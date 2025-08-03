@@ -67,3 +67,76 @@ def check_null_columns(df: pd.DataFrame,
     styled_df = result_df.style.map(style_nulls, subset=['Null_Percentage'])
 
     return styled_df
+
+
+def analyze_categorical_columns(df: pd.DataFrame, 
+                              threshold: Optional[float] = 35) -> None:
+    """
+    Analyze categorical columns of object type to identify potential data issues.
+    
+    This function examines object-type columns to detect:
+    1. Columns that might be numeric but stored as strings
+    2. Categorical columns with their unique values
+    3. Data type consistency issues
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame to analyze
+        threshold (Optional[float], optional): The threshold percentage for 
+                                             non-numeric values. If a column 
+                                             has less than this percentage of 
+                                             non-numeric values, it's flagged 
+                                             as potentially numeric. Defaults to 35.
+    
+    Returns:
+        None: Prints analysis results directly to console with color coding
+    
+    Example:
+        >>> import pandas as pd
+        >>> import edaflow
+        >>> df = pd.DataFrame({
+        ...     'name': ['Alice', 'Bob', 'Charlie'],
+        ...     'age_str': ['25', '30', '35'], 
+        ...     'mixed': ['1', '2', 'three'],
+        ...     'numbers': [1, 2, 3]
+        ... })
+        >>> edaflow.analyze_categorical_columns(df, threshold=35)
+        # Output with color coding:
+        # age_str is potentially a numeric column that needs conversion
+        # age_str has ['25' '30' '35'] values
+        # mixed has too many non-numeric values (33.33% non-numeric)
+        # numbers is not an object column
+        
+        # Alternative import style:
+        >>> from edaflow.analysis import analyze_categorical_columns
+    """
+    print("Analyzing categorical columns of object type...")
+    print("=" * 50)
+    
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            # Try to convert to numeric and check how many fail
+            numeric_col = pd.to_numeric(df[col], errors='coerce')
+            non_numeric_pct = (numeric_col.isnull().sum() / len(numeric_col)) * 100
+            
+            if non_numeric_pct < threshold:
+                # Potential numeric column - highlight in red with blue background
+                print('\x1b[1;31;44m{} is potentially a numeric column that needs conversion\x1b[m'.format(col))
+                print('\x1b[1;30;43m{} has {} unique values: {}\x1b[m'.format(
+                    col, df[col].nunique(), df[col].unique()[:10]  # Show first 10 unique values
+                ))
+            else:
+                # Truly categorical column
+                unique_count = df[col].nunique()
+                total_count = len(df[col])
+                print('{} has too many non-numeric values ({}% non-numeric)'.format(
+                    col, round(non_numeric_pct, 2)
+                ))
+                print('  └─ {} unique values out of {} total ({} unique values shown): {}'.format(
+                    unique_count, total_count, min(10, unique_count), 
+                    df[col].unique()[:10]  # Show first 10 unique values
+                ))
+        else:
+            print('{} is not an object column (dtype: {})'.format(col, df[col].dtype))
+    
+    print("=" * 50)
+    print("Analysis complete!")

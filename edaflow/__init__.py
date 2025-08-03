@@ -2,9 +2,9 @@
 edaflow - A Python package for exploratory data analysis workflows
 """
 
-from .analysis import check_null_columns
+from .analysis import check_null_columns, analyze_categorical_columns
 
-__version__ = "0.1.0"
+__version__ = "0.2.1"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 

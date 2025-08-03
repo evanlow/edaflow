@@ -3,7 +3,7 @@ Tests for the main edaflow module
 """
 import pandas as pd
 import edaflow
-from edaflow.analysis import check_null_columns
+from edaflow.analysis import check_null_columns, analyze_categorical_columns
 
 
 def test_hello_function():
@@ -103,3 +103,72 @@ def test_check_null_columns_no_nulls():
     
     assert all(data['Null_Percentage'] == 0.0)
     assert all(data['Null_Count'] == 0)
+
+
+def test_analyze_categorical_columns_import():
+    """Test that analyze_categorical_columns can be imported"""
+    from edaflow import analyze_categorical_columns
+    assert callable(analyze_categorical_columns)
+
+
+def test_analyze_categorical_columns_mixed_data(capsys):
+    """Test analyze_categorical_columns with mixed data types"""
+    df = pd.DataFrame({
+        'name': ['Alice', 'Bob', 'Charlie'],  # Truly categorical
+        'age_str': ['25', '30', '35'],        # Numeric stored as string
+        'mixed': ['1', '2', 'three'],         # Mixed numeric/text (33% non-numeric)
+        'numbers': [1, 2, 3],                 # Already numeric
+        'categories': ['A', 'B', 'A']         # Categorical
+    })
+    
+    # Import and test the function
+    from edaflow import analyze_categorical_columns
+    
+    # Call the function (it prints to stdout)
+    analyze_categorical_columns(df, threshold=35)
+    
+    # Capture the printed output
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Check that it identifies potentially numeric columns
+    assert 'age_str is potentially a numeric column' in output
+    assert 'numbers is not an object column' in output
+    # Mixed should be flagged as potentially numeric since 33% < 35% threshold
+    assert 'mixed is potentially a numeric column' in output
+    # Name and categories should be flagged as truly categorical
+    assert 'name has too many non-numeric values (100.0% non-numeric)' in output
+    assert 'categories has too many non-numeric values (100.0% non-numeric)' in output
+
+
+def test_analyze_categorical_columns_all_numeric_strings(capsys):
+    """Test analyze_categorical_columns with all numeric strings"""
+    df = pd.DataFrame({
+        'numeric_col': ['10', '20', '30', '40', '50']
+    })
+    
+    from edaflow import analyze_categorical_columns
+    analyze_categorical_columns(df, threshold=35)
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Should identify this as potentially numeric
+    assert 'numeric_col is potentially a numeric column' in output
+    assert "['10' '20' '30' '40' '50']" in output
+
+
+def test_analyze_categorical_columns_all_text(capsys):
+    """Test analyze_categorical_columns with all text data"""
+    df = pd.DataFrame({
+        'text_col': ['apple', 'banana', 'cherry', 'date', 'elderberry']
+    })
+    
+    from edaflow import analyze_categorical_columns
+    analyze_categorical_columns(df, threshold=35)
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Should identify this as truly categorical
+    assert 'text_col has too many non-numeric values (100.0% non-numeric)' in output
