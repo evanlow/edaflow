@@ -10,6 +10,7 @@ A Python package for streamlined exploratory data analysis workflows.
 
 - **Missing Data Analysis**: Color-coded analysis of null values with customizable thresholds
 - **Categorical Data Insights**: Identify object columns that might be numeric, detect data type issues
+- **Automatic Data Type Conversion**: Smart conversion of object columns to numeric when appropriate
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
 - **Easy Integration**: Works seamlessly with pandas, numpy, and other popular libraries
@@ -63,6 +64,10 @@ print(null_analysis)
 
 # Analyze categorical columns to identify data type issues
 edaflow.analyze_categorical_columns(df, threshold=35)
+
+# Convert appropriate object columns to numeric automatically
+df_cleaned = edaflow.convert_to_numeric(df, threshold=35)
+print("Data types after conversion:", df_cleaned.dtypes)
 ```
 
 ## Usage Examples
@@ -143,6 +148,39 @@ edaflow.analyze_categorical_columns(df, threshold=50)
 - **Regular text**: Truly categorical columns with statistics
 - **"not an object column"**: Already properly typed numeric columns
 
+### Data Type Conversion with `convert_to_numeric`
+
+After analyzing your categorical columns, you can automatically convert appropriate columns to numeric:
+
+```python
+import pandas as pd
+import edaflow
+
+# Create sample data with string numbers
+df = pd.DataFrame({
+    'product_name': ['Laptop', 'Mouse', 'Keyboard', 'Monitor'],
+    'price_str': ['999', '25', '75', '450'],      # Should convert
+    'mixed_ids': ['001', '002', 'ABC', '004'],    # Mixed data
+    'category': ['Electronics', 'Accessories', 'Electronics', 'Electronics']
+})
+
+# Convert appropriate columns to numeric (threshold=35% by default)
+df_converted = edaflow.convert_to_numeric(df, threshold=35)
+
+# Or modify the original DataFrame in place
+edaflow.convert_to_numeric(df, threshold=35, inplace=True)
+
+# Use a stricter threshold (only convert if <20% non-numeric values)
+df_strict = edaflow.convert_to_numeric(df, threshold=20)
+```
+
+**Function Features:**
+- ✅ **Smart Detection**: Only converts columns with few non-numeric values
+- ✅ **Customizable Threshold**: Control conversion sensitivity 
+- ✅ **Safe Conversion**: Non-numeric values become NaN (not errors)
+- ✅ **Inplace Option**: Modify original DataFrame or create new one
+- ✅ **Detailed Output**: Shows exactly what was converted and why
+
 ### Complete EDA Workflow Example
 
 ```python
@@ -167,14 +205,26 @@ print("\n2. CATEGORICAL DATA ANALYSIS")
 print("-" * 40)
 edaflow.analyze_categorical_columns(df, threshold=30)
 
-# Step 3: Based on the analysis, you can then:
-# - Convert string numbers to numeric types
-# - Handle missing data appropriately
-# - Clean categorical data
+# Step 3: Convert appropriate columns to numeric automatically
+print("\n3. AUTOMATIC DATA TYPE CONVERSION")
+print("-" * 40)
+df_cleaned = edaflow.convert_to_numeric(df, threshold=30)
 
-# Example conversion based on analysis results:
-# df['price'] = pd.to_numeric(df['price_str'], errors='coerce')
-# df = df.drop('price_str', axis=1)
+# Step 4: Final data review
+print("\n4. DATA CLEANING SUMMARY")
+print("-" * 40)
+print("Original data types:")
+print(df.dtypes)
+print("\nCleaned data types:")
+print(df_cleaned.dtypes)
+print(f"\nFinal dataset shape: {df_cleaned.shape}")
+
+# Now your data is ready for further analysis!
+# You can proceed with:
+# - Statistical analysis
+# - Machine learning preprocessing
+# - Visualization
+# - Advanced EDA techniques
 ```
 
 ### Integration with Jupyter Notebooks
@@ -276,6 +326,15 @@ isort edaflow/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.3.0 (Major Feature Release)
+- **NEW**: `convert_to_numeric()` function for automatic data type conversion
+- **NEW**: Complete EDA workflow: analyze → convert → clean
+- **NEW**: Smart threshold-based conversion with detailed reporting
+- **NEW**: Inplace conversion option for flexible DataFrame modification
+- **NEW**: Safe conversion with NaN handling for invalid values
+- **ENHANCED**: Updated comprehensive examples with full 3-step workflow
+- Enhanced testing coverage with 18 comprehensive tests covering all functions
 
 ### v0.2.1 (Documentation Enhancement)
 - **ENHANCED**: Comprehensive README with detailed usage examples

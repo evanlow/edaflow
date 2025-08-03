@@ -140,3 +140,113 @@ def analyze_categorical_columns(df: pd.DataFrame,
     
     print("=" * 50)
     print("Analysis complete!")
+
+
+def convert_to_numeric(df: pd.DataFrame, 
+                      threshold: Optional[float] = 35,
+                      inplace: bool = False) -> pd.DataFrame:
+    """
+    Convert object columns to numeric when appropriate based on data analysis.
+    
+    This function examines object-type columns and converts them to numeric
+    if the percentage of non-numeric values is below the specified threshold.
+    This helps clean datasets where numeric data is stored as strings.
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame to process
+        threshold (Optional[float], optional): The threshold percentage for 
+                                             non-numeric values. Columns with
+                                             fewer non-numeric values than this
+                                             threshold will be converted to numeric.
+                                             Defaults to 35.
+        inplace (bool, optional): If True, modify the DataFrame in place and return None.
+                                If False, return a new DataFrame with conversions applied.
+                                Defaults to False.
+    
+    Returns:
+        pd.DataFrame or None: If inplace=False, returns a new DataFrame with 
+                            numeric conversions applied. If inplace=True, 
+                            modifies the original DataFrame and returns None.
+    
+    Example:
+        >>> import pandas as pd
+        >>> import edaflow
+        >>> df = pd.DataFrame({
+        ...     'name': ['Alice', 'Bob', 'Charlie'],
+        ...     'age_str': ['25', '30', '35'], 
+        ...     'mixed': ['1', '2', 'three'],
+        ...     'numbers': [1, 2, 3]
+        ... })
+        >>> 
+        >>> # Create a copy with conversions
+        >>> df_cleaned = edaflow.convert_to_numeric(df, threshold=35)
+        >>> 
+        >>> # Or modify the original DataFrame
+        >>> edaflow.convert_to_numeric(df, threshold=35, inplace=True)
+        >>> 
+        >>> # Alternative import style:
+        >>> from edaflow.analysis import convert_to_numeric
+        >>> df_cleaned = convert_to_numeric(df, threshold=50)
+    
+    Notes:
+        - Values that cannot be converted to numeric become NaN
+        - The function provides colored output showing which columns were converted
+        - Use a lower threshold to be more strict about conversions
+        - Use a higher threshold to be more lenient about mixed data
+    """
+    # Create a copy if not modifying inplace
+    if not inplace:
+        df_result = df.copy()
+    else:
+        df_result = df
+    
+    print("Converting object columns to numeric where appropriate...")
+    print("=" * 60)
+    
+    conversions_made = []
+    
+    for col in df_result.columns:
+        if df_result[col].dtype == 'object':
+            # Try to convert to numeric and check how many fail
+            numeric_col = pd.to_numeric(df_result[col], errors='coerce')
+            non_numeric_pct = (numeric_col.isnull().sum() / len(numeric_col)) * 100
+            
+            if non_numeric_pct < threshold:
+                # Convert the column to numeric
+                original_nulls = df_result[col].isnull().sum()
+                df_result[col] = pd.to_numeric(df_result[col], errors='coerce')
+                new_nulls = df_result[col].isnull().sum()
+                values_converted_to_nan = new_nulls - original_nulls
+                
+                # Colored output for successful conversion
+                print('\x1b[1;31;44mConverting {} to a numerical column\x1b[m'.format(col))
+                print('  └─ {}% of values were non-numeric ({} values converted to NaN)'.format(
+                    round(non_numeric_pct, 2), values_converted_to_nan
+                ))
+                
+                conversions_made.append({
+                    'column': col,
+                    'non_numeric_pct': round(non_numeric_pct, 2),
+                    'values_converted_to_nan': values_converted_to_nan
+                })
+            else:
+                # Skip conversion - too many non-numeric values
+                print('{} skipped: {}% non-numeric values (threshold: {}%)'.format(
+                    col, round(non_numeric_pct, 2), threshold
+                ))
+        else:
+            print('{} skipped: already numeric (dtype: {})'.format(col, df_result[col].dtype))
+    
+    print("=" * 60)
+    
+    if conversions_made:
+        print(f"✅ Successfully converted {len(conversions_made)} columns to numeric:")
+        for conversion in conversions_made:
+            print(f"   • {conversion['column']}: {conversion['non_numeric_pct']}% non-numeric")
+    else:
+        print("ℹ️  No columns were converted (all were either already numeric or above threshold)")
+    
+    print("Conversion complete!")
+    
+    # Return the result DataFrame if not inplace, otherwise return None
+    return None if inplace else df_result

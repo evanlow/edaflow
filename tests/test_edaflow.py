@@ -3,7 +3,7 @@ Tests for the main edaflow module
 """
 import pandas as pd
 import edaflow
-from edaflow.analysis import check_null_columns, analyze_categorical_columns
+from edaflow.analysis import check_null_columns, analyze_categorical_columns, convert_to_numeric
 
 
 def test_hello_function():
@@ -172,3 +172,125 @@ def test_analyze_categorical_columns_all_text(capsys):
     
     # Should identify this as truly categorical
     assert 'text_col has too many non-numeric values (100.0% non-numeric)' in output
+
+
+def test_convert_to_numeric_import():
+    """Test that convert_to_numeric can be imported"""
+    from edaflow import convert_to_numeric
+    assert callable(convert_to_numeric)
+
+
+def test_convert_to_numeric_basic_conversion(capsys):
+    """Test convert_to_numeric with basic string-to-numeric conversion"""
+    df = pd.DataFrame({
+        'numeric_str': ['10', '20', '30', '40', '50'],  # Should convert (0% non-numeric)
+        'mixed': ['1', '2', 'text', '4', '5'],          # Should convert (20% < 35% threshold)
+        'text_col': ['apple', 'banana', 'cherry', 'date', 'elderberry'],  # Should not convert (100% non-numeric)
+        'already_numeric': [1, 2, 3, 4, 5]             # Already numeric
+    })
+    
+    # Test with default threshold (35%)
+    result_df = edaflow.convert_to_numeric(df, threshold=35)
+    
+    # Capture printed output
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Check that the right columns were converted
+    assert 'Converting numeric_str to a numerical column' in output
+    assert 'Converting mixed to a numerical column' in output  # This should also convert since 20% < 35%
+    assert 'text_col skipped' in output
+    assert 'already_numeric skipped: already numeric' in output
+    
+    # Check that the DataFrame was properly modified
+    assert result_df['numeric_str'].dtype in ['int64', 'float64']
+    assert result_df['mixed'].dtype in ['int64', 'float64']  # Should be converted
+    assert result_df['text_col'].dtype == 'object'  # Should remain object
+    assert result_df['already_numeric'].dtype in ['int64', 'float64']
+    
+    # Check that original DataFrame is unchanged
+    assert df['numeric_str'].dtype == 'object'
+    assert df['mixed'].dtype == 'object'
+
+
+def test_convert_to_numeric_inplace(capsys):
+    """Test convert_to_numeric with inplace=True"""
+    df = pd.DataFrame({
+        'price': ['100', '200', '300'],
+        'category': ['A', 'B', 'C']
+    })
+    
+    original_id = id(df)
+    
+    # Test inplace conversion
+    result = edaflow.convert_to_numeric(df, threshold=35, inplace=True)
+    
+    # Should return None when inplace=True
+    assert result is None
+    
+    # Original DataFrame should be modified
+    assert id(df) == original_id  # Same object
+    assert df['price'].dtype in ['int64', 'float64']  # Should be converted
+    assert df['category'].dtype == 'object'  # Should remain object
+
+
+def test_convert_to_numeric_with_nans():
+    """Test convert_to_numeric handles conversion to NaN correctly"""
+    df = pd.DataFrame({
+        'mixed_col': ['10', '20', 'invalid', '40'],  # 25% non-numeric
+    })
+    
+    result_df = edaflow.convert_to_numeric(df, threshold=30)
+    
+    # Should convert since 25% < 30%
+    assert result_df['mixed_col'].dtype in ['int64', 'float64']
+    
+    # Should have 1 NaN value where 'invalid' was
+    assert result_df['mixed_col'].isnull().sum() == 1
+    assert result_df['mixed_col'].notna().sum() == 3
+    
+    # Values that could be converted should be numeric
+    numeric_values = result_df['mixed_col'].dropna().tolist()
+    expected_values = [10.0, 20.0, 40.0]  # Will be float due to NaN presence
+    assert numeric_values == expected_values
+
+
+def test_convert_to_numeric_custom_threshold(capsys):
+    """Test convert_to_numeric with custom threshold"""
+    df = pd.DataFrame({
+        'col1': ['1', '2', 'text1', 'text2'],  # 50% non-numeric
+        'col2': ['10', '20', '30', '40']       # 0% non-numeric
+    })
+    
+    # Test with strict threshold (40%)
+    result_df = edaflow.convert_to_numeric(df, threshold=40)
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # col1 should be skipped (50% > 40%), col2 should be converted
+    assert 'col1 skipped: 50.0% non-numeric' in output
+    assert 'Converting col2 to a numerical column' in output
+    
+    assert result_df['col1'].dtype == 'object'
+    assert result_df['col2'].dtype in ['int64', 'float64']
+
+
+def test_convert_to_numeric_no_conversions(capsys):
+    """Test convert_to_numeric when no conversions are possible"""
+    df = pd.DataFrame({
+        'text_only': ['apple', 'banana', 'cherry'],
+        'already_int': [1, 2, 3],
+        'already_float': [1.1, 2.2, 3.3]
+    })
+    
+    result_df = edaflow.convert_to_numeric(df, threshold=35)
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Should indicate no conversions were made
+    assert 'No columns were converted' in output
+    
+    # DataFrame should be unchanged in terms of data types
+    assert result_df['text_only'].dtype == 'object'
+    assert result_df['already_int'].dtype in ['int64', 'float64']
+    assert result_df['already_float'].dtype in ['int64', 'float64']
