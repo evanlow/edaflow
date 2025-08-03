@@ -16,7 +16,7 @@ A Python package for streamlined exploratory data analysis workflows.
 
 ## Installation
 
-### From PyPI (when published)
+### From PyPI
 ```bash
 pip install edaflow
 ```
@@ -119,7 +119,7 @@ edaflow/
 ### Setup Development Environment
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/edaflow.git
+git clone https://github.com/evanlow/edaflow.git
 cd edaflow
 
 # Create virtual environment
@@ -152,7 +152,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-If you encounter any issues or have questions, please file an issue on the [GitHub repository](https://github.com/yourusername/edaflow/issues).
+If you encounter any issues or have questions, please file an issue on the [GitHub repository](https://github.com/evanlow/edaflow/issues).
 
 ## Roadmap
 
@@ -167,6 +167,4 @@ If you encounter any issues or have questions, please file an issue on the [GitH
 
 ## Acknowledgments
 
-- Built on top of the excellent Python data science ecosystem
-- Inspired by the need for streamlined EDA workflows
-- Thanks to the open-source community
+edaflow was developed during the AI/ML course conducted by NTUC LearningHub. I am grateful for the privilege of working alongside my coursemates from Cohort 15. A special thanks to our awesome instructor, Ms. Isha Sehgal, who not only inspired us but also instilled the data science discipline that we now possess
