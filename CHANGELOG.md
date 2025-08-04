@@ -19,6 +19,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.4.1] - 2025-01-04
+
+### Added
+- `visualize_numerical_boxplots()` function for comprehensive outlier detection and statistical analysis
+- Advanced boxplot visualization with customizable layouts (rows/cols), orientations, and color palettes
+- Automatic numerical column detection for boxplot analysis
+- Detailed statistical summaries including skewness analysis and interpretation
+- IQR-based outlier detection with threshold reporting
+- Comprehensive outlier identification with actual outlier values displayed
+- Support for horizontal and vertical boxplot orientations
+- Seaborn integration for enhanced styling and color palettes
+
+### Fixed
+- `impute_categorical_mode()` function now properly returns DataFrame instead of None
+- Corrected inplace parameter handling for categorical imputation function
+
 ### Fixed
 - Future fixes will be documented here
 

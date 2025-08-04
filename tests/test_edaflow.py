@@ -3,8 +3,9 @@ Tests for the main edaflow module
 """
 import pytest
 import pandas as pd
+import numpy as np
 import edaflow
-from edaflow.analysis import check_null_columns, analyze_categorical_columns, convert_to_numeric, visualize_categorical_values, display_column_types
+from edaflow.analysis import check_null_columns, analyze_categorical_columns, convert_to_numeric, visualize_categorical_values, display_column_types, visualize_numerical_boxplots
 
 
 def test_hello_function():
@@ -879,3 +880,216 @@ def test_impute_numerical_median_from_main_package():
     
     assert result['age'].isnull().sum() == 0
     assert result['salary'].isnull().sum() == 0
+
+
+# Tests for visualize_numerical_boxplots function
+def test_visualize_numerical_boxplots_import():
+    """Test importing visualize_numerical_boxplots from both locations"""
+    from edaflow.analysis import visualize_numerical_boxplots
+    from edaflow import visualize_numerical_boxplots as main_boxplots
+    
+    assert visualize_numerical_boxplots is not None
+    assert main_boxplots is not None
+    assert visualize_numerical_boxplots == main_boxplots
+
+
+def test_visualize_numerical_boxplots_basic(monkeypatch):
+    """Test basic functionality of visualize_numerical_boxplots"""
+    # Mock plt.show() to prevent displaying plots during testing
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    df = pd.DataFrame({
+        'age': [20, 25, 30, 35, 40, 100],  # Contains outlier
+        'salary': [30000, 40000, 50000, 60000, 70000, 200000],  # Contains outlier
+        'experience': [1, 3, 5, 7, 10, 25],
+        'category': ['A', 'B', 'C', 'A', 'B', 'C']  # Non-numerical
+    })
+    
+    # This should work without raising exceptions
+    try:
+        edaflow.visualize_numerical_boxplots(df)
+    except Exception as e:
+        pytest.fail(f"visualize_numerical_boxplots raised an exception: {e}")
+
+
+def test_visualize_numerical_boxplots_custom_parameters(monkeypatch):
+    """Test visualize_numerical_boxplots with custom parameters"""
+    import matplotlib
+    matplotlib.use('Agg')  # Use non-interactive backend
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    df = pd.DataFrame({
+        'value1': [1, 2, 3, 4, 5, 100],
+        'value2': [10, 20, 30, 40, 50, 1000],
+        'value3': [5, 10, 15, 20, 25, 500]
+    })
+    
+    # Test with custom parameters
+    try:
+        edaflow.visualize_numerical_boxplots(
+            df, 
+            rows=2, 
+            cols=2, 
+            title="Custom Title",
+            show_skewness=False,
+            orientation='vertical',
+            color_palette='viridis'
+        )
+    except Exception as e:
+        pytest.fail(f"visualize_numerical_boxplots with custom parameters raised an exception: {e}")
+
+
+def test_visualize_numerical_boxplots_specific_columns(monkeypatch):
+    """Test visualize_numerical_boxplots with specific columns"""
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    df = pd.DataFrame({
+        'col1': [1, 2, 3, 4, 5],
+        'col2': [10, 20, 30, 40, 50],
+        'col3': [100, 200, 300, 400, 500],
+        'text_col': ['A', 'B', 'C', 'D', 'E']
+    })
+    
+    # Test with specific columns
+    try:
+        edaflow.visualize_numerical_boxplots(df, columns=['col1', 'col2'])
+    except Exception as e:
+        pytest.fail(f"visualize_numerical_boxplots with specific columns raised an exception: {e}")
+
+
+def test_visualize_numerical_boxplots_invalid_orientation():
+    """Test visualize_numerical_boxplots with invalid orientation"""
+    df = pd.DataFrame({
+        'value': [1, 2, 3, 4, 5]
+    })
+    
+    with pytest.raises(ValueError, match="orientation must be either 'horizontal' or 'vertical'"):
+        edaflow.visualize_numerical_boxplots(df, orientation='diagonal')
+
+
+def test_visualize_numerical_boxplots_no_numerical_columns():
+    """Test visualize_numerical_boxplots with no numerical columns"""
+    df = pd.DataFrame({
+        'text1': ['A', 'B', 'C'],
+        'text2': ['X', 'Y', 'Z']
+    })
+    
+    with pytest.raises(ValueError, match="No valid numerical columns found for plotting"):
+        edaflow.visualize_numerical_boxplots(df)
+
+
+def test_visualize_numerical_boxplots_missing_columns():
+    """Test visualize_numerical_boxplots with missing columns"""
+    df = pd.DataFrame({
+        'value1': [1, 2, 3],
+        'value2': [4, 5, 6]
+    })
+    
+    with pytest.raises(ValueError, match="Columns not found in DataFrame"):
+        edaflow.visualize_numerical_boxplots(df, columns=['value1', 'nonexistent'])
+
+
+def test_visualize_numerical_boxplots_mixed_column_types(monkeypatch, capsys):
+    """Test visualize_numerical_boxplots with mixed column types"""
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    df = pd.DataFrame({
+        'numerical': [1, 2, 3, 4, 5],
+        'text': ['A', 'B', 'C', 'D', 'E']
+    })
+    
+    # This should work and show a warning
+    edaflow.visualize_numerical_boxplots(df, columns=['numerical', 'text'])
+    
+    # Check that warning was printed
+    captured = capsys.readouterr()
+    assert "Warning: Skipping non-numerical columns: ['text']" in captured.out
+
+
+def test_visualize_numerical_boxplots_all_missing_values(monkeypatch, capsys):
+    """Test visualize_numerical_boxplots with columns containing all missing values"""
+    import matplotlib
+    matplotlib.use('Agg')  # Use non-interactive backend
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    df = pd.DataFrame({
+        'good_col': [1, 2, 3, 4, 5],
+        'all_nan': [np.nan, np.nan, np.nan, np.nan, np.nan]  # Use np.nan for numerical column
+    })
+    
+    # This should work and show a warning about the all-NaN column
+    edaflow.visualize_numerical_boxplots(df)
+    
+    # Check that warning was printed
+    captured = capsys.readouterr()
+    assert "Warning: Skipping column 'all_nan' - all values are missing" in captured.out
+
+
+def test_visualize_numerical_boxplots_single_column(monkeypatch):
+    """Test visualize_numerical_boxplots with single column"""
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    df = pd.DataFrame({
+        'single_col': [1, 2, 3, 4, 5, 100]  # Contains outlier
+    })
+    
+    try:
+        edaflow.visualize_numerical_boxplots(df)
+    except Exception as e:
+        pytest.fail(f"visualize_numerical_boxplots with single column raised an exception: {e}")
+
+
+def test_visualize_numerical_boxplots_large_dataset(monkeypatch):
+    """Test visualize_numerical_boxplots with many columns"""
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    # Create DataFrame with many numerical columns
+    data = {}
+    for i in range(10):
+        data[f'col_{i}'] = [j + i for j in range(20)]
+    df = pd.DataFrame(data)
+    
+    try:
+        edaflow.visualize_numerical_boxplots(df)
+    except Exception as e:
+        pytest.fail(f"visualize_numerical_boxplots with large dataset raised an exception: {e}")
+
+
+def test_visualize_numerical_boxplots_from_main_package(monkeypatch):
+    """Test importing and using visualize_numerical_boxplots from main package"""
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    import edaflow
+    
+    df = pd.DataFrame({
+        'test_col': [1, 2, 3, 4, 5, 100]
+    })
+    
+    try:
+        edaflow.visualize_numerical_boxplots(df)
+    except Exception as e:
+        pytest.fail(f"visualize_numerical_boxplots from main package raised an exception: {e}")
+
+
+def test_visualize_numerical_boxplots_with_custom_figsize(monkeypatch):
+    """Test visualize_numerical_boxplots with custom figure size"""
+    import matplotlib.pyplot as plt
+    monkeypatch.setattr(plt, 'show', lambda: None)
+    
+    df = pd.DataFrame({
+        'col1': [1, 2, 3, 4, 5],
+        'col2': [10, 20, 30, 40, 50]
+    })
+    
+    try:
+        edaflow.visualize_numerical_boxplots(df, figsize=(12, 8))
+    except Exception as e:
+        pytest.fail(f"visualize_numerical_boxplots with custom figsize raised an exception: {e}")

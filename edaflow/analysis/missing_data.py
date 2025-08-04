@@ -6,7 +6,10 @@ This module provides utilities for analyzing and visualizing missing data patter
 
 import pandas as pd
 import numpy as np
-from typing import Optional
+import matplotlib.pyplot as plt
+import seaborn as sns
+from typing import Optional, List, Union
+import math
 
 
 def check_null_columns(df: pd.DataFrame,
@@ -731,4 +734,222 @@ def impute_categorical_mode(df, columns=None, inplace=False):
     if imputed_columns:
         print(f"   Imputed columns: {', '.join(imputed_columns)}")
     
-    return result_df if not inplace else None
+    return None if inplace else result_df
+
+
+def visualize_numerical_boxplots(df: pd.DataFrame,
+                                 columns: Optional[List[str]] = None,
+                                 figsize: Optional[tuple] = None,
+                                 rows: Optional[int] = None,
+                                 cols: Optional[int] = None,
+                                 title: str = "Boxplots for Numerical Columns",
+                                 show_skewness: bool = True,
+                                 orientation: str = 'horizontal',
+                                 color_palette: str = 'Set2') -> None:
+    """
+    Create boxplots for numerical columns to visualize distributions and outliers.
+    
+    This function automatically detects numerical columns and creates a grid of boxplots
+    to help identify outliers, skewness, and distribution characteristics. Each boxplot
+    can optionally display the skewness value in the title.
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame to analyze
+        columns (Optional[List[str]], optional): Specific columns to plot. If None, 
+                                               all numerical columns are used. 
+                                               Defaults to None.
+        figsize (Optional[tuple], optional): Figure size (width, height). If None, 
+                                           automatically calculated based on subplot grid.
+                                           Defaults to None.
+        rows (Optional[int], optional): Number of rows in subplot grid. If None, 
+                                      automatically calculated. Defaults to None.
+        cols (Optional[int], optional): Number of columns in subplot grid. If None, 
+                                      automatically calculated. Defaults to None.
+        title (str, optional): Main title for the entire plot. 
+                              Defaults to "Boxplots for Numerical Columns".
+        show_skewness (bool, optional): Whether to show skewness values in subplot titles.
+                                      Defaults to True.
+        orientation (str, optional): Boxplot orientation. Either 'horizontal' or 'vertical'.
+                                   Defaults to 'horizontal'.
+        color_palette (str, optional): Seaborn color palette to use. 
+                                     Defaults to 'Set2'.
+    
+    Returns:
+        None: Displays the boxplot visualization
+    
+    Raises:
+        ValueError: If orientation is not 'horizontal' or 'vertical'
+        ValueError: If no numerical columns are found
+    
+    Example:
+        >>> import pandas as pd
+        >>> import edaflow
+        >>> df = pd.DataFrame({
+        ...     'age': [25, 30, 35, 40, 100, 28, 32],  # 100 is outlier
+        ...     'salary': [50000, 60000, 75000, 80000, 200000, 55000, 65000],  # 200000 is outlier
+        ...     'experience': [2, 5, 8, 12, 25, 3, 6],
+        ...     'category': ['A', 'B', 'A', 'C', 'B', 'A', 'C']
+        ... })
+        >>> 
+        >>> # Basic boxplot visualization
+        >>> edaflow.visualize_numerical_boxplots(df)
+        >>> 
+        >>> # Custom layout and styling
+        >>> edaflow.visualize_numerical_boxplots(df, 
+        ...                                     rows=2, cols=2,
+        ...                                     title="Custom Boxplots",
+        ...                                     orientation='vertical',
+        ...                                     color_palette='viridis')
+        >>> 
+        >>> # Specific columns only
+        >>> edaflow.visualize_numerical_boxplots(df, columns=['age', 'salary'])
+        >>> 
+        >>> # Alternative import style:
+        >>> from edaflow.analysis import visualize_numerical_boxplots
+        >>> visualize_numerical_boxplots(df, show_skewness=False)
+    
+    Notes:
+        - Automatically identifies numerical columns (int64, float64, etc.)
+        - Skips columns with all missing values
+        - Outliers are clearly visible as points beyond the whiskers
+        - Skewness interpretation:
+          * |skewness| < 0.5: Approximately symmetric
+          * 0.5 ≤ |skewness| < 1: Moderately skewed  
+          * |skewness| ≥ 1: Highly skewed
+        - Uses seaborn styling for better visual appearance
+    """
+    # Validate orientation
+    if orientation not in ['horizontal', 'vertical']:
+        raise ValueError("orientation must be either 'horizontal' or 'vertical'")
+    
+    # Get numerical columns
+    if columns is None:
+        numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    else:
+        # Validate that specified columns exist and are numerical
+        missing_cols = [col for col in columns if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Columns not found in DataFrame: {missing_cols}")
+        
+        non_numerical = [col for col in columns if col in df.columns and 
+                        not pd.api.types.is_numeric_dtype(df[col])]
+        if non_numerical:
+            print(f"⚠️  Warning: Skipping non-numerical columns: {non_numerical}")
+        
+        numerical_cols = [col for col in columns if col in df.columns and 
+                         pd.api.types.is_numeric_dtype(df[col])]
+    
+    # Filter out columns with all missing values
+    valid_cols = []
+    for col in numerical_cols:
+        if not df[col].isna().all():
+            valid_cols.append(col)
+        else:
+            print(f"⚠️  Warning: Skipping column '{col}' - all values are missing")
+    
+    if not valid_cols:
+        raise ValueError("No valid numerical columns found for plotting")
+    
+    print(f"📊 Creating boxplots for {len(valid_cols)} numerical column(s): {', '.join(valid_cols)}")
+    
+    # Calculate grid dimensions if not provided
+    n_plots = len(valid_cols)
+    if rows is None and cols is None:
+        cols = min(3, n_plots)  # Default to 3 columns max
+        rows = math.ceil(n_plots / cols)
+    elif rows is None:
+        rows = math.ceil(n_plots / cols)
+    elif cols is None:
+        cols = math.ceil(n_plots / rows)
+    
+    # Calculate figure size if not provided
+    if figsize is None:
+        if orientation == 'horizontal':
+            figsize = (4 * cols, 3 * rows)
+        else:
+            figsize = (3 * cols, 4 * rows)
+    
+    # Set style
+    plt.style.use('default')
+    sns.set_palette(color_palette)
+    
+    # Create the subplot grid
+    fig, axes = plt.subplots(rows, cols, figsize=figsize)
+    fig.suptitle(title, fontsize=16, y=0.98)
+    
+    # Handle case where there's only one subplot
+    if n_plots == 1:
+        axes = [axes]
+    elif rows == 1 or cols == 1:
+        axes = axes.flatten() if hasattr(axes, 'flatten') else [axes]
+    else:
+        axes = axes.flatten()
+    
+    # Create boxplots
+    for i, col in enumerate(valid_cols):
+        ax = axes[i]
+        
+        # Create the boxplot
+        if orientation == 'horizontal':
+            sns.boxplot(data=df, x=col, ax=ax, orient='h')
+            ax.set_xlabel(col)
+            ax.set_ylabel('')
+        else:
+            sns.boxplot(data=df, y=col, ax=ax, orient='v')
+            ax.set_ylabel(col)
+            ax.set_xlabel('')
+        
+        # Calculate and display skewness if requested
+        if show_skewness:
+            skewness = df[col].skew(skipna=True)
+            skew_text = f"{col}\nSkewness: {skewness:.2f}"
+            ax.set_title(skew_text, fontsize=10)
+        else:
+            ax.set_title(col, fontsize=10)
+        
+        # Add grid for better readability
+        ax.grid(True, alpha=0.3)
+    
+    # Hide empty subplots
+    for i in range(n_plots, len(axes)):
+        axes[i].set_visible(False)
+    
+    # Adjust layout
+    plt.tight_layout()
+    
+    # Show summary statistics
+    print("\n📈 Summary Statistics:")
+    print("=" * 50)
+    for col in valid_cols:
+        col_data = df[col].dropna()
+        if len(col_data) > 0:
+            skewness = col_data.skew()
+            q1, q3 = col_data.quantile([0.25, 0.75])
+            iqr = q3 - q1
+            lower_bound = q1 - 1.5 * iqr
+            upper_bound = q3 + 1.5 * iqr
+            outliers = col_data[(col_data < lower_bound) | (col_data > upper_bound)]
+            
+            print(f"📊 {col}:")
+            print(f"   Range: {col_data.min():.2f} to {col_data.max():.2f}")
+            print(f"   Median: {col_data.median():.2f}")
+            print(f"   IQR: {iqr:.2f} (Q1: {q1:.2f}, Q3: {q3:.2f})")
+            print(f"   Skewness: {skewness:.2f}", end="")
+            
+            # Skewness interpretation
+            if abs(skewness) < 0.5:
+                print(" (approximately symmetric)")
+            elif abs(skewness) < 1:
+                print(" (moderately skewed)")
+            else:
+                print(" (highly skewed)")
+            
+            print(f"   Outliers: {len(outliers)} values outside [{lower_bound:.2f}, {upper_bound:.2f}]")
+            if len(outliers) > 0 and len(outliers) <= 5:
+                print(f"   Outlier values: {sorted(outliers.tolist())}")
+            elif len(outliers) > 5:
+                print(f"   Sample outliers: {sorted(outliers.tolist())[:5]}... (+{len(outliers)-5} more)")
+            print()
+    
+    # Display the plot
+    plt.show()
