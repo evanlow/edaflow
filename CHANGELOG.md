@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
-## [0.4.1] - 2025-01-04
+## [0.4.1] - 2025-08-04
 
 ### Added
 - `visualize_numerical_boxplots()` function for comprehensive outlier detection and statistical analysis

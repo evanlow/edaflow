@@ -14,6 +14,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Categorical Values Visualization**: Detailed exploration of categorical column values with insights
 - **Column Type Classification**: Simple categorization of DataFrame columns into categorical and numerical types
 - **Data Imputation**: Smart missing value imputation using median for numerical and mode for categorical columns
+- **Numerical Distribution Visualization**: Advanced boxplot analysis with outlier detection and statistical summaries
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
 - **Easy Integration**: Works seamlessly with pandas, numpy, and other popular libraries
@@ -423,6 +424,81 @@ print(f"\nMissing values remaining: {df_final.isnull().sum().sum()}")
    Total values imputed: 3
 ```
 
+### Numerical Distribution Analysis with `visualize_numerical_boxplots`
+
+Analyze numerical columns to detect outliers, understand distributions, and assess skewness:
+
+```python
+import pandas as pd
+import edaflow
+
+# Create sample dataset with outliers
+df = pd.DataFrame({
+    'age': [25, 30, 35, 40, 45, 28, 32, 38, 42, 100],  # 100 is an outlier
+    'salary': [50000, 60000, 75000, 80000, 90000, 55000, 65000, 70000, 85000, 250000],  # 250000 is outlier
+    'experience': [2, 5, 8, 12, 15, 3, 6, 9, 13, 30],  # 30 might be an outlier
+    'score': [85, 92, 78, 88, 95, 82, 89, 91, 86, 20],  # 20 is an outlier
+    'category': ['A', 'B', 'A', 'C', 'B', 'A', 'C', 'B', 'A', 'C']  # Non-numerical
+})
+
+# Basic boxplot analysis
+edaflow.visualize_numerical_boxplots(
+    df, 
+    title="Employee Data Analysis - Outlier Detection",
+    show_skewness=True
+)
+
+# Custom layout and specific columns
+edaflow.visualize_numerical_boxplots(
+    df, 
+    columns=['age', 'salary'],
+    rows=1, 
+    cols=2,
+    title="Age vs Salary Analysis",
+    orientation='vertical',
+    color_palette='viridis'
+)
+```
+
+**Expected Output:**
+```
+📊 Creating boxplots for 4 numerical column(s): age, salary, experience, score
+
+📈 Summary Statistics:
+==================================================
+📊 age:
+   Range: 25.00 to 100.00
+   Median: 36.50
+   IQR: 11.00 (Q1: 30.50, Q3: 41.50)
+   Skewness: 2.66 (highly skewed)
+   Outliers: 1 values outside [14.00, 58.00]
+   Outlier values: [100]
+
+📊 salary:
+   Range: 50000.00 to 250000.00
+   Median: 72500.00
+   IQR: 22500.00 (Q1: 61250.00, Q3: 83750.00)
+   Skewness: 2.88 (highly skewed)
+   Outliers: 1 values outside [27500.00, 117500.00]
+   Outlier values: [250000]
+
+📊 experience:
+   Range: 2.00 to 30.00
+   Median: 8.50
+   IQR: 7.50 (Q1: 5.25, Q3: 12.75)
+   Skewness: 1.69 (highly skewed)
+   Outliers: 1 values outside [-6.00, 24.00]
+   Outlier values: [30]
+
+📊 score:
+   Range: 20.00 to 95.00
+   Median: 87.00
+   IQR: 7.75 (Q1: 82.75, Q3: 90.50)
+   Skewness: -2.87 (highly skewed)
+   Outliers: 1 values outside [71.12, 102.12]
+   Outlier values: [20]
+```
+
 ### Complete EDA Workflow Example
 
 ```python
@@ -470,8 +546,18 @@ df_numeric_imputed = edaflow.impute_numerical_median(df_cleaned)
 # Impute categorical columns with mode
 df_fully_imputed = edaflow.impute_categorical_mode(df_numeric_imputed)
 
-# Step 7: Final data review
-print("\n7. DATA CLEANING SUMMARY")
+# Step 7: Visualize numerical distributions and outliers
+print("\n7. NUMERICAL DISTRIBUTION & OUTLIER ANALYSIS")
+print("-" * 40)
+edaflow.visualize_numerical_boxplots(
+    df_fully_imputed,
+    title="Distribution Analysis - Outlier Detection",
+    show_skewness=True,
+    orientation='horizontal'
+)
+
+# Step 8: Final data review
+print("\n8. DATA CLEANING SUMMARY")
 print("-" * 40)
 print("Original data types:")
 print(df.dtypes)
