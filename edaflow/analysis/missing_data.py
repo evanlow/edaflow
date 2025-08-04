@@ -953,3 +953,195 @@ def visualize_numerical_boxplots(df: pd.DataFrame,
     
     # Display the plot
     plt.show()
+
+
+def handle_outliers_median(df: pd.DataFrame,
+                          columns: Optional[Union[str, List[str]]] = None,
+                          method: str = 'iqr',
+                          iqr_multiplier: float = 1.5,
+                          inplace: bool = False,
+                          verbose: bool = True) -> pd.DataFrame:
+    """
+    Replace outliers in numerical columns with the median value.
+    
+    This function identifies outliers using statistical methods and replaces them
+    with the median value of the respective column. It's designed to work seamlessly
+    with the visualize_numerical_boxplots function for a complete outlier workflow.
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame
+        columns (Optional[Union[str, List[str]]], optional): Column name(s) to process.
+                                                            If None, processes all numerical columns.
+                                                            Defaults to None.
+        method (str, optional): Method to identify outliers. Options:
+                               - 'iqr': Interquartile Range method (Q1 - 1.5*IQR, Q3 + 1.5*IQR)
+                               - 'zscore': Z-score method (values with |z-score| > 3)
+                               - 'modified_zscore': Modified Z-score using median absolute deviation
+                               Defaults to 'iqr'.
+        iqr_multiplier (float, optional): Multiplier for IQR method. Defaults to 1.5.
+        inplace (bool, optional): If True, modifies the original DataFrame.
+                                 If False, returns a new DataFrame. Defaults to False.
+        verbose (bool, optional): If True, displays detailed information about
+                                 the outlier handling process. Defaults to True.
+    
+    Returns:
+        pd.DataFrame: DataFrame with outliers replaced by median values.
+                     If inplace=True, returns the modified original DataFrame.
+    
+    Raises:
+        ValueError: If no valid numerical columns are found or if an invalid method is specified.
+        KeyError: If specified column(s) don't exist in the DataFrame.
+    
+    Example:
+        >>> import pandas as pd
+        >>> import edaflow
+        >>> 
+        >>> # Create sample data with outliers
+        >>> df = pd.DataFrame({
+        ...     'A': [1, 2, 3, 4, 5, 100],  # 100 is an outlier
+        ...     'B': [10, 20, 30, 40, 50, 60],
+        ...     'C': ['x', 'y', 'z', 'x', 'y', 'z']
+        ... })
+        >>> 
+        >>> # First visualize outliers
+        >>> edaflow.visualize_numerical_boxplots(df)
+        >>> 
+        >>> # Then handle outliers
+        >>> df_clean = edaflow.handle_outliers_median(df)
+        >>> 
+        >>> # Or handle specific columns
+        >>> df_clean = edaflow.handle_outliers_median(df, columns=['A'])
+        >>> 
+        >>> # Or modify inplace
+        >>> edaflow.handle_outliers_median(df, inplace=True)
+        
+        # Alternative import style:
+        >>> from edaflow.analysis import handle_outliers_median
+        >>> df_clean = handle_outliers_median(df, method='zscore')
+    """
+    # Input validation
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+    
+    if df.empty:
+        raise ValueError("DataFrame is empty")
+    
+    if method not in ['iqr', 'zscore', 'modified_zscore']:
+        raise ValueError("Method must be 'iqr', 'zscore', or 'modified_zscore'")
+    
+    # Handle column selection
+    if columns is None:
+        # Get all numerical columns
+        numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    elif isinstance(columns, str):
+        numerical_cols = [columns]
+    else:
+        numerical_cols = list(columns)
+    
+    # Validate columns exist
+    missing_cols = [col for col in numerical_cols if col not in df.columns]
+    if missing_cols:
+        raise KeyError(f"Column(s) not found in DataFrame: {missing_cols}")
+    
+    # Filter for actual numerical columns
+    valid_cols = []
+    for col in numerical_cols:
+        if df[col].dtype in [np.number] or pd.api.types.is_numeric_dtype(df[col]):
+            valid_cols.append(col)
+        elif verbose:
+            print(f"⚠️  Skipping non-numerical column: {col}")
+    
+    if not valid_cols:
+        raise ValueError("No valid numerical columns found for outlier handling")
+    
+    # Create working DataFrame
+    if inplace:
+        result_df = df
+    else:
+        result_df = df.copy()
+    
+    if verbose:
+        print(f"🔧 Handling outliers in {len(valid_cols)} numerical column(s): {', '.join(valid_cols)}")
+        print(f"📊 Method: {method.upper()}")
+        if method == 'iqr':
+            print(f"📈 IQR Multiplier: {iqr_multiplier}")
+        print("=" * 60)
+    
+    total_outliers_replaced = 0
+    
+    for col in valid_cols:
+        col_data = result_df[col].dropna()
+        
+        if len(col_data) == 0:
+            if verbose:
+                print(f"⚠️  {col}: No data available (all NaN)")
+            continue
+        
+        original_outliers = 0
+        
+        if method == 'iqr':
+            # IQR method
+            q1, q3 = col_data.quantile([0.25, 0.75])
+            iqr = q3 - q1
+            lower_bound = q1 - iqr_multiplier * iqr
+            upper_bound = q3 + iqr_multiplier * iqr
+            outlier_mask = (result_df[col] < lower_bound) | (result_df[col] > upper_bound)
+            
+        elif method == 'zscore':
+            # Z-score method
+            mean_val = col_data.mean()
+            std_val = col_data.std()
+            if std_val == 0:
+                outlier_mask = pd.Series([False] * len(result_df), index=result_df.index)
+            else:
+                z_scores = np.abs((result_df[col] - mean_val) / std_val)
+                outlier_mask = z_scores > 3
+                
+        elif method == 'modified_zscore':
+            # Modified Z-score using median absolute deviation
+            median_val = col_data.median()
+            mad = np.median(np.abs(col_data - median_val))
+            if mad == 0:
+                outlier_mask = pd.Series([False] * len(result_df), index=result_df.index)
+            else:
+                modified_z_scores = 0.6745 * (result_df[col] - median_val) / mad
+                outlier_mask = np.abs(modified_z_scores) > 3.5
+        
+        # Count outliers before replacement
+        original_outliers = outlier_mask.sum()
+        
+        if original_outliers > 0:
+            # Calculate median for replacement
+            median_val = col_data.median()
+            
+            # Replace outliers with median, ensuring dtype compatibility
+            result_df.loc[outlier_mask, col] = result_df[col].dtype.type(median_val)
+            total_outliers_replaced += original_outliers
+            
+            if verbose:
+                print(f"📊 {col}:")
+                print(f"   🎯 Median value: {median_val:.2f}")
+                print(f"   🔄 Outliers replaced: {original_outliers}")
+                if method == 'iqr':
+                    print(f"   📏 Valid range: [{lower_bound:.2f}, {upper_bound:.2f}]")
+                elif method == 'zscore':
+                    print(f"   📏 Z-score threshold: ±3.0")
+                elif method == 'modified_zscore':
+                    print(f"   📏 Modified Z-score threshold: ±3.5")
+                print()
+        else:
+            if verbose:
+                print(f"✅ {col}: No outliers detected")
+                print()
+    
+    if verbose:
+        print("=" * 60)
+        print(f"🎉 Outlier handling completed!")
+        print(f"📈 Total outliers replaced: {total_outliers_replaced}")
+        print(f"🔧 Method used: {method.upper()}")
+        if not inplace:
+            print("💾 Original DataFrame unchanged (inplace=False)")
+        else:
+            print("💾 Original DataFrame modified (inplace=True)")
+    
+    return result_df

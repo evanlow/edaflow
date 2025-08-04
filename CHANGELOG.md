@@ -19,6 +19,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.5.0] - 2025-08-04
+
+### Added
+- `handle_outliers_median()` function for automated outlier detection and replacement
+- Multiple outlier detection methods: IQR, Z-score, and Modified Z-score
+- Complete outlier analysis workflow integration with boxplot visualization
+- Median-based outlier replacement for robust statistical handling
+- Flexible column selection with automatic numerical column detection
+- Detailed reporting showing exactly which outliers were replaced and statistical bounds
+- Safe operation mode (inplace=False by default) to preserve original data
+- Statistical method comparison with customizable IQR multipliers
+- Complete 9-function EDA package with comprehensive outlier management
+
+### Fixed
+- Dtype compatibility improvements to eliminate pandas FutureWarnings
+- Enhanced error handling and validation for numerical column processing
+
 ## [0.4.2] - 2025-08-04
 
 ### Fixed

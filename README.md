@@ -574,6 +574,82 @@ print(f"Missing values remaining: {df_fully_imputed.isnull().sum().sum()}")
 # - Advanced EDA techniques
 ```
 
+### Outlier Handling with `handle_outliers_median`
+
+The `handle_outliers_median` function complements the boxplot visualization by providing automated outlier detection and replacement with median values. This creates a complete outlier analysis workflow:
+
+```python
+import pandas as pd
+import numpy as np
+import edaflow
+
+# Create sample data with outliers
+np.random.seed(42)
+df = pd.DataFrame({
+    'sales': [100, 120, 110, 105, 115, 2000, 95, 125],  # 2000 is an outlier
+    'age': [25, 30, 28, 35, 32, 29, 31, 33],  # Clean data
+    'price': [50, 55, 48, 52, 51, -100, 49, 53],  # -100 is an outlier
+    'category': ['A', 'B', 'A', 'C', 'B', 'A', 'C', 'B']  # Non-numerical
+})
+
+# Step 1: Visualize outliers first
+edaflow.visualize_numerical_boxplots(
+    df, 
+    title="Before Outlier Handling",
+    show_skewness=True
+)
+
+# Step 2: Handle outliers using IQR method (default)
+df_clean = edaflow.handle_outliers_median(df, verbose=True)
+
+# Step 3: Visualize after cleaning
+edaflow.visualize_numerical_boxplots(
+    df_clean,
+    title="After Outlier Handling", 
+    show_skewness=True
+)
+
+# Alternative: Handle specific columns only
+df_sales_clean = edaflow.handle_outliers_median(
+    df, 
+    columns=['sales'],  # Only clean sales column
+    method='iqr',
+    iqr_multiplier=1.5,
+    verbose=True
+)
+
+# Alternative: Use Z-score method for outlier detection
+df_zscore_clean = edaflow.handle_outliers_median(
+    df,
+    method='zscore',  # Z-score method (|z| > 3)
+    verbose=True
+)
+
+# Alternative: Use modified Z-score (more robust)
+df_mod_zscore_clean = edaflow.handle_outliers_median(
+    df,
+    method='modified_zscore',  # Modified Z-score using MAD
+    verbose=True
+)
+
+# Modify original DataFrame in place
+edaflow.handle_outliers_median(df, inplace=True, verbose=True)
+print("Original DataFrame now cleaned!")
+```
+
+**Outlier Detection Methods:**
+- 🎯 **IQR Method** (default): Values outside Q1 - 1.5×IQR to Q3 + 1.5×IQR
+- 📊 **Z-Score Method**: Values with |z-score| > 3
+- 🎪 **Modified Z-Score**: Uses median absolute deviation, more robust to outliers
+
+**Key Features:**
+- 🔍 **Multiple Detection Methods**: Choose between IQR, Z-score, or modified Z-score
+- 🎯 **Median Replacement**: Replaces outliers with column median (robust central tendency)
+- 📊 **Detailed Reporting**: Shows exactly which values were replaced and why
+- 🔧 **Flexible Column Selection**: Process all numerical columns or specify which ones
+- 💾 **Safe Operation**: Default behavior preserves original data (inplace=False)
+- 📈 **Statistical Summary**: Displays before/after statistics for transparency
+
 ### Integration with Jupyter Notebooks
 
 For the best experience, use these functions in Jupyter notebooks where:
@@ -673,6 +749,18 @@ isort edaflow/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.5.0 (Outlier Handling Release)
+- **NEW**: `handle_outliers_median()` function for automated outlier detection and replacement
+- **NEW**: Multiple outlier detection methods: IQR, Z-score, and Modified Z-score
+- **NEW**: Complete outlier analysis workflow: visualize → detect → handle → verify
+- **NEW**: Median-based outlier replacement for robust statistical handling
+- **NEW**: Flexible column selection with automatic numerical column detection
+- **NEW**: Detailed reporting showing exactly which outliers were replaced and why
+- **NEW**: Safe operation mode (inplace=False by default) to preserve original data
+- **NEW**: Statistical method comparison with customizable IQR multipliers
+- **ENHANCED**: Complete 9-function EDA package with comprehensive outlier management
+- Enhanced testing coverage and dtype compatibility improvements
 
 ### v0.4.1 (Advanced Visualization Release)
 - **NEW**: `visualize_numerical_boxplots()` function for comprehensive outlier detection and statistical analysis
