@@ -1347,3 +1347,371 @@ def visualize_interactive_boxplots(df: pd.DataFrame,
     if verbose:
         print("✅ Interactive boxplot visualization completed!")
         print("🎉 Use the interactive features to explore your data distributions!")
+
+
+def visualize_heatmap(df: pd.DataFrame,
+                     heatmap_type: str = "correlation",
+                     columns: Optional[Union[str, List[str]]] = None,
+                     title: Optional[str] = None,
+                     figsize: Optional[tuple] = None,
+                     cmap: str = "RdYlBu_r",
+                     annot: bool = True,
+                     fmt: str = ".2f",
+                     square: bool = True,
+                     linewidths: float = 0.5,
+                     cbar_kws: Optional[dict] = None,
+                     method: str = "pearson",
+                     missing_threshold: float = 5.0,
+                     verbose: bool = True) -> None:
+    """
+    Create comprehensive heatmap visualizations for exploratory data analysis.
+    
+    This function provides multiple types of heatmaps for different EDA purposes:
+    - Correlation heatmaps for numerical relationships
+    - Missing data pattern heatmaps
+    - Numerical data value heatmaps
+    - Cross-tabulation heatmaps for categorical relationships
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame
+        heatmap_type (str, optional): Type of heatmap to create. Options:
+                                    - "correlation": Correlation matrix heatmap (default)
+                                    - "missing": Missing data pattern heatmap
+                                    - "values": Raw data values heatmap (for small datasets)
+                                    - "crosstab": Cross-tabulation heatmap for categorical data
+                                    Defaults to "correlation".
+        columns (Optional[Union[str, List[str]]], optional): Column name(s) to include.
+                                                            If None, uses appropriate columns based on heatmap_type.
+                                                            Defaults to None.
+        title (Optional[str], optional): Custom title for the heatmap. If None, auto-generated.
+                                        Defaults to None.
+        figsize (Optional[tuple], optional): Figure size (width, height). If None, auto-calculated.
+                                           Defaults to None.
+        cmap (str, optional): Colormap for the heatmap. Defaults to "RdYlBu_r".
+        annot (bool, optional): Whether to annotate cells with values. Defaults to True.
+        fmt (str, optional): String formatting code for annotations. Defaults to ".2f".
+        square (bool, optional): Whether to make cells square-shaped. Defaults to True.
+        linewidths (float, optional): Width of lines separating cells. Defaults to 0.5.
+        cbar_kws (Optional[dict], optional): Keyword arguments for colorbar. Defaults to None.
+        method (str, optional): Correlation method for correlation heatmaps.
+                               Options: "pearson", "kendall", "spearman". Defaults to "pearson".
+        missing_threshold (float, optional): Threshold for missing data highlighting (%).
+                                            Only used for missing data heatmaps. Defaults to 5.0.
+        verbose (bool, optional): If True, displays detailed information about
+                                 the heatmap creation process. Defaults to True.
+    
+    Returns:
+        None: Displays the heatmap visualization
+    
+    Raises:
+        ValueError: If heatmap_type is not supported or no suitable data found.
+        KeyError: If specified column(s) don't exist in the DataFrame.
+    
+    Example:
+        >>> import pandas as pd
+        >>> import edaflow
+        >>> 
+        >>> # Create sample data
+        >>> df = pd.DataFrame({
+        ...     'age': [25, 30, 28, 35, 32, 29, 31, 33],
+        ...     'income': [50000, 55000, 48000, 62000, 51000, 45000, 53000, 49000],
+        ...     'score': [85, 90, 78, 92, 88, 95, 81, 87],
+        ...     'category': ['A', 'B', 'A', 'C', 'B', 'A', 'C', 'B']
+        ... })
+        >>> 
+        >>> # Correlation heatmap (default)
+        >>> edaflow.visualize_heatmap(df)
+        >>> 
+        >>> # Missing data pattern heatmap
+        >>> edaflow.visualize_heatmap(df, heatmap_type="missing")
+        >>> 
+        >>> # Custom styling
+        >>> edaflow.visualize_heatmap(
+        ...     df, 
+        ...     heatmap_type="correlation",
+        ...     method="spearman",
+        ...     cmap="viridis",
+        ...     title="Spearman Correlation Analysis"
+        ... )
+    """
+    if df.empty:
+        raise ValueError("DataFrame is empty")
+    
+    if verbose:
+        print(f"🔥 Creating {heatmap_type} heatmap...")
+        print("=" * 50)
+    
+    # Handle column selection
+    if columns is not None:
+        if isinstance(columns, str):
+            columns = [columns]
+        
+        # Validate columns exist
+        missing_cols = [col for col in columns if col not in df.columns]
+        if missing_cols:
+            raise KeyError(f"Column(s) not found in DataFrame: {missing_cols}")
+        
+        df_subset = df[columns].copy()
+    else:
+        df_subset = df.copy()
+    
+    # Create heatmap based on type
+    if heatmap_type == "correlation":
+        # Get numerical columns only
+        numerical_cols = df_subset.select_dtypes(include=[np.number]).columns.tolist()
+        
+        if len(numerical_cols) < 2:
+            raise ValueError("At least 2 numerical columns required for correlation heatmap")
+        
+        if verbose:
+            print(f"📊 Creating correlation matrix for {len(numerical_cols)} numerical columns")
+            print(f"📈 Using {method} correlation method")
+            print(f"🔢 Columns: {', '.join(numerical_cols)}")
+        
+        # Calculate correlation matrix
+        df_plot = df_subset[numerical_cols]
+        corr_matrix = df_plot.corr(method=method)
+        
+        # Auto-generate title if not provided
+        if title is None:
+            title = f"{method.capitalize()} Correlation Matrix"
+        
+        # Set up figure size
+        if figsize is None:
+            n_cols = len(numerical_cols)
+            figsize = (max(8, n_cols * 0.8), max(6, n_cols * 0.7))
+        
+        # Create the plot
+        plt.figure(figsize=figsize)
+        
+        # Create heatmap
+        sns.heatmap(
+            corr_matrix,
+            annot=annot,
+            cmap=cmap,
+            fmt=fmt,
+            square=square,
+            linewidths=linewidths,
+            cbar_kws=cbar_kws or {"shrink": 0.8},
+            vmin=-1,
+            vmax=1,
+            center=0
+        )
+        
+        if verbose:
+            # Display correlation insights
+            print(f"\n📈 Correlation Analysis Summary:")
+            print("=" * 40)
+            
+            # Find strongest positive and negative correlations
+            corr_values = corr_matrix.values
+            np.fill_diagonal(corr_values, np.nan)  # Remove self-correlations
+            
+            # Get indices of max/min correlations
+            max_idx = np.unravel_index(np.nanargmax(corr_values), corr_values.shape)
+            min_idx = np.unravel_index(np.nanargmin(corr_values), corr_values.shape)
+            
+            max_corr = corr_values[max_idx]
+            min_corr = corr_values[min_idx]
+            
+            max_pair = (corr_matrix.index[max_idx[0]], corr_matrix.columns[max_idx[1]])
+            min_pair = (corr_matrix.index[min_idx[0]], corr_matrix.columns[min_idx[1]])
+            
+            print(f"🔺 Strongest positive correlation: {max_pair[0]} ↔ {max_pair[1]} ({max_corr:.3f})")
+            print(f"🔻 Strongest negative correlation: {min_pair[0]} ↔ {min_pair[1]} ({min_corr:.3f})")
+            
+            # Count strong correlations
+            strong_positive = np.sum((corr_values > 0.7) & (corr_values < 1.0))
+            strong_negative = np.sum(corr_values < -0.7)
+            
+            print(f"💪 Strong positive correlations (>0.7): {strong_positive}")
+            print(f"💪 Strong negative correlations (<-0.7): {strong_negative}")
+    
+    elif heatmap_type == "missing":
+        if verbose:
+            print(f"🕳️  Creating missing data pattern heatmap")
+            print(f"⚠️  Highlighting missing values > {missing_threshold}%")
+        
+        # Calculate missing data percentages
+        missing_percent = (df_subset.isnull().sum() / len(df_subset) * 100)
+        missing_data = pd.DataFrame({
+            'Column': missing_percent.index,
+            'Missing_Percentage': missing_percent.values
+        })
+        
+        # Create missing data matrix for visualization
+        missing_matrix = df_subset.isnull().astype(int)
+        
+        # Auto-generate title if not provided
+        if title is None:
+            title = "Missing Data Pattern Analysis"
+        
+        # Set up figure size
+        if figsize is None:
+            n_cols = len(df_subset.columns)
+            n_rows = min(50, len(df_subset))  # Limit rows for readability
+            figsize = (max(10, n_cols * 0.5), max(6, n_rows * 0.1))
+        
+        # Create the plot
+        plt.figure(figsize=figsize)
+        
+        # Use a subset of rows if dataset is too large
+        if len(df_subset) > 100:
+            sample_size = min(100, len(df_subset))
+            missing_sample = missing_matrix.sample(n=sample_size, random_state=42)
+            if verbose:
+                print(f"📊 Showing sample of {sample_size} rows (dataset has {len(df_subset)} rows)")
+        else:
+            missing_sample = missing_matrix
+        
+        # Create heatmap
+        sns.heatmap(
+            missing_sample.T,  # Transpose to show columns on y-axis
+            cmap=['lightblue', 'red'],
+            cbar_kws={'label': 'Missing Data (1) vs Present Data (0)'},
+            yticklabels=True,
+            xticklabels=False,
+            linewidths=0.1
+        )
+        
+        plt.ylabel("Columns")
+        plt.xlabel("Sample Rows")
+        
+        if verbose:
+            print(f"\n🕳️  Missing Data Summary:")
+            print("=" * 40)
+            for col in missing_percent.index:
+                pct = missing_percent[col]
+                if pct > 0:
+                    status = "🔴 HIGH" if pct > missing_threshold * 2 else "🟡 MEDIUM" if pct > missing_threshold else "🟢 LOW"
+                    print(f"{status}: {col} - {pct:.1f}% missing")
+            
+            total_missing = df_subset.isnull().sum().sum()
+            total_values = df_subset.size
+            overall_pct = (total_missing / total_values) * 100
+            print(f"\n📊 Overall missing data: {overall_pct:.1f}% ({total_missing:,} / {total_values:,} values)")
+    
+    elif heatmap_type == "values":
+        if verbose:
+            print(f"🔢 Creating data values heatmap")
+            print(f"⚠️  Best for small datasets (showing first 50 rows max)")
+        
+        # Get numerical columns only
+        numerical_cols = df_subset.select_dtypes(include=[np.number]).columns.tolist()
+        
+        if len(numerical_cols) == 0:
+            raise ValueError("No numerical columns found for values heatmap")
+        
+        df_plot = df_subset[numerical_cols]
+        
+        # Limit rows for readability
+        if len(df_plot) > 50:
+            df_plot = df_plot.head(50)
+            if verbose:
+                print(f"📊 Showing first 50 rows (dataset has {len(df_subset)} rows)")
+        
+        # Auto-generate title if not provided
+        if title is None:
+            title = "Data Values Heatmap"
+        
+        # Set up figure size
+        if figsize is None:
+            n_cols = len(numerical_cols)
+            n_rows = len(df_plot)
+            figsize = (max(10, n_cols * 0.8), max(8, n_rows * 0.3))
+        
+        # Create the plot
+        plt.figure(figsize=figsize)
+        
+        # Normalize data for better visualization
+        df_normalized = (df_plot - df_plot.min()) / (df_plot.max() - df_plot.min())
+        
+        # Create heatmap
+        sns.heatmap(
+            df_normalized,
+            annot=annot,
+            cmap=cmap,
+            fmt=fmt,
+            linewidths=linewidths,
+            cbar_kws=cbar_kws or {"shrink": 0.8, "label": "Normalized Values (0-1)"},
+            yticklabels=True,
+            xticklabels=True
+        )
+        
+        plt.ylabel("Rows")
+        plt.xlabel("Columns")
+        
+        if verbose:
+            print(f"\n🔢 Values Heatmap Summary:")
+            print("=" * 40)
+            print(f"📊 Columns included: {', '.join(numerical_cols)}")
+            print(f"📏 Data range (original):")
+            for col in numerical_cols:
+                col_min, col_max = df_plot[col].min(), df_plot[col].max()
+                print(f"   {col}: {col_min:.2f} to {col_max:.2f}")
+    
+    elif heatmap_type == "crosstab":
+        # Get categorical columns
+        categorical_cols = df_subset.select_dtypes(include=['object', 'category']).columns.tolist()
+        
+        if len(categorical_cols) < 2:
+            raise ValueError("At least 2 categorical columns required for crosstab heatmap")
+        
+        if verbose:
+            print(f"📊 Creating cross-tabulation heatmap")
+            print(f"📈 Using first 2 categorical columns: {categorical_cols[:2]}")
+        
+        # Use first two categorical columns
+        col1, col2 = categorical_cols[0], categorical_cols[1]
+        
+        # Create cross-tabulation
+        crosstab = pd.crosstab(df_subset[col1], df_subset[col2])
+        
+        # Auto-generate title if not provided
+        if title is None:
+            title = f"Cross-tabulation: {col1} vs {col2}"
+        
+        # Set up figure size
+        if figsize is None:
+            figsize = (max(8, len(crosstab.columns) * 0.8), max(6, len(crosstab.index) * 0.5))
+        
+        # Create the plot
+        plt.figure(figsize=figsize)
+        
+        # Create heatmap
+        sns.heatmap(
+            crosstab,
+            annot=annot,
+            cmap=cmap,
+            fmt='d' if annot else fmt,
+            square=square,
+            linewidths=linewidths,
+            cbar_kws=cbar_kws or {"shrink": 0.8, "label": "Count"}
+        )
+        
+        plt.ylabel(col1)
+        plt.xlabel(col2)
+        
+        if verbose:
+            print(f"\n📊 Cross-tabulation Summary:")
+            print("=" * 40)
+            print(f"📈 {col1} categories: {len(crosstab.index)}")
+            print(f"📈 {col2} categories: {len(crosstab.columns)}")
+            print(f"📊 Total combinations: {crosstab.size}")
+            print(f"🔢 Total observations: {crosstab.sum().sum()}")
+    
+    else:
+        raise ValueError(f"Unsupported heatmap_type: {heatmap_type}. "
+                        f"Supported types: 'correlation', 'missing', 'values', 'crosstab'")
+    
+    # Apply title and styling
+    plt.title(title, fontsize=16, fontweight='bold', pad=20)
+    plt.tight_layout()
+    
+    if verbose:
+        print(f"\n✅ {heatmap_type.capitalize()} heatmap created successfully!")
+        print("🎨 Use plt.show() to display the plot")
+        print("💾 Use plt.savefig('filename.png') to save")
+    
+    # Show the plot
+    plt.show()

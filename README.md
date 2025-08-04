@@ -16,6 +16,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Data Imputation**: Smart missing value imputation using median for numerical and mode for categorical columns
 - **Numerical Distribution Visualization**: Advanced boxplot analysis with outlier detection and statistical summaries
 - **Interactive Boxplot Visualization**: Interactive Plotly Express boxplots with zoom, hover, and statistical tooltips
+- **Comprehensive Heatmap Visualizations**: Correlation matrices, missing data patterns, values heatmaps, and cross-tabulations
 - **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
@@ -626,6 +627,24 @@ edaflow.visualize_interactive_boxplots(
     show_points='outliers'  # Show any remaining outliers as interactive points
 )
 
+# Step 11: Comprehensive heatmap analysis for relationships (NEW!)
+print("\n11. HEATMAP ANALYSIS")
+print("-" * 40)
+# Correlation heatmap to understand variable relationships
+edaflow.visualize_heatmap(
+    df_outliers_handled,
+    heatmap_type="correlation",
+    title="Final Correlation Analysis After Data Cleaning",
+    method="pearson"
+)
+
+# Missing data pattern heatmap (if any missing values remain)
+edaflow.visualize_heatmap(
+    df_outliers_handled,
+    heatmap_type="missing",
+    title="Remaining Missing Data Patterns"
+)
+
 # Now your data is ready for further analysis!
 # You can proceed with:
 # - Statistical analysis
@@ -772,6 +791,118 @@ edaflow.visualize_interactive_boxplots(
 - 🎨 Interactive presentations and dashboards
 - 🔍 Detailed outlier investigation
 - 📈 Sharing insights with stakeholders
+
+### Comprehensive Heatmap Visualizations with `visualize_heatmap`
+
+The `visualize_heatmap` function provides multiple types of heatmap visualizations essential for comprehensive exploratory data analysis. This powerful function covers correlation analysis, missing data patterns, data values visualization, and categorical relationships:
+
+```python
+import pandas as pd
+import numpy as np
+import edaflow
+
+# Create sample data for demonstration
+np.random.seed(42)
+df = pd.DataFrame({
+    'age': np.random.normal(35, 10, 100),
+    'salary': np.random.normal(60000, 15000, 100),
+    'experience': np.random.normal(8, 4, 100),
+    'rating': np.random.normal(4.2, 0.8, 100),
+    'department': np.random.choice(['Engineering', 'Sales', 'Marketing'], 100),
+    'level': np.random.choice(['Junior', 'Senior', 'Lead'], 100)
+})
+
+# 1. Correlation Heatmap (Default)
+edaflow.visualize_heatmap(df)
+
+# 2. Custom Correlation Analysis
+edaflow.visualize_heatmap(
+    df,
+    heatmap_type="correlation",
+    method="spearman",  # Use Spearman correlation
+    title="Spearman Correlation Matrix",
+    cmap="coolwarm",
+    figsize=(10, 8)
+)
+
+# 3. Missing Data Pattern Analysis
+edaflow.visualize_heatmap(
+    df,
+    heatmap_type="missing",
+    title="Missing Data Patterns",
+    missing_threshold=5.0  # Highlight columns with >5% missing
+)
+
+# 4. Data Values Heatmap (for small datasets)
+edaflow.visualize_heatmap(
+    df.head(25),  # Use first 25 rows
+    heatmap_type="values",
+    title="Data Values Visualization",
+    cmap="viridis"
+)
+
+# 5. Cross-tabulation Heatmap
+edaflow.visualize_heatmap(
+    df,
+    heatmap_type="crosstab",
+    title="Department vs Level Distribution",
+    cmap="Blues"
+)
+
+# 6. Advanced Customization
+edaflow.visualize_heatmap(
+    df,
+    columns=['age', 'salary', 'experience', 'rating'],  # Specific columns
+    title="Key Metrics Correlation Analysis",
+    method="kendall",
+    annot=True,
+    fmt='.3f',
+    linewidths=1.0,
+    cbar_kws={'label': 'Correlation Coefficient'}
+)
+```
+
+**Heatmap Types Available:**
+
+🔥 **Correlation Heatmap (`"correlation"`):**
+- 📊 **Purpose**: Analyze relationships between numerical variables
+- 🔢 **Methods**: Pearson, Spearman, Kendall correlations
+- 💡 **Insights**: Identifies strong positive/negative correlations, multicollinearity
+- 🎯 **Best for**: Feature selection, understanding variable relationships
+
+🕳️ **Missing Data Heatmap (`"missing"`):**
+- 📊 **Purpose**: Visualize missing data patterns across columns
+- 🔍 **Features**: Pattern detection, missing percentage analysis
+- 💡 **Insights**: Identifies systematic missing data, data quality issues
+- 🎯 **Best for**: Data quality assessment, imputation strategy planning
+
+🔢 **Values Heatmap (`"values"`):**
+- 📊 **Purpose**: Visualize actual data values (normalized 0-1)
+- 📏 **Features**: Row-by-row value comparison, pattern identification
+- 💡 **Insights**: Spot outliers, understand data distribution patterns
+- 🎯 **Best for**: Small datasets, detailed data inspection
+
+📋 **Cross-tabulation Heatmap (`"crosstab"`):**
+- 📊 **Purpose**: Analyze relationships between categorical variables
+- 🔢 **Features**: Frequency analysis, category distribution
+- 💡 **Insights**: Understand categorical dependencies, group distributions
+- 🎯 **Best for**: Categorical data analysis, segment analysis
+
+**Key Features:**
+- 🎨 **Multiple Visualization Types**: 4 different heatmap types for comprehensive analysis
+- 📊 **Automatic Statistics**: Detailed correlation insights and missing data summaries
+- 🔧 **Flexible Customization**: Full control over colors, sizing, annotations
+- 🎯 **Smart Column Detection**: Automatically selects appropriate columns for each type
+- 📈 **Responsive Design**: Auto-sizing based on data dimensions
+- 💪 **Robust Error Handling**: Comprehensive validation and informative error messages
+- 📋 **Detailed Reporting**: Statistical summaries with emoji-formatted output
+
+**Statistical Insights Provided:**
+- 🔺 Strongest positive and negative correlations
+- 💪 Count of strong correlations (>0.7, <-0.7)
+- 📊 Missing data percentages and patterns
+- 🔢 Data range and distribution summaries
+- 📈 Cross-tabulation frequencies and totals
 
 ### Integration with Jupyter Notebooks
 

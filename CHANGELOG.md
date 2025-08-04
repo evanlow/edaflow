@@ -23,6 +23,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.0] - 2024-01-15
+
+### Added
+- **NEW**: `visualize_heatmap()` function with comprehensive heatmap visualizations
+- Four distinct heatmap types: correlation, missing data patterns, values, and cross-tabulation
+- Multiple correlation methods: Pearson, Spearman, and Kendall
+- Missing data pattern visualization with threshold highlighting
+- Data values heatmap for detailed small dataset inspection  
+- Cross-tabulation heatmaps for categorical relationship analysis
+- Automatic statistical insights and detailed reporting
+- Smart column detection and validation for each heatmap type
+- Comprehensive customization options (colors, sizing, annotations)
+- Enhanced Complete EDA Workflow with Step 11: Heatmap Analysis
+- Comprehensive test suite with error handling validation
+- Updated README documentation with detailed heatmap examples and use cases
+
+### Enhanced
+- Complete EDA workflow now includes 11 steps with comprehensive heatmap analysis
+- Updated package features to highlight new heatmap visualization capabilities
+- Improved documentation with statistical insights explanations
+
 ## [0.6.0] - 2024-01-15
 
 ### Added
