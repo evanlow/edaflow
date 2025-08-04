@@ -13,7 +13,8 @@ from .analysis import (
     visualize_numerical_boxplots,
     handle_outliers_median,
     visualize_interactive_boxplots,
-    visualize_heatmap
+    visualize_heatmap,
+    visualize_histograms
 )
 
 __version__ = "0.5.1"

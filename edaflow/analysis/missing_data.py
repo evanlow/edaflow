@@ -1715,3 +1715,384 @@ def visualize_heatmap(df: pd.DataFrame,
     
     # Show the plot
     plt.show()
+
+
+def visualize_histograms(df: pd.DataFrame,
+                        columns: Optional[Union[str, List[str]]] = None,
+                        title: Optional[str] = None,
+                        figsize: Optional[tuple] = None,
+                        bins: Union[int, str] = 'auto',
+                        kde: bool = True,
+                        show_stats: bool = True,
+                        show_normal_curve: bool = True,
+                        color_palette: str = 'Set2',
+                        alpha: float = 0.7,
+                        grid_alpha: float = 0.3,
+                        rows: Optional[int] = None,
+                        cols: Optional[int] = None,
+                        statistical_tests: bool = True,
+                        verbose: bool = True) -> None:
+    """
+    Create comprehensive histogram visualizations with distribution analysis and skewness detection.
+    
+    This function provides detailed histogram analysis for numerical columns, including:
+    - Distribution shape visualization with histograms and KDE curves
+    - Skewness and kurtosis analysis with interpretation
+    - Normal distribution comparison overlay
+    - Statistical tests for normality (Shapiro-Wilk, Anderson-Darling)
+    - Comprehensive distribution statistics and insights
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame
+        columns (Optional[Union[str, List[str]]], optional): Column name(s) to visualize.
+                                                            If None, processes all numerical columns.
+                                                            Defaults to None.
+        title (Optional[str], optional): Main title for the entire plot. If None, auto-generated.
+                                        Defaults to None.
+        figsize (Optional[tuple], optional): Figure size (width, height). If None, auto-calculated.
+                                           Defaults to None.
+        bins (Union[int, str], optional): Number of bins or binning strategy.
+                                         Options: int, 'auto', 'sturges', 'fd', 'scott', 'sqrt'.
+                                         Defaults to 'auto'.
+        kde (bool, optional): Whether to show Kernel Density Estimation curve. Defaults to True.
+        show_stats (bool, optional): Whether to display statistics on each subplot. Defaults to True.
+        show_normal_curve (bool, optional): Whether to overlay normal distribution curve. Defaults to True.
+        color_palette (str, optional): Seaborn color palette. Defaults to 'Set2'.
+        alpha (float, optional): Transparency of histogram bars (0-1). Defaults to 0.7.
+        grid_alpha (float, optional): Transparency of grid lines (0-1). Defaults to 0.3.
+        rows (Optional[int], optional): Number of rows in subplot grid. If None, auto-calculated.
+                                      Defaults to None.
+        cols (Optional[int], optional): Number of columns in subplot grid. If None, auto-calculated.
+                                      Defaults to None.
+        statistical_tests (bool, optional): Whether to run normality tests (Shapiro-Wilk, etc.).
+                                          Defaults to True.
+        verbose (bool, optional): If True, displays detailed distribution analysis.
+                                 Defaults to True.
+    
+    Returns:
+        None: Displays the histogram visualization
+    
+    Raises:
+        ValueError: If no numerical columns are found or DataFrame is empty.
+        KeyError: If specified column(s) don't exist in the DataFrame.
+    
+    Example:
+        >>> import pandas as pd
+        >>> import numpy as np
+        >>> import edaflow
+        >>> 
+        >>> # Create sample data with different distributions
+        >>> np.random.seed(42)
+        >>> df = pd.DataFrame({
+        ...     'normal': np.random.normal(100, 15, 1000),
+        ...     'skewed_right': np.random.exponential(2, 1000),
+        ...     'skewed_left': 10 - np.random.exponential(2, 1000),
+        ...     'uniform': np.random.uniform(0, 100, 1000)
+        ... })
+        >>> 
+        >>> # Basic histogram analysis
+        >>> edaflow.visualize_histograms(df)
+        >>> 
+        >>> # Custom analysis with specific columns
+        >>> edaflow.visualize_histograms(
+        ...     df,
+        ...     columns=['normal', 'skewed_right'],
+        ...     bins=30,
+        ...     show_normal_curve=True,
+        ...     statistical_tests=True
+        ... )
+        >>> 
+        >>> # Detailed styling
+        >>> edaflow.visualize_histograms(
+        ...     df,
+        ...     title="Distribution Analysis Dashboard",
+        ...     color_palette='viridis',
+        ...     alpha=0.8,
+        ...     figsize=(15, 10)
+        ... )
+    """
+    if df.empty:
+        raise ValueError("DataFrame is empty")
+    
+    # Handle column selection
+    if columns is not None:
+        if isinstance(columns, str):
+            columns = [columns]
+        
+        # Validate columns exist
+        missing_cols = [col for col in columns if col not in df.columns]
+        if missing_cols:
+            raise KeyError(f"Column(s) not found in DataFrame: {missing_cols}")
+        
+        numerical_cols = [col for col in columns if col in df.select_dtypes(include=[np.number]).columns]
+    else:
+        numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    
+    if len(numerical_cols) == 0:
+        raise ValueError("No numerical columns found for histogram visualization")
+    
+    if verbose:
+        print("📊 Creating histogram distribution analysis...")
+        print("=" * 60)
+        print(f"🔢 Analyzing {len(numerical_cols)} numerical column(s): {', '.join(numerical_cols)}")
+        print(f"📈 Features: KDE={kde}, Normal Curve={show_normal_curve}, Stats={show_stats}")
+        if statistical_tests:
+            print("🧪 Statistical normality tests will be performed")
+    
+    # Calculate subplot grid
+    n_cols = len(numerical_cols)
+    if rows is None and cols is None:
+        cols = min(3, n_cols)
+        rows = math.ceil(n_cols / cols)
+    elif rows is None:
+        rows = math.ceil(n_cols / cols)
+    elif cols is None:
+        cols = math.ceil(n_cols / rows)
+    
+    # Set figure size
+    if figsize is None:
+        width = cols * 5
+        height = rows * 4
+        figsize = (width, height)
+    
+    # Auto-generate title
+    if title is None:
+        title = f"Distribution Analysis - Histograms with Skewness Detection ({n_cols} columns)"
+    
+    # Set up the plot
+    fig, axes = plt.subplots(rows, cols, figsize=figsize)
+    fig.suptitle(title, fontsize=16, fontweight='bold', y=0.98)
+    
+    # Handle single subplot case
+    if n_cols == 1:
+        axes = [axes]
+    elif rows == 1:
+        axes = axes.flatten()
+    else:
+        axes = axes.flatten()
+    
+    # Get colors from palette
+    colors = sns.color_palette(color_palette, n_cols)
+    
+    # Statistical summaries for verbose output
+    distribution_stats = {}
+    
+    # Create histograms
+    for idx, col in enumerate(numerical_cols):
+        ax = axes[idx]
+        data = df[col].dropna()
+        
+        if len(data) == 0:
+            ax.text(0.5, 0.5, f"No data available\nfor {col}", 
+                   ha='center', va='center', transform=ax.transAxes, fontsize=12)
+            ax.set_title(col, fontweight='bold')
+            continue
+        
+        # Calculate statistics
+        mean = data.mean()
+        median = data.median()
+        std = data.std()
+        skewness = data.skew()
+        kurt = data.kurtosis()
+        
+        # Store stats for verbose output
+        distribution_stats[col] = {
+            'mean': mean,
+            'median': median,
+            'std': std,
+            'skewness': skewness,
+            'kurtosis': kurt,
+            'min': data.min(),
+            'max': data.max(),
+            'count': len(data)
+        }
+        
+        # Statistical tests
+        normality_tests = {}
+        if statistical_tests and len(data) >= 3:
+            try:
+                from scipy import stats
+                
+                # Shapiro-Wilk test (best for small samples)
+                if len(data) <= 5000:  # Limit for computational efficiency
+                    shapiro_stat, shapiro_p = stats.shapiro(data.sample(min(5000, len(data)), random_state=42))
+                    normality_tests['shapiro'] = {'statistic': shapiro_stat, 'p_value': shapiro_p}
+                
+                # Anderson-Darling test
+                anderson_result = stats.anderson(data, dist='norm')
+                normality_tests['anderson'] = {
+                    'statistic': anderson_result.statistic,
+                    'critical_values': anderson_result.critical_values,
+                    'significance_level': anderson_result.significance_level
+                }
+                
+                # Jarque-Bera test
+                jb_stat, jb_p = stats.jarque_bera(data)
+                normality_tests['jarque_bera'] = {'statistic': jb_stat, 'p_value': jb_p}
+                
+            except ImportError:
+                if verbose:
+                    print("⚠️  scipy not available - skipping statistical tests")
+                statistical_tests = False
+        
+        # Create main histogram
+        n, bins_used, patches = ax.hist(data, bins=bins, alpha=alpha, color=colors[idx], 
+                                       edgecolor='black', linewidth=0.5, density=True)
+        
+        # Add KDE curve
+        if kde:
+            try:
+                sns.kdeplot(data=data, ax=ax, color='darkred', linewidth=2, alpha=0.8)
+            except Exception:
+                pass  # Skip KDE if it fails
+        
+        # Add normal distribution overlay
+        if show_normal_curve:
+            x_norm = np.linspace(data.min(), data.max(), 100)
+            normal_curve = stats.norm.pdf(x_norm, mean, std)
+            ax.plot(x_norm, normal_curve, 'g--', linewidth=2, alpha=0.8, 
+                   label=f'Normal(μ={mean:.1f}, σ={std:.1f})')
+        
+        # Add vertical lines for mean and median
+        ax.axvline(mean, color='red', linestyle='--', alpha=0.8, linewidth=2, label=f'Mean: {mean:.2f}')
+        ax.axvline(median, color='blue', linestyle='--', alpha=0.8, linewidth=2, label=f'Median: {median:.2f}')
+        
+        # Interpret skewness
+        if abs(skewness) < 0.5:
+            skew_interpretation = "Approximately Normal"
+            skew_color = 'green'
+        elif abs(skewness) < 1:
+            skew_interpretation = "Moderately Skewed"
+            skew_color = 'orange'
+        else:
+            skew_interpretation = "Highly Skewed"
+            skew_color = 'red'
+        
+        # Determine skew direction
+        if skewness > 0:
+            skew_direction = "Right (Positive)"
+        elif skewness < 0:
+            skew_direction = "Left (Negative)"
+        else:
+            skew_direction = "Symmetric"
+        
+        # Add statistics text box
+        if show_stats:
+            stats_text = f"n = {len(data):,}\n"
+            stats_text += f"Mean = {mean:.2f}\n" 
+            stats_text += f"Std = {std:.2f}\n"
+            stats_text += f"Skewness = {skewness:.3f}\n"
+            stats_text += f"Kurtosis = {kurt:.3f}\n"
+            stats_text += f"Shape: {skew_interpretation}"
+            
+            # Add statistical test results
+            if statistical_tests and normality_tests:
+                stats_text += "\n\nNormality Tests:"
+                if 'shapiro' in normality_tests:
+                    p_val = normality_tests['shapiro']['p_value']
+                    result = "Normal" if p_val > 0.05 else "Non-Normal"
+                    stats_text += f"\nShapiro: {result}"
+                    stats_text += f"\n(p={p_val:.4f})"
+            
+            # Position stats box
+            ax.text(0.98, 0.98, stats_text, transform=ax.transAxes, fontsize=9,
+                   verticalalignment='top', horizontalalignment='right',
+                   bbox=dict(boxstyle='round', facecolor='white', alpha=0.8))
+        
+        # Customize subplot
+        ax.set_title(f"{col}\nSkew: {skewness:.3f} ({skew_direction})", 
+                    fontweight='bold', color=skew_color)
+        ax.grid(True, alpha=grid_alpha)
+        ax.set_xlabel('Value')
+        ax.set_ylabel('Density')
+        
+        # Add legend if normal curve is shown
+        if show_normal_curve or True:  # Always show legend for mean/median
+            ax.legend(loc='upper left', fontsize=8, framealpha=0.8)
+    
+    # Hide unused subplots
+    for idx in range(n_cols, len(axes)):
+        axes[idx].set_visible(False)
+    
+    plt.tight_layout()
+    
+    # Verbose statistical analysis
+    if verbose:
+        print(f"\n📈 Distribution Analysis Summary:")
+        print("=" * 60)
+        
+        for col, stats in distribution_stats.items():
+            print(f"\n🔢 {col}:")
+            print(f"   📊 Basic Stats: μ={stats['mean']:.2f}, σ={stats['std']:.2f}, median={stats['median']:.2f}")
+            print(f"   📏 Range: {stats['min']:.2f} to {stats['max']:.2f}")
+            print(f"   📈 Sample Size: {stats['count']:,} observations")
+            
+            # Skewness interpretation
+            skew = stats['skewness']
+            if abs(skew) < 0.5:
+                skew_desc = "🟢 NORMAL - Approximately symmetric distribution"
+            elif abs(skew) < 1:
+                direction = "right (positive)" if skew > 0 else "left (negative)"
+                skew_desc = f"🟡 MODERATE - Moderately skewed {direction}"
+            else:
+                direction = "right (positive)" if skew > 0 else "left (negative)"
+                skew_desc = f"🔴 HIGH - Highly skewed {direction}"
+            
+            print(f"   ⚖️  Skewness: {skew:.3f} - {skew_desc}")
+            
+            # Kurtosis interpretation  
+            kurt = stats['kurtosis']
+            if abs(kurt) < 0.5:
+                kurt_desc = "🟢 NORMAL - Normal tail behavior (mesokurtic)"
+            elif kurt > 0.5:
+                kurt_desc = "🔺 HEAVY - Heavy tails, more outliers (leptokurtic)"
+            else:
+                kurt_desc = "🔻 LIGHT - Light tails, fewer outliers (platykurtic)" 
+            
+            print(f"   📊 Kurtosis: {kurt:.3f} - {kurt_desc}")
+            
+            # Statistical test results
+            if statistical_tests and len(df[col].dropna()) >= 3:
+                print(f"   🧪 Normality Assessment:")
+                data_sample = df[col].dropna()
+                
+                try:
+                    from scipy import stats
+                    
+                    # Shapiro-Wilk
+                    if len(data_sample) <= 5000:
+                        test_data = data_sample.sample(min(5000, len(data_sample)), random_state=42)
+                        shapiro_stat, shapiro_p = stats.shapiro(test_data)
+                        normality = "✅ Likely Normal" if shapiro_p > 0.05 else "❌ Non-Normal"
+                        print(f"      Shapiro-Wilk: {normality} (p={shapiro_p:.4f})")
+                    
+                    # Jarque-Bera
+                    jb_stat, jb_p = stats.jarque_bera(data_sample)
+                    jb_normality = "✅ Likely Normal" if jb_p > 0.05 else "❌ Non-Normal"
+                    print(f"      Jarque-Bera: {jb_normality} (p={jb_p:.4f})")
+                    
+                except ImportError:
+                    print("      ⚠️  Install scipy for normality tests")
+        
+        # Overall summary
+        total_normal = sum(1 for stats in distribution_stats.values() if abs(stats['skewness']) < 0.5)
+        total_moderate = sum(1 for stats in distribution_stats.values() if 0.5 <= abs(stats['skewness']) < 1)
+        total_high = sum(1 for stats in distribution_stats.values() if abs(stats['skewness']) >= 1)
+        
+        print(f"\n🎯 Overall Distribution Summary:")
+        print("=" * 40)
+        print(f"🟢 Normal/Symmetric: {total_normal}/{len(numerical_cols)} columns")
+        print(f"🟡 Moderately Skewed: {total_moderate}/{len(numerical_cols)} columns")
+        print(f"🔴 Highly Skewed: {total_high}/{len(numerical_cols)} columns")
+        
+        if total_high > 0:
+            print(f"\n💡 Recommendation: Consider data transformation for highly skewed columns")
+            print("   📈 Right skew: Try log, sqrt, or Box-Cox transformation")
+            print("   📉 Left skew: Try square, exponential, or reflect + transform")
+        
+        print(f"\n✅ Histogram analysis completed!")
+        print("🎨 Use plt.show() to display the plot")
+        print("💾 Use plt.savefig('filename.png') to save")
+    
+    # Show the plot
+    plt.show()

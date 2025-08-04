@@ -4,9 +4,9 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "edaflow"
-version = "0.7.0"
+version = "0.8.3"
 description = "A Python package for exploratory data analysis workflows"
-readme = "README.md"
+readme = {file = "README.md", content-type = "text/markdown"}
 license = "MIT"
 authors = [
     {name = "Evan Low", email = "evan.low@illumetechnology.com"}
@@ -67,6 +67,7 @@ Documentation = "https://edaflow.readthedocs.io"
 Repository = "https://github.com/evanlow/edaflow.git"
 "Bug Tracker" = "https://github.com/evanlow/edaflow/issues"
 Changelog = "https://github.com/evanlow/edaflow/blob/main/CHANGELOG.md"
+"Source Code" = "https://github.com/evanlow/edaflow"
 
 [tool.setuptools]
 package-dir = {"" = "."}

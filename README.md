@@ -17,6 +17,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Numerical Distribution Visualization**: Advanced boxplot analysis with outlier detection and statistical summaries
 - **Interactive Boxplot Visualization**: Interactive Plotly Express boxplots with zoom, hover, and statistical tooltips
 - **Comprehensive Heatmap Visualizations**: Correlation matrices, missing data patterns, values heatmaps, and cross-tabulations
+- **Statistical Histogram Analysis**: Advanced histogram visualization with skewness detection, normality testing, and distribution analysis
 - **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
@@ -64,7 +65,7 @@ import edaflow
 # Test the installation
 print(edaflow.hello())
 
-# Complete EDA workflow with all 9 functions:
+# Complete EDA workflow with all 12 functions:
 import pandas as pd
 df = pd.read_csv('your_data.csv')
 
@@ -90,10 +91,19 @@ df_fully_imputed = edaflow.impute_categorical_mode(df_numeric_imputed)
 # 7. Visualize numerical distributions and detect outliers
 edaflow.visualize_numerical_boxplots(df_fully_imputed, show_skewness=True)
 
-# 8. Handle outliers automatically (NEW!)
+# 8. Interactive boxplot analysis
+edaflow.visualize_interactive_boxplots(df_fully_imputed)
+
+# 9. Comprehensive heatmap analysis
+edaflow.visualize_heatmaps(df_fully_imputed, heatmap_type='all')
+
+# 10. Statistical histogram analysis with skewness detection (NEW!)
+edaflow.visualize_histograms(df_fully_imputed, kde=True, show_normal_curve=True)
+
+# 11. Handle outliers automatically
 df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbose=True)
 
-# 9. Verify final results
+# 12. Verify final results
 edaflow.visualize_numerical_boxplots(df_final, title="Clean Data Distribution")
 ```
 
@@ -904,6 +914,128 @@ edaflow.visualize_heatmap(
 - 🔢 Data range and distribution summaries
 - 📈 Cross-tabulation frequencies and totals
 
+### Statistical Histogram Analysis with `visualize_histograms` (NEW!)
+
+The `visualize_histograms` function provides comprehensive distribution analysis with advanced skewness detection, normality testing, and statistical insights. This powerful visualization combines histograms with KDE curves, normal distribution overlays, and detailed statistical assessments:
+
+```python
+import pandas as pd
+import numpy as np
+import edaflow
+
+# Create sample data with different distribution shapes
+np.random.seed(42)
+df = pd.DataFrame({
+    'normal_dist': np.random.normal(100, 15, 1000),
+    'right_skewed': np.random.exponential(2, 1000),  
+    'left_skewed': 10 - np.random.exponential(2, 1000),
+    'uniform': np.random.uniform(0, 100, 1000),
+    'bimodal': np.concatenate([
+        np.random.normal(30, 5, 500),
+        np.random.normal(70, 5, 500)
+    ])
+})
+
+# 1. Basic Histogram Analysis (All Numerical Columns)
+edaflow.visualize_histograms(df)
+
+# 2. Customized Histogram with Statistical Features
+edaflow.visualize_histograms(
+    df,
+    columns=['normal_dist', 'right_skewed'],  # Specific columns
+    kde=True,  # Add KDE curves
+    show_normal_curve=True,  # Add normal distribution overlay
+    show_stats=True,  # Display statistical text box
+    title="Distribution Analysis with Statistical Overlays"
+)
+
+# 3. Advanced Customization
+edaflow.visualize_histograms(
+    df,
+    bins=30,  # Custom bin count
+    alpha=0.7,  # Transparency
+    figsize=(15, 10),  # Custom figure size
+    colors=['skyblue', 'lightcoral', 'lightgreen'],
+    title="Custom Styled Distribution Analysis"
+)
+
+# 4. Single Column Detailed Analysis
+edaflow.visualize_histograms(
+    df,
+    columns=['bimodal'],
+    kde=True,
+    show_normal_curve=True,
+    show_stats=True,
+    title="Detailed Bimodal Distribution Analysis"
+)
+```
+
+**🎯 Key Features:**
+
+**📊 Comprehensive Distribution Analysis:**
+- 📈 Multi-column histogram visualization with subplots
+- 🔍 Automatic skewness detection and interpretation
+- 📊 Kurtosis analysis (normal, heavy-tailed, light-tailed)
+- 📏 Basic statistics (mean, median, std, range, sample size)
+
+**🧪 Advanced Statistical Testing:**
+- 🔬 **Shapiro-Wilk Test**: Tests normality for smaller samples
+- 📊 **Jarque-Bera Test**: Tests normality using skewness and kurtosis
+- 📈 **Anderson-Darling Test**: Powerful normality test with critical values
+- ✅ **Automated Interpretation**: Clear pass/fail results with p-values
+
+**⚖️ Skewness Detection & Interpretation:**
+- 🟢 **Normal/Symmetric** (|skew| < 0.5): Approximately symmetric distribution
+- 🟡 **Moderately Skewed** (0.5 ≤ |skew| < 1): Noticeable but manageable skew
+- 🔴 **Highly Skewed** (|skew| ≥ 1): Significant skew requiring transformation
+- 📈 **Direction Analysis**: Right-skewed (positive) vs Left-skewed (negative)
+
+**📈 Visual Enhancements:**
+- 🎨 **KDE Curves**: Smooth density estimation overlays
+- 📊 **Normal Distribution Overlay**: Compare actual vs theoretical normal
+- 📏 **Mean/Median Lines**: Visual reference lines with values
+- 📋 **Statistical Text Boxes**: Comprehensive stats display on plots
+
+**💡 Transformation Recommendations:**
+- 📈 **Right Skew**: Suggests log, sqrt, or Box-Cox transformations
+- 📉 **Left Skew**: Suggests square, exponential, or reflect + transform
+- 🎯 **Actionable Insights**: Specific recommendations based on skewness level
+
+**🔍 Distribution Shape Insights:**
+- 📊 **Kurtosis Interpretation**: 
+  - 🟢 Normal (mesokurtic): -0.5 to 0.5
+  - 🔺 Heavy-tailed (leptokurtic): > 0.5
+  - 🔻 Light-tailed (platykurtic): < -0.5
+- 📈 **Pattern Recognition**: Identifies normal, uniform, bimodal, exponential patterns
+- 🎯 **Statistical Summary**: Overall assessment of distribution health
+
+**Example Output Summary:**
+```
+📈 Distribution Analysis Summary:
+============================================================
+🔢 normal_dist:
+   📊 Basic Stats: μ=100.29, σ=14.69, median=100.38
+   📏 Range: 51.38 to 157.79
+   📈 Sample Size: 1,000 observations
+   ⚖️  Skewness: 0.117 - 🟢 NORMAL - Approximately symmetric distribution
+   📊 Kurtosis: 0.073 - 🟢 NORMAL - Normal tail behavior (mesokurtic)
+   🧪 Normality Assessment:
+      Shapiro-Wilk: ✅ Likely Normal (p=0.6273)
+      Jarque-Bera: ✅ Likely Normal (p=0.2928)
+
+🎯 Overall Distribution Summary:
+🟢 Normal/Symmetric: 1/1 columns
+🟡 Moderately Skewed: 0/1 columns  
+🔴 Highly Skewed: 0/1 columns
+```
+
+**Perfect for:**
+- 🔍 **Distribution Assessment**: Understanding data shape before modeling
+- 📊 **Normality Testing**: Determining if data meets normal distribution assumptions
+- 🎯 **Data Transformation Planning**: Identifying which columns need transformation
+- 📈 **Statistical Reporting**: Comprehensive distribution documentation
+- 🧪 **Assumption Validation**: Verifying statistical test prerequisites
+
 ### Integration with Jupyter Notebooks
 
 For the best experience, use these functions in Jupyter notebooks where:
@@ -1004,6 +1136,48 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### v0.8.2 (2025-08-04) - Metadata Enhancement Release
+- **METADATA**: Enhanced PyPI metadata to ensure proper changelog display
+- **PYPI**: Forced PyPI cache refresh by updating package metadata
+- **LINKS**: Added additional project URLs for better discoverability
+- **FIXED**: Updated changelog dates and formatting for better PyPI presentation
+
+### v0.8.1 (2025-08-04) - Changelog Formatting Release
+- **FIXED**: Updated changelog dates to current date format
+- **FIXED**: Removed duplicate changelog header that was causing PyPI display issues
+- **ENHANCED**: Improved changelog formatting for better PyPI presentation
+
+### v0.8.0 (2025-08-04) - Statistical Histogram Analysis Release
+- **NEW**: `visualize_histograms()` function with advanced statistical analysis and skewness detection
+- **NEW**: Comprehensive distribution analysis with normality testing (Shapiro-Wilk, Jarque-Bera, Anderson-Darling)
+- **NEW**: Advanced skewness interpretation: Normal (|skew| < 0.5), Moderate (0.5-1), High (≥1)
+- **NEW**: Kurtosis analysis: Normal, Heavy-tailed (leptokurtic), Light-tailed (platykurtic)
+- **NEW**: KDE curve overlays and normal distribution comparisons
+- **NEW**: Statistical text boxes with comprehensive distribution metrics
+- **NEW**: Transformation recommendations based on skewness analysis
+- **NEW**: Multi-column histogram visualization with automatic subplot layout
+- **ENHANCED**: Updated Complete EDA Workflow to include 12 functions (from 9)
+- **ENHANCED**: Added histogram analysis as Step 10 in the comprehensive workflow
+- **FIXED**: Fixed Anderson-Darling test attribute error and improved statistical test error handling
+
+### v0.7.0 (2025-08-03) - Comprehensive Heatmap Visualization Release
+- **NEW**: `visualize_heatmap()` function with comprehensive heatmap visualizations
+- **NEW**: Four distinct heatmap types: correlation, missing data patterns, values, and cross-tabulation
+- **NEW**: Multiple correlation methods: Pearson, Spearman, and Kendall
+- **NEW**: Missing data pattern visualization with threshold highlighting
+- **NEW**: Data values heatmap for detailed small dataset inspection
+- **NEW**: Cross-tabulation heatmaps for categorical relationship analysis
+- **ENHANCED**: Complete EDA workflow with comprehensive heatmap analysis
+- **ENHANCED**: Updated package features to highlight new visualization capabilities
+
+### v0.6.0 (2025-08-02) - Interactive Boxplot Visualization Release
+- **NEW**: `visualize_interactive_boxplots()` function with full Plotly Express integration
+- **NEW**: Interactive boxplot visualization with hover tooltips, zoom, and pan functionality
+- **NEW**: Statistical summaries with emoji-formatted output for better readability
+- **NEW**: Customizable styling options (colors, dimensions, margins)
+- **NEW**: Smart column selection for numerical data
+- **ENHANCED**: Added plotly>=5.0.0 dependency for interactive visualizations
+
 ### v0.5.1 (Documentation Sync Release)
 - **FIXED**: Updated PyPI documentation to properly showcase handle_outliers_median() function in Complete EDA Workflow Example
 - **ENHANCED**: Ensured PyPI page displays the complete 9-step EDA workflow including outlier handling
@@ -1018,54 +1192,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **NEW**: Detailed reporting showing exactly which outliers were replaced and why
 - **NEW**: Safe operation mode (inplace=False by default) to preserve original data
 - **NEW**: Statistical method comparison with customizable IQR multipliers
-- **ENHANCED**: Complete 9-function EDA package with comprehensive outlier management
-- Enhanced testing coverage and dtype compatibility improvements
-
-### v0.4.1 (Advanced Visualization Release)
-- **NEW**: `visualize_numerical_boxplots()` function for comprehensive outlier detection and statistical analysis
-- **NEW**: Advanced boxplot visualization with customizable layouts (rows/cols), orientations, and color palettes
-- **NEW**: Automatic numerical column detection for boxplot analysis
-- **NEW**: Detailed statistical summaries including skewness analysis and interpretation
-- **NEW**: IQR-based outlier detection with threshold reporting and actual outlier values displayed
-- **NEW**: Support for horizontal and vertical boxplot orientations with seaborn styling integration
-- **FIXED**: `impute_categorical_mode()` function now properly returns DataFrame instead of None
-- **FIXED**: Corrected inplace parameter handling for categorical imputation function
-- Enhanced testing coverage with 67 comprehensive tests including 13 new boxplot tests
-
-### v0.4.0 (Data Imputation Release)
-- **NEW**: `impute_numerical_median()` function for numerical missing value imputation using median
-- **NEW**: `impute_categorical_mode()` function for categorical missing value imputation using mode
-- **NEW**: Complete 7-function EDA workflow: analyze → convert → visualize → classify → impute
-- **NEW**: Smart column detection and validation for imputation functions
-- **NEW**: Inplace imputation option with detailed reporting and error handling
-- **NEW**: Comprehensive edge case handling (empty DataFrames, all missing values, mode ties)
-- Enhanced testing coverage with 54 comprehensive tests achieving 93% coverage
-
-### v0.3.1 (Feature Enhancement)
-- **NEW**: `display_column_types()` function for column type classification
-- **NEW**: Complete 5-function EDA workflow: analyze → convert → visualize → classify
-- **ENHANCED**: Updated comprehensive examples with full 5-function workflow
-- Enhanced testing coverage with 32 comprehensive tests covering all functions
-
-### v0.3.0 (Major Feature Release)
-- **NEW**: `convert_to_numeric()` function for automatic data type conversion
-- **NEW**: `visualize_categorical_values()` function for detailed categorical data exploration
-- **NEW**: Smart threshold-based conversion with detailed reporting
-- **NEW**: Inplace conversion option for flexible DataFrame modification
-- **NEW**: Safe conversion with NaN handling for invalid values
-- **NEW**: High-cardinality handling and data quality insights
-- Enhanced testing coverage with comprehensive tests
-
-### v0.2.1 (Documentation Enhancement)
-- **ENHANCED**: Comprehensive README with detailed usage examples
-- **NEW**: Step-by-step examples for both `check_null_columns()` and `analyze_categorical_columns()`
-- **NEW**: Complete EDA workflow example showing real-world usage
-- **NEW**: Jupyter notebook integration examples
-- **IMPROVED**: Color-coding explanations and output interpretation guides
-
-### v0.2.0 (Feature Release)
-- **NEW**: `analyze_categorical_columns()` function for categorical data analysis
-- **NEW**: Smart detection of object columns that might be numeric
 - **NEW**: Color-coded terminal output for better readability
 - Enhanced testing coverage with 12 comprehensive tests
 - Improved documentation with detailed usage examples

@@ -19,11 +19,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
-# Changelog
+## [0.8.3] - 2025-08-04
 
-All notable changes to this project will be documented in this file.
+### Fixed
+- **CRITICAL**: Updated README.md changelog section that PyPI was displaying instead of CHANGELOG.md
+- **PYPI**: Fixed PyPI changelog display by synchronizing README.md changelog with main CHANGELOG.md
+- **DOCUMENTATION**: Ensured consistent changelog information across all package files
 
-## [0.7.0] - 2024-01-15
+## [0.8.2] - 2025-08-04
+
+### Fixed
+- **METADATA**: Enhanced PyPI metadata to ensure proper changelog display
+- **PYPI**: Forced PyPI cache refresh by updating package metadata
+- **LINKS**: Added additional project URLs for better discoverability
+
+## [0.8.1] - 2025-08-04
+
+### Fixed
+- **FIXED**: Updated changelog dates to current date format
+- **FIXED**: Removed duplicate changelog header that was causing PyPI display issues
+- **ENHANCED**: Improved changelog formatting for better PyPI presentation
+
+## [0.8.0] - 2025-08-04
+
+### Added
+- **NEW**: `visualize_histograms()` function with advanced statistical analysis and skewness detection
+- Comprehensive distribution analysis with normality testing (Shapiro-Wilk, Jarque-Bera, Anderson-Darling)
+- Advanced skewness interpretation: Normal (|skew| < 0.5), Moderate (0.5-1), High (≥1)
+- Kurtosis analysis: Normal, Heavy-tailed (leptokurtic), Light-tailed (platykurtic)
+- KDE curve overlays and normal distribution comparisons
+- Statistical text boxes with comprehensive distribution metrics
+- Transformation recommendations based on skewness analysis
+- Multi-column histogram visualization with automatic subplot layout
+- Missing data handling and robust error validation
+- Detailed statistical reporting with emoji-formatted output
+
+### Enhanced
+- Updated Complete EDA Workflow to include 12 functions (from 9)
+- Added histogram analysis as Step 10 in the comprehensive workflow
+- Enhanced README documentation with detailed histogram function examples
+- Comprehensive test suite with 7 test scenarios covering various distribution types
+
+### Fixed
+- Fixed Anderson-Darling test attribute error (significance_levels → significance_level)
+- Improved statistical test error handling and validation
+
+## [0.7.0] - 2025-08-03
 
 ### Added
 - **NEW**: `visualize_heatmap()` function with comprehensive heatmap visualizations
@@ -44,7 +85,7 @@ All notable changes to this project will be documented in this file.
 - Updated package features to highlight new heatmap visualization capabilities
 - Improved documentation with statistical insights explanations
 
-## [0.6.0] - 2024-01-15
+## [0.6.0] - 2025-08-02
 
 ### Added
 - **NEW**: `visualize_interactive_boxplots()` function with full Plotly Express integration
