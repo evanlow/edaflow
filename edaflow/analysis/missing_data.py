@@ -5,6 +5,7 @@ This module provides utilities for analyzing and visualizing missing data patter
 """
 
 import pandas as pd
+import numpy as np
 from typing import Optional
 
 
@@ -250,3 +251,484 @@ def convert_to_numeric(df: pd.DataFrame,
     
     # Return the result DataFrame if not inplace, otherwise return None
     return None if inplace else df_result
+
+
+def visualize_categorical_values(df: pd.DataFrame, 
+                                max_unique_values: Optional[int] = 20,
+                                show_counts: bool = True,
+                                show_percentages: bool = True) -> None:
+    """
+    Visualize unique values in categorical (object-type) columns with counts and percentages.
+    
+    This function provides a comprehensive overview of categorical columns by displaying:
+    - Unique values in each categorical column
+    - Value counts (frequency of each unique value)
+    - Percentages (relative frequency)
+    - Summary statistics for each column
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame to analyze
+        max_unique_values (Optional[int], optional): Maximum number of unique values 
+                                                   to display per column. If a column 
+                                                   has more unique values, only the top 
+                                                   N most frequent will be shown. 
+                                                   Defaults to 20.
+        show_counts (bool, optional): Whether to show the count of each unique value.
+                                    Defaults to True.
+        show_percentages (bool, optional): Whether to show the percentage of each 
+                                         unique value. Defaults to True.
+    
+    Returns:
+        None: Prints visualization results directly to console with formatting
+    
+    Example:
+        >>> import pandas as pd
+        >>> import edaflow
+        >>> df = pd.DataFrame({
+        ...     'category': ['A', 'B', 'A', 'C', 'B', 'A'],
+        ...     'status': ['active', 'inactive', 'active', 'pending', 'active', 'active'],
+        ...     'region': ['North', 'South', 'North', 'East', 'West', 'North'],
+        ...     'score': [85, 92, 78, 88, 95, 82]
+        ... })
+        >>> 
+        >>> # Basic visualization
+        >>> edaflow.visualize_categorical_values(df)
+        >>> 
+        >>> # Show only top 10 values per column, without percentages
+        >>> edaflow.visualize_categorical_values(df, max_unique_values=10, show_percentages=False)
+        >>> 
+        >>> # Alternative import style:
+        >>> from edaflow.analysis import visualize_categorical_values
+        >>> visualize_categorical_values(df, max_unique_values=15)
+    
+    Notes:
+        - Only analyzes columns with object dtype (categorical/string columns)
+        - Columns with many unique values are truncated to show most frequent ones
+        - Provides summary statistics including total unique values and most common value
+        - Uses color coding to highlight column names and important information
+    """
+    # Find categorical columns
+    cat_columns = [col for col in df.columns if df[col].dtype == 'object']
+    
+    if not cat_columns:
+        print("🔍 No categorical (object-type) columns found in the DataFrame.")
+        print("   All columns appear to be numeric or datetime types.")
+        return
+    
+    print("📊 CATEGORICAL COLUMNS VISUALIZATION")
+    print("=" * 70)
+    print(f"Found {len(cat_columns)} categorical column(s): {', '.join(cat_columns)}")
+    print("=" * 70)
+    
+    for i, col in enumerate(cat_columns, 1):
+        # Get value counts
+        value_counts = df[col].value_counts(dropna=False)
+        total_values = len(df[col])
+        unique_count = len(value_counts)
+        
+        # Handle missing values
+        null_count = df[col].isnull().sum()
+        
+        # Column header with color coding
+        print(f'\n\x1b[1;36m[{i}/{len(cat_columns)}] Column: {col}\x1b[m')
+        print(f'📈 Total values: {total_values} | Unique values: {unique_count} | Missing: {null_count}')
+        
+        if unique_count == 0:
+            print('⚠️  Column is completely empty')
+            continue
+            
+        # Determine how many values to show
+        values_to_show = min(max_unique_values, unique_count)
+        
+        if unique_count > max_unique_values:
+            print(f'📋 Showing top {values_to_show} most frequent values (out of {unique_count} total):')
+        else:
+            print(f'📋 All unique values:')
+        
+        # Display values with counts and percentages
+        for j, (value, count) in enumerate(value_counts.head(values_to_show).items(), 1):
+            # Handle NaN values display
+            display_value = 'NaN/Missing' if pd.isna(value) else repr(value)
+            
+            # Calculate percentage
+            percentage = (count / total_values) * 100
+            
+            # Build the display string
+            display_parts = [f'   {j:2d}. {display_value}']
+            
+            if show_counts:
+                display_parts.append(f'Count: {count}')
+            
+            if show_percentages:
+                display_parts.append(f'({percentage:.1f}%)')
+            
+            print(' | '.join(display_parts))
+        
+        # Show truncation message if needed
+        if unique_count > max_unique_values:
+            remaining = unique_count - max_unique_values
+            print(f'   ... and {remaining} more unique value(s)')
+        
+        # Summary statistics
+        most_common_value = value_counts.index[0]
+        most_common_count = value_counts.iloc[0]
+        most_common_pct = (most_common_count / total_values) * 100
+        
+        display_most_common = 'NaN/Missing' if pd.isna(most_common_value) else repr(most_common_value)
+        
+        print(f'🏆 Most frequent: {display_most_common} ({most_common_count} times, {most_common_pct:.1f}%)')
+        
+        # Add separator between columns (except for the last one)
+        if i < len(cat_columns):
+            print('-' * 50)
+    
+    print("\n" + "=" * 70)
+    print("✅ Categorical visualization complete!")
+    
+    # Provide actionable insights
+    high_cardinality_cols = [col for col in cat_columns if df[col].nunique() > max_unique_values]
+    if high_cardinality_cols:
+        print(f"\n💡 High cardinality columns detected: {', '.join(high_cardinality_cols)}")
+        print("   Consider: grouping rare categories, encoding, or feature engineering")
+    
+    # Check for columns that might need attention
+    mostly_unique_cols = [col for col in cat_columns if df[col].nunique() / len(df) > 0.8]
+    if mostly_unique_cols:
+        print(f"\n⚠️  Mostly unique columns (>80% unique): {', '.join(mostly_unique_cols)}")
+        print("   These might be IDs or need special handling")
+
+
+def display_column_types(df):
+    """
+    Display categorical and numerical columns in a DataFrame.
+    
+    This function separates DataFrame columns into categorical (object dtype) 
+    and numerical (non-object dtypes) columns and displays them in a clear format.
+    
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        The DataFrame to analyze
+        
+    Returns:
+    --------
+    dict
+        Dictionary containing 'categorical' and 'numerical' lists of column names
+        
+    Example:
+    --------
+    >>> import pandas as pd
+    >>> from edaflow import display_column_types
+    >>> 
+    >>> # Create sample data
+    >>> data = {
+    ...     'name': ['Alice', 'Bob', 'Charlie'],
+    ...     'age': [25, 30, 35],
+    ...     'city': ['NYC', 'LA', 'Chicago'],
+    ...     'salary': [50000, 60000, 70000],
+    ...     'is_active': [True, False, True]
+    ... }
+    >>> df = pd.DataFrame(data)
+    >>> 
+    >>> # Display column types
+    >>> result = display_column_types(df)
+    >>> print("Categorical columns:", result['categorical'])
+    >>> print("Numerical columns:", result['numerical'])
+    """
+    import pandas as pd
+    
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+    
+    if df.empty:
+        print("⚠️  DataFrame is empty!")
+        return {'categorical': [], 'numerical': []}
+    
+    # Separate columns by type
+    cat_cols = [col for col in df.columns if df[col].dtype == 'object']
+    num_cols = [col for col in df.columns if df[col].dtype != 'object']
+    
+    # Display results
+    print("📊 Column Type Analysis")
+    print("=" * 50)
+    
+    print(f"\n📝 Categorical Columns ({len(cat_cols)} total):")
+    if cat_cols:
+        for i, col in enumerate(cat_cols, 1):
+            unique_count = df[col].nunique()
+            print(f"   {i:2d}. {col:<20} (unique values: {unique_count})")
+    else:
+        print("   No categorical columns found")
+    
+    print(f"\n🔢 Numerical Columns ({len(num_cols)} total):")
+    if num_cols:
+        for i, col in enumerate(num_cols, 1):
+            dtype = str(df[col].dtype)
+            print(f"   {i:2d}. {col:<20} (dtype: {dtype})")
+    else:
+        print("   No numerical columns found")
+    
+    # Summary
+    total_cols = len(df.columns)
+    cat_percentage = (len(cat_cols) / total_cols * 100) if total_cols > 0 else 0
+    num_percentage = (len(num_cols) / total_cols * 100) if total_cols > 0 else 0
+    
+    print(f"\n📈 Summary:")
+    print(f"   Total columns: {total_cols}")
+    print(f"   Categorical: {len(cat_cols)} ({cat_percentage:.1f}%)")
+    print(f"   Numerical: {len(num_cols)} ({num_percentage:.1f}%)")
+    
+    return {
+        'categorical': cat_cols,
+        'numerical': num_cols
+    }
+
+
+def impute_numerical_median(df, columns=None, inplace=False):
+    """
+    Impute missing values in numerical columns using median values.
+    
+    This function identifies numerical columns and fills missing values (NaN) 
+    with the median value of each column. It provides detailed reporting of 
+    the imputation process and handles edge cases safely.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame containing data to impute
+    columns : list, optional
+        Specific columns to impute. If None, all numerical columns will be processed
+    inplace : bool, default False
+        If True, modify the original DataFrame. If False, return a new DataFrame
+        
+    Returns
+    -------
+    pandas.DataFrame or None
+        If inplace=False, returns the DataFrame with imputed values
+        If inplace=True, returns None and modifies the original DataFrame
+        
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import edaflow
+    >>> 
+    >>> # Create sample data with missing values
+    >>> df = pd.DataFrame({
+    ...     'age': [25, None, 35, None, 45],
+    ...     'salary': [50000, 60000, None, 70000, None],
+    ...     'name': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve']
+    ... })
+    >>> 
+    >>> # Impute all numerical columns
+    >>> df_imputed = edaflow.impute_numerical_median(df)
+    >>> 
+    >>> # Impute specific columns only
+    >>> df_imputed = edaflow.impute_numerical_median(df, columns=['age'])
+    >>> 
+    >>> # Impute in place
+    >>> edaflow.impute_numerical_median(df, inplace=True)
+    """
+    # Input validation
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError("Input must be a pandas DataFrame")
+    
+    if df.empty:
+        print("⚠️  DataFrame is empty. Nothing to impute.")
+        return df.copy() if not inplace else None
+    
+    # Work with copy unless inplace=True
+    result_df = df if inplace else df.copy()
+    
+    # Determine which columns to process
+    if columns is None:
+        # Get all numerical columns
+        numerical_cols = result_df.select_dtypes(include=[np.number]).columns.tolist()
+        if not numerical_cols:
+            print("⚠️  No numerical columns found in DataFrame.")
+            return result_df if not inplace else None
+    else:
+        # Validate specified columns
+        if isinstance(columns, str):
+            columns = [columns]
+        
+        # Check if columns exist
+        missing_cols = [col for col in columns if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Columns not found in DataFrame: {missing_cols}")
+        
+        # Check if columns are numerical
+        non_numerical = [col for col in columns if not pd.api.types.is_numeric_dtype(df[col])]
+        if non_numerical:
+            raise ValueError(f"Non-numerical columns specified: {non_numerical}")
+        
+        numerical_cols = columns
+    
+    print("🔢 Numerical Missing Value Imputation (Median)")
+    print("=" * 55)
+    
+    imputed_columns = []
+    total_imputed = 0
+    
+    for col in numerical_cols:
+        missing_count = result_df[col].isnull().sum()
+        
+        if missing_count == 0:
+            print(f"✅ {col:<20} - No missing values")
+            continue
+        
+        # Calculate median (ignoring NaN values)
+        median_value = result_df[col].median()
+        
+        if pd.isna(median_value):
+            print(f"⚠️  {col:<20} - All values are missing, skipping")
+            continue
+        
+        # Perform imputation
+        result_df[col] = result_df[col].fillna(median_value)
+        
+        # Track results
+        imputed_columns.append(col)
+        total_imputed += missing_count
+        
+        print(f"🔄 {col:<20} - Imputed {missing_count:,} values with median: {median_value}")
+    
+    # Summary
+    print(f"\n📊 Imputation Summary:")
+    print(f"   Columns processed: {len(numerical_cols)}")
+    print(f"   Columns imputed: {len(imputed_columns)}")
+    print(f"   Total values imputed: {total_imputed:,}")
+    
+    if imputed_columns:
+        print(f"   Imputed columns: {', '.join(imputed_columns)}")
+    
+    return result_df if not inplace else None
+
+
+def impute_categorical_mode(df, columns=None, inplace=False):
+    """
+    Impute missing values in categorical columns using mode (most frequent value).
+    
+    This function identifies categorical columns and fills missing values (NaN) 
+    with the mode (most frequent value) of each column. It provides detailed 
+    reporting of the imputation process and handles edge cases safely.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame containing data to impute
+    columns : list, optional
+        Specific columns to impute. If None, all categorical columns will be processed
+    inplace : bool, default False
+        If True, modify the original DataFrame. If False, return a new DataFrame
+        
+    Returns
+    -------
+    pandas.DataFrame or None
+        If inplace=False, returns the DataFrame with imputed values
+        If inplace=True, returns None and modifies the original DataFrame
+        
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import edaflow
+    >>> 
+    >>> # Create sample data with missing values
+    >>> df = pd.DataFrame({
+    ...     'category': ['A', 'B', 'A', None, 'A'],
+    ...     'status': ['Active', None, 'Active', 'Inactive', None],
+    ...     'age': [25, 30, 35, 40, 45]
+    ... })
+    >>> 
+    >>> # Impute all categorical columns
+    >>> df_imputed = edaflow.impute_categorical_mode(df)
+    >>> 
+    >>> # Impute specific columns only
+    >>> df_imputed = edaflow.impute_categorical_mode(df, columns=['category'])
+    >>> 
+    >>> # Impute in place
+    >>> edaflow.impute_categorical_mode(df, inplace=True)
+    """
+    # Input validation
+    if not isinstance(df, pd.DataFrame):
+        raise ValueError("Input must be a pandas DataFrame")
+    
+    if df.empty:
+        print("⚠️  DataFrame is empty. Nothing to impute.")
+        return df.copy() if not inplace else None
+    
+    # Work with copy unless inplace=True
+    result_df = df if inplace else df.copy()
+    
+    # Determine which columns to process
+    if columns is None:
+        # Get all categorical (object) columns
+        categorical_cols = result_df.select_dtypes(include=['object']).columns.tolist()
+        if not categorical_cols:
+            print("⚠️  No categorical columns found in DataFrame.")
+            return result_df if not inplace else None
+    else:
+        # Validate specified columns
+        if isinstance(columns, str):
+            columns = [columns]
+        
+        # Check if columns exist
+        missing_cols = [col for col in columns if col not in df.columns]
+        if missing_cols:
+            raise ValueError(f"Columns not found in DataFrame: {missing_cols}")
+        
+        # Check if columns are categorical (object type)
+        non_categorical = [col for col in columns if df[col].dtype != 'object']
+        if non_categorical:
+            print(f"⚠️  Warning: Non-object columns specified: {non_categorical}")
+            print("   These will be processed but may not be truly categorical")
+        
+        categorical_cols = columns
+    
+    print("📝 Categorical Missing Value Imputation (Mode)")
+    print("=" * 55)
+    
+    imputed_columns = []
+    total_imputed = 0
+    
+    for col in categorical_cols:
+        missing_count = result_df[col].isnull().sum()
+        
+        if missing_count == 0:
+            print(f"✅ {col:<20} - No missing values")
+            continue
+        
+        # Calculate mode (most frequent value)
+        mode_values = result_df[col].mode()
+        
+        if len(mode_values) == 0:
+            print(f"⚠️  {col:<20} - All values are missing, skipping")
+            continue
+        
+        # Use the first mode value (in case of ties)
+        mode_value = mode_values.iloc[0]
+        
+        # Check for ties in mode
+        value_counts = result_df[col].value_counts()
+        if len(value_counts) > 1 and value_counts.iloc[0] == value_counts.iloc[1]:
+            tie_count = (value_counts == value_counts.iloc[0]).sum()
+            print(f"ℹ️  {col:<20} - Mode tie detected ({tie_count} values), using: '{mode_value}'")
+        
+        # Perform imputation
+        result_df[col] = result_df[col].fillna(mode_value)
+        
+        # Track results
+        imputed_columns.append(col)
+        total_imputed += missing_count
+        
+        print(f"🔄 {col:<20} - Imputed {missing_count:,} values with mode: '{mode_value}'")
+    
+    # Summary
+    print(f"\n📊 Imputation Summary:")
+    print(f"   Columns processed: {len(categorical_cols)}")
+    print(f"   Columns imputed: {len(imputed_columns)}")
+    print(f"   Total values imputed: {total_imputed:,}")
+    
+    if imputed_columns:
+        print(f"   Imputed columns: {', '.join(imputed_columns)}")
+    
+    return result_df if not inplace else None

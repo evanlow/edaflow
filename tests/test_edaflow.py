@@ -1,9 +1,10 @@
 """
 Tests for the main edaflow module
 """
+import pytest
 import pandas as pd
 import edaflow
-from edaflow.analysis import check_null_columns, analyze_categorical_columns, convert_to_numeric
+from edaflow.analysis import check_null_columns, analyze_categorical_columns, convert_to_numeric, visualize_categorical_values, display_column_types
 
 
 def test_hello_function():
@@ -294,3 +295,587 @@ def test_convert_to_numeric_no_conversions(capsys):
     assert result_df['text_only'].dtype == 'object'
     assert result_df['already_int'].dtype in ['int64', 'float64']
     assert result_df['already_float'].dtype in ['int64', 'float64']
+
+
+def test_visualize_categorical_values_import():
+    """Test that visualize_categorical_values can be imported"""
+    from edaflow import visualize_categorical_values
+    assert callable(visualize_categorical_values)
+
+
+def test_visualize_categorical_values_basic(capsys):
+    """Test visualize_categorical_values with basic categorical data"""
+    df = pd.DataFrame({
+        'category': ['A', 'B', 'A', 'C', 'B', 'A'],
+        'status': ['active', 'inactive', 'active', 'pending', 'active', 'active'],
+        'numeric_col': [1, 2, 3, 4, 5, 6]  # Should be ignored
+    })
+    
+    # Test the function
+    edaflow.visualize_categorical_values(df)
+    
+    # Capture printed output
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Check that it found the right columns
+    assert 'Found 2 categorical column(s): category, status' in output
+    assert 'Column: category' in output
+    assert 'Column: status' in output
+    
+    # Check that it shows values and counts
+    assert "'A'" in output  # Category A
+    assert "'B'" in output  # Category B
+    assert "'active'" in output  # Status active
+    assert 'Count:' in output  # Should show counts by default
+    assert 'Most frequent:' in output  # Should show most frequent value
+
+
+def test_visualize_categorical_values_no_categorical_columns(capsys):
+    """Test visualize_categorical_values with no categorical columns"""
+    df = pd.DataFrame({
+        'numbers': [1, 2, 3, 4, 5],
+        'floats': [1.1, 2.2, 3.3, 4.4, 5.5],
+        'integers': [10, 20, 30, 40, 50]
+    })
+    
+    edaflow.visualize_categorical_values(df)
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Should indicate no categorical columns found
+    assert 'No categorical (object-type) columns found' in output
+
+
+def test_visualize_categorical_values_with_missing(capsys):
+    """Test visualize_categorical_values with missing values"""
+    df = pd.DataFrame({
+        'category_with_nulls': ['A', 'B', None, 'A', None, 'B'],
+        'complete_category': ['X', 'Y', 'X', 'Y', 'X', 'Y']
+    })
+    
+    edaflow.visualize_categorical_values(df)
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Should handle missing values
+    assert 'Missing: 2' in output  # category_with_nulls has 2 NaN
+    assert 'Missing: 0' in output  # complete_category has 0 NaN
+    assert 'NaN/Missing' in output  # Should show NaN values
+
+
+def test_visualize_categorical_values_high_cardinality(capsys):
+    """Test visualize_categorical_values with high cardinality column"""
+    # Create a column with many unique values
+    df = pd.DataFrame({
+        'high_cardinality': [f'value_{i}' for i in range(25)],  # 25 unique values
+        'normal_category': ['A'] * 10 + ['B'] * 10 + ['C'] * 5
+    })
+    
+    # Test with max_unique_values=10
+    edaflow.visualize_categorical_values(df, max_unique_values=10)
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Should truncate high cardinality column
+    assert 'Showing top 10 most frequent values (out of 25 total)' in output
+    assert '... and 15 more unique value(s)' in output
+    
+    # Should provide insights about high cardinality
+    assert 'High cardinality columns detected: high_cardinality' in output
+
+
+def test_visualize_categorical_values_custom_options(capsys):
+    """Test visualize_categorical_values with custom options"""
+    df = pd.DataFrame({
+        'category': ['A', 'B', 'A', 'C'],
+        'status': ['active', 'inactive', 'active', 'pending']
+    })
+    
+    # Test with counts but no percentages
+    edaflow.visualize_categorical_values(df, show_percentages=False, show_counts=True)
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Should show counts but not percentages
+    assert 'Count:' in output
+    assert '(50.0%)' not in output and '(25.0%)' not in output  # No percentages
+
+
+def test_visualize_categorical_values_mostly_unique(capsys):
+    """Test visualize_categorical_values with mostly unique column"""
+    # Create a column where most values are unique (like IDs)
+    df = pd.DataFrame({
+        'mostly_unique': [f'id_{i}' for i in range(20)] + ['duplicate'] * 2,  # 20/22 are unique (>80%)
+        'normal_category': ['A'] * 11 + ['B'] * 11
+    })
+    
+    edaflow.visualize_categorical_values(df)
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Should detect mostly unique columns
+    assert 'Mostly unique columns (>80% unique): mostly_unique' in output
+    assert 'These might be IDs or need special handling' in output
+
+
+# Tests for display_column_types function
+
+def test_display_column_types_basic():
+    """Test display_column_types with mixed data types"""
+    df = pd.DataFrame({
+        'name': ['Alice', 'Bob', 'Charlie'],
+        'age': [25, 30, 35],
+        'city': ['NYC', 'LA', 'Chicago'],
+        'salary': [50000, 60000, 70000],
+        'is_active': [True, False, True]
+    })
+    
+    result = display_column_types(df)
+    
+    # Check return type
+    assert isinstance(result, dict)
+    assert 'categorical' in result
+    assert 'numerical' in result
+    
+    # Check categorical columns (object dtype)
+    assert 'name' in result['categorical']
+    assert 'city' in result['categorical']
+    assert len(result['categorical']) == 2
+    
+    # Check numerical columns (non-object dtype)
+    assert 'age' in result['numerical']
+    assert 'salary' in result['numerical']
+    assert 'is_active' in result['numerical']
+    assert len(result['numerical']) == 3
+
+
+def test_display_column_types_only_categorical():
+    """Test display_column_types with only categorical columns"""
+    df = pd.DataFrame({
+        'category1': ['A', 'B', 'C'],
+        'category2': ['X', 'Y', 'Z'],
+        'category3': ['P', 'Q', 'R']
+    })
+    
+    result = display_column_types(df)
+    
+    assert len(result['categorical']) == 3
+    assert len(result['numerical']) == 0
+    assert all(col in result['categorical'] for col in ['category1', 'category2', 'category3'])
+
+
+def test_display_column_types_only_numerical():
+    """Test display_column_types with only numerical columns"""
+    df = pd.DataFrame({
+        'int_col': [1, 2, 3],
+        'float_col': [1.1, 2.2, 3.3],
+        'bool_col': [True, False, True]
+    })
+    
+    result = display_column_types(df)
+    
+    assert len(result['categorical']) == 0
+    assert len(result['numerical']) == 3
+    assert all(col in result['numerical'] for col in ['int_col', 'float_col', 'bool_col'])
+
+
+def test_display_column_types_empty_dataframe():
+    """Test display_column_types with empty DataFrame"""
+    df = pd.DataFrame()
+    
+    result = display_column_types(df)
+    
+    assert result['categorical'] == []
+    assert result['numerical'] == []
+
+
+def test_display_column_types_invalid_input():
+    """Test display_column_types with invalid input"""
+    try:
+        display_column_types("not a dataframe")
+        assert False, "Should raise TypeError"
+    except TypeError as e:
+        assert "Input must be a pandas DataFrame" in str(e)
+
+
+def test_display_column_types_import_from_main():
+    """Test display_column_types imported from main edaflow module"""
+    df = pd.DataFrame({
+        'name': ['Alice', 'Bob'],
+        'age': [25, 30]
+    })
+    
+    result = edaflow.display_column_types(df)
+    
+    assert isinstance(result, dict)
+    assert 'categorical' in result
+    assert 'numerical' in result
+    assert 'name' in result['categorical']
+    assert 'age' in result['numerical']
+
+
+def test_display_column_types_output_format(capsys):
+    """Test display_column_types output format"""
+    df = pd.DataFrame({
+        'name': ['Alice', 'Bob'],
+        'age': [25, 30],
+        'city': ['NYC', 'LA']
+    })
+    
+    result = display_column_types(df)
+    
+    captured = capsys.readouterr()
+    output = captured.out
+    
+    # Check for key output elements
+    assert 'Column Type Analysis' in output
+    assert 'Categorical Columns' in output
+    assert 'Numerical Columns' in output
+    assert 'Summary:' in output
+    assert 'Total columns: 3' in output
+
+
+# =============================================================================
+# Tests for impute_numerical_median function
+# =============================================================================
+
+def test_impute_numerical_median_import():
+    """Test that impute_numerical_median can be imported from main package"""
+    from edaflow import impute_numerical_median
+    assert callable(impute_numerical_median)
+
+
+def test_impute_numerical_median_basic():
+    """Test basic numerical imputation with median"""
+    from edaflow.analysis.missing_data import impute_numerical_median
+    
+    df = pd.DataFrame({
+        'age': [25, None, 35, None, 45],
+        'salary': [50000, 60000, None, 70000, None],
+        'name': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve']
+    })
+    
+    result = impute_numerical_median(df)
+    
+    # Check that numerical columns are imputed
+    assert result['age'].isnull().sum() == 0
+    assert result['salary'].isnull().sum() == 0
+    
+    # Check median values (age median: 35, salary median: 60000)
+    assert result['age'].tolist() == [25, 35, 35, 35, 45]
+    assert result['salary'].tolist() == [50000, 60000, 60000, 70000, 60000]
+    
+    # Check that categorical column is unchanged
+    assert result['name'].equals(df['name'])
+
+
+def test_impute_numerical_median_inplace():
+    """Test inplace imputation"""
+    from edaflow.analysis.missing_data import impute_numerical_median
+    
+    df = pd.DataFrame({
+        'age': [20, None, 40],
+        'score': [80, 90, None]
+    })
+    
+    original_id = id(df)
+    result = impute_numerical_median(df, inplace=True)
+    
+    # Check that function returns None for inplace operation
+    assert result is None
+    
+    # Check that original dataframe is modified
+    assert id(df) == original_id
+    assert df['age'].isnull().sum() == 0
+    assert df['score'].isnull().sum() == 0
+
+
+def test_impute_numerical_median_specific_columns():
+    """Test imputation of specific columns only"""
+    from edaflow.analysis.missing_data import impute_numerical_median
+    
+    df = pd.DataFrame({
+        'age': [25, None, 35],
+        'salary': [50000, None, 70000],
+        'score': [80, None, 90]
+    })
+    
+    result = impute_numerical_median(df, columns=['age', 'score'])
+    
+    # Check that specified columns are imputed
+    assert result['age'].isnull().sum() == 0
+    assert result['score'].isnull().sum() == 0
+    
+    # Check that non-specified column still has missing values
+    assert result['salary'].isnull().sum() == 1
+
+
+def test_impute_numerical_median_no_missing():
+    """Test with DataFrame that has no missing values"""
+    from edaflow.analysis.missing_data import impute_numerical_median
+    
+    df = pd.DataFrame({
+        'age': [25, 30, 35],
+        'salary': [50000, 60000, 70000]
+    })
+    
+    result = impute_numerical_median(df)
+    
+    # Should return identical DataFrame
+    pd.testing.assert_frame_equal(result, df)
+
+
+def test_impute_numerical_median_all_missing():
+    """Test with column that has all missing values"""
+    from edaflow.analysis.missing_data import impute_numerical_median
+    
+    df = pd.DataFrame({
+        'age': [25, 30, 35],
+        'empty_col': [None, None, None]
+    })
+    
+    result = impute_numerical_median(df)
+    
+    # Age should be unchanged, empty_col should remain all NaN
+    assert result['age'].equals(df['age'])
+    assert result['empty_col'].isnull().all()
+
+
+def test_impute_numerical_median_empty_dataframe():
+    """Test with empty DataFrame"""
+    from edaflow.analysis.missing_data import impute_numerical_median
+    
+    df = pd.DataFrame()
+    result = impute_numerical_median(df)
+    
+    assert result.empty
+
+
+def test_impute_numerical_median_invalid_input():
+    """Test with invalid input"""
+    from edaflow.analysis.missing_data import impute_numerical_median
+    
+    with pytest.raises(ValueError, match="Input must be a pandas DataFrame"):
+        impute_numerical_median("not a dataframe")
+
+
+def test_impute_numerical_median_invalid_columns():
+    """Test with invalid column specifications"""
+    from edaflow.analysis.missing_data import impute_numerical_median
+    
+    df = pd.DataFrame({
+        'age': [25, None, 35],
+        'name': ['Alice', 'Bob', 'Charlie']
+    })
+    
+    # Test non-existent column
+    with pytest.raises(ValueError, match="Columns not found"):
+        impute_numerical_median(df, columns=['nonexistent'])
+    
+    # Test non-numerical column
+    with pytest.raises(ValueError, match="Non-numerical columns"):
+        impute_numerical_median(df, columns=['name'])
+
+
+# =============================================================================
+# Tests for impute_categorical_mode function
+# =============================================================================
+
+def test_impute_categorical_mode_import():
+    """Test that impute_categorical_mode can be imported from main package"""
+    from edaflow import impute_categorical_mode
+    assert callable(impute_categorical_mode)
+
+
+def test_impute_categorical_mode_basic():
+    """Test basic categorical imputation with mode"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame({
+        'category': ['A', 'B', 'A', None, 'A'],
+        'status': ['Active', None, 'Active', 'Inactive', None],
+        'age': [25, 30, 35, 40, 45]
+    })
+    
+    result = impute_categorical_mode(df)
+    
+    # Check that categorical columns are imputed
+    assert result['category'].isnull().sum() == 0
+    assert result['status'].isnull().sum() == 0
+    
+    # Check mode values (category mode: 'A', status mode: 'Active')
+    assert result['category'].tolist() == ['A', 'B', 'A', 'A', 'A']
+    assert result['status'].tolist() == ['Active', 'Active', 'Active', 'Inactive', 'Active']
+    
+    # Check that numerical column is unchanged
+    assert result['age'].equals(df['age'])
+
+
+def test_impute_categorical_mode_inplace():
+    """Test inplace imputation"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame({
+        'category': ['X', None, 'X'],
+        'status': ['Yes', 'No', None]
+    })
+    
+    original_id = id(df)
+    result = impute_categorical_mode(df, inplace=True)
+    
+    # Check that function returns None for inplace operation
+    assert result is None
+    
+    # Check that original dataframe is modified
+    assert id(df) == original_id
+    assert df['category'].isnull().sum() == 0
+    assert df['status'].isnull().sum() == 0
+
+
+def test_impute_categorical_mode_specific_columns():
+    """Test imputation of specific columns only"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame({
+        'category': ['A', None, 'A'],
+        'status': ['Yes', None, 'Yes'],
+        'type': ['X', None, 'Y']
+    })
+    
+    result = impute_categorical_mode(df, columns=['category', 'type'])
+    
+    # Check that specified columns are imputed
+    assert result['category'].isnull().sum() == 0
+    assert result['type'].isnull().sum() == 0
+    
+    # Check that non-specified column still has missing values
+    assert result['status'].isnull().sum() == 1
+
+
+def test_impute_categorical_mode_no_missing():
+    """Test with DataFrame that has no missing values"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame({
+        'category': ['A', 'B', 'C'],
+        'status': ['Active', 'Inactive', 'Pending']
+    })
+    
+    result = impute_categorical_mode(df)
+    
+    # Should return identical DataFrame
+    pd.testing.assert_frame_equal(result, df)
+
+
+def test_impute_categorical_mode_all_missing():
+    """Test with column that has all missing values"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame({
+        'category': ['A', 'B', 'C'],
+        'empty_col': [None, None, None]
+    })
+    
+    result = impute_categorical_mode(df)
+    
+    # Category should be unchanged, empty_col should remain all NaN
+    assert result['category'].equals(df['category'])
+    assert result['empty_col'].isnull().all()
+
+
+def test_impute_categorical_mode_mode_ties():
+    """Test with mode ties (multiple values with same frequency)"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame({
+        'category': ['A', 'B', 'A', 'B', None]  # A and B both appear twice
+    })
+    
+    result = impute_categorical_mode(df)
+    
+    # Should pick one of the tied values ('A' or 'B')
+    assert result['category'].isnull().sum() == 0
+    assert result['category'].iloc[-1] in ['A', 'B']
+
+
+def test_impute_categorical_mode_empty_dataframe():
+    """Test with empty DataFrame"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame()
+    result = impute_categorical_mode(df)
+    
+    assert result.empty
+
+
+def test_impute_categorical_mode_invalid_input():
+    """Test with invalid input"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    with pytest.raises(ValueError, match="Input must be a pandas DataFrame"):
+        impute_categorical_mode("not a dataframe")
+
+
+def test_impute_categorical_mode_invalid_columns():
+    """Test with invalid column specifications"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame({
+        'category': ['A', None, 'B'],
+        'age': [25, 30, 35]
+    })
+    
+    # Test non-existent column
+    with pytest.raises(ValueError, match="Columns not found"):
+        impute_categorical_mode(df, columns=['nonexistent'])
+
+
+def test_impute_categorical_mode_no_categorical_columns():
+    """Test with DataFrame that has no categorical columns"""
+    from edaflow.analysis.missing_data import impute_categorical_mode
+    
+    df = pd.DataFrame({
+        'age': [25, 30, 35],
+        'salary': [50000, 60000, 70000]
+    })
+    
+    result = impute_categorical_mode(df)
+    
+    # Should return identical DataFrame
+    pd.testing.assert_frame_equal(result, df)
+
+
+def test_impute_categorical_mode_from_main_package():
+    """Test importing and using impute_categorical_mode from main package"""
+    import edaflow
+    
+    df = pd.DataFrame({
+        'category': ['A', None, 'A', 'B'],
+        'status': ['Yes', 'No', None, 'Yes']
+    })
+    
+    result = edaflow.impute_categorical_mode(df)
+    
+    assert result['category'].isnull().sum() == 0
+    assert result['status'].isnull().sum() == 0
+
+
+def test_impute_numerical_median_from_main_package():
+    """Test importing and using impute_numerical_median from main package"""
+    import edaflow
+    
+    df = pd.DataFrame({
+        'age': [25, None, 35],
+        'salary': [50000, None, 70000]
+    })
+    
+    result = edaflow.impute_numerical_median(df)
+    
+    assert result['age'].isnull().sum() == 0
+    assert result['salary'].isnull().sum() == 0
