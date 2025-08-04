@@ -15,6 +15,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Column Type Classification**: Simple categorization of DataFrame columns into categorical and numerical types
 - **Data Imputation**: Smart missing value imputation using median for numerical and mode for categorical columns
 - **Numerical Distribution Visualization**: Advanced boxplot analysis with outlier detection and statistical summaries
+- **Interactive Boxplot Visualization**: Interactive Plotly Express boxplots with zoom, hover, and statistical tooltips
 - **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
@@ -48,6 +49,9 @@ pip install -e ".[dev]"
 - numpy >= 1.21.0
 - matplotlib >= 3.5.0
 - seaborn >= 0.11.0
+- scipy >= 1.9.0
+- missingno >= 0.5.0
+- plotly >= 5.0.0
 - scipy >= 1.7.0
 - missingno >= 0.5.0
 
@@ -612,6 +616,16 @@ for col in df_fully_imputed.select_dtypes(include=['number']).columns:
     cleaned_range = f"{df_outliers_handled[col].min():.2f} to {df_outliers_handled[col].max():.2f}"
     print(f"  {col}: {original_range} → {cleaned_range}")
 
+# Step 10: Interactive visualization for final data exploration (NEW!)
+print("\n10. INTERACTIVE DATA VISUALIZATION")
+print("-" * 40)
+edaflow.visualize_interactive_boxplots(
+    df_outliers_handled,
+    title="Final Interactive Data Exploration",
+    height=600,
+    points='outliers'  # Show any remaining outliers as interactive points
+)
+
 # Now your data is ready for further analysis!
 # You can proceed with:
 # - Statistical analysis
@@ -695,6 +709,71 @@ print("Original DataFrame now cleaned!")
 - 🔧 **Flexible Column Selection**: Process all numerical columns or specify which ones
 - 💾 **Safe Operation**: Default behavior preserves original data (inplace=False)
 - 📈 **Statistical Summary**: Displays before/after statistics for transparency
+
+### Interactive Boxplot Visualization with `visualize_interactive_boxplots`
+
+The `visualize_interactive_boxplots` function provides an interactive Plotly Express-based boxplot visualization that complements the static matplotlib boxplots with full interactivity. This is perfect for final data exploration and presentation:
+
+```python
+import pandas as pd
+import numpy as np
+import edaflow
+
+# Create sample data for demonstration
+np.random.seed(42)
+df = pd.DataFrame({
+    'age': np.random.normal(35, 10, 100),
+    'salary': np.random.normal(60000, 15000, 100),
+    'experience': np.random.normal(8, 4, 100),
+    'rating': np.random.normal(4.2, 0.8, 100),
+    'category': np.random.choice(['A', 'B', 'C'], 100)
+})
+
+# Basic interactive boxplot (all numerical columns)
+edaflow.visualize_interactive_boxplots(df)
+
+# Customized interactive visualization
+edaflow.visualize_interactive_boxplots(
+    df,
+    columns=['age', 'salary'],  # Specific columns only
+    title="Age and Salary Distribution Analysis",
+    height=500,
+    points='all',  # Show all data points
+    color_sequence=['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
+)
+
+# Advanced customization
+edaflow.visualize_interactive_boxplots(
+    df,
+    title="Complete Salary Analysis Dashboard",
+    height=700,
+    points='outliers',  # Only show outlier points
+    color_sequence=['steelblue'],
+    margin_top=80,
+    margin_bottom=100
+)
+```
+
+**Interactive Features:**
+- 🖱️ **Hover Information**: Detailed statistics appear on hover
+- 🔍 **Zoom & Pan**: Click and drag to zoom, double-click to reset
+- 📊 **Statistical Tooltips**: Median, quartiles, and outlier information
+- 💾 **Export Options**: Built-in toolbar for saving plots
+- 🎨 **Custom Styling**: Full control over colors, dimensions, and layout
+
+**Key Features:**
+- 🎯 **Plotly Express Integration**: Full px.box functionality with enhanced features
+- 📈 **Automatic Statistics**: Displays comprehensive statistical summaries
+- 🎨 **Customizable Styling**: Colors, dimensions, and layout options
+- 📊 **Smart Column Selection**: Automatically detects numerical columns
+- 🖥️ **Responsive Design**: Works perfectly in Jupyter notebooks and standalone
+- 📋 **Detailed Reporting**: Comprehensive statistical analysis with emoji formatting
+
+**Perfect for:**
+- 📊 Final data exploration after cleaning
+- 🎨 Interactive presentations and dashboards
+- 🔍 Detailed outlier investigation
+- 📈 Sharing insights with stakeholders
 
 ### Integration with Jupyter Notebooks
 

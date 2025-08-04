@@ -1145,3 +1145,205 @@ def handle_outliers_median(df: pd.DataFrame,
             print("💾 Original DataFrame modified (inplace=True)")
     
     return result_df
+
+
+def visualize_interactive_boxplots(df: pd.DataFrame,
+                                 columns: Optional[Union[str, List[str]]] = None,
+                                 title: str = "Interactive Boxplot Analysis",
+                                 height: int = 600,
+                                 color_sequence: Optional[List[str]] = None,
+                                 show_points: str = "outliers",
+                                 verbose: bool = True) -> None:
+    """
+    Create interactive boxplots for numerical columns using Plotly Express.
+    
+    This function provides an interactive alternative to matplotlib-based boxplots,
+    allowing users to hover, zoom, and explore data distributions dynamically.
+    Perfect for final visualization after data cleaning and outlier handling.
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame
+        columns (Optional[Union[str, List[str]]], optional): Column name(s) to visualize.
+                                                            If None, processes all numerical columns.
+                                                            Defaults to None.
+        title (str, optional): Title for the interactive plot. Defaults to "Interactive Boxplot Analysis".
+        height (int, optional): Height of the plot in pixels. Defaults to 600.
+        color_sequence (Optional[List[str]], optional): Custom color sequence for the boxplots.
+                                                       If None, uses Plotly's default colors.
+                                                       Defaults to None.
+        show_points (str, optional): Points to show on boxplots. Options:
+                                   - "outliers": Show only outlier points
+                                   - "all": Show all data points
+                                   - "suspectedoutliers": Show suspected outliers
+                                   - False: Show no points
+                                   Defaults to "outliers".
+        verbose (bool, optional): If True, displays detailed information about
+                                 the visualization process. Defaults to True.
+    
+    Returns:
+        None: Displays the interactive plot directly
+    
+    Raises:
+        ValueError: If no valid numerical columns are found.
+        KeyError: If specified column(s) don't exist in the DataFrame.
+        ImportError: If plotly is not installed.
+    
+    Example:
+        >>> import pandas as pd
+        >>> import edaflow
+        >>> 
+        >>> # Create sample data
+        >>> df = pd.DataFrame({
+        ...     'age': [25, 30, 28, 35, 32, 29, 31, 33],
+        ...     'income': [50000, 55000, 48000, 62000, 51000, 45000, 53000, 49000],
+        ...     'score': [85, 90, 78, 92, 88, 95, 81, 87],
+        ...     'category': ['A', 'B', 'A', 'C', 'B', 'A', 'C', 'B']
+        ... })
+        >>> 
+        >>> # Interactive visualization of all numerical columns
+        >>> edaflow.visualize_interactive_boxplots(df)
+        >>> 
+        >>> # Visualize specific columns with custom styling
+        >>> edaflow.visualize_interactive_boxplots(
+        ...     df, 
+        ...     columns=['age', 'income'],
+        ...     title="Age and Income Distribution",
+        ...     height=500,
+        ...     show_points="all"
+        ... )
+        
+        # Alternative import style:
+        >>> from edaflow.analysis import visualize_interactive_boxplots
+        >>> visualize_interactive_boxplots(df, verbose=True)
+    """
+    # Check if plotly is available
+    try:
+        import plotly.express as px
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+    except ImportError:
+        raise ImportError(
+            "Plotly is required for interactive boxplots. Install it with: pip install plotly"
+        )
+    
+    # Input validation
+    if not isinstance(df, pd.DataFrame):
+        raise TypeError("Input must be a pandas DataFrame")
+    
+    if df.empty:
+        raise ValueError("DataFrame is empty")
+    
+    # Handle column selection
+    if columns is None:
+        # Get all numerical columns
+        numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    elif isinstance(columns, str):
+        numerical_cols = [columns]
+    else:
+        numerical_cols = list(columns)
+    
+    # Validate columns exist
+    missing_cols = [col for col in numerical_cols if col not in df.columns]
+    if missing_cols:
+        raise KeyError(f"Column(s) not found in DataFrame: {missing_cols}")
+    
+    # Filter for actual numerical columns
+    valid_cols = []
+    for col in numerical_cols:
+        if df[col].dtype in [np.number] or pd.api.types.is_numeric_dtype(df[col]):
+            # Check if column has any non-null values
+            if df[col].dropna().empty:
+                if verbose:
+                    print(f"⚠️  Skipping column with no valid data: {col}")
+            else:
+                valid_cols.append(col)
+        elif verbose:
+            print(f"⚠️  Skipping non-numerical column: {col}")
+    
+    if not valid_cols:
+        raise ValueError("No valid numerical columns found for interactive visualization")
+    
+    if verbose:
+        print(f"📊 Creating interactive boxplots for {len(valid_cols)} numerical column(s): {', '.join(valid_cols)}")
+        print(f"🎨 Plot configuration: {height}px height, showing {show_points} points")
+    
+    # Prepare data for plotting
+    # Create a melted dataframe for easier plotting with px.box
+    plot_data = df[valid_cols].copy()
+    
+    # Melt the dataframe to long format for plotly
+    melted_data = plot_data.melt(var_name='Variable', value_name='Value')
+    
+    # Set up color sequence
+    if color_sequence is None:
+        color_sequence = px.colors.qualitative.Set2
+    
+    # Create the interactive boxplot
+    fig = px.box(
+        melted_data, 
+        x='Variable', 
+        y='Value',
+        title=title,
+        color='Variable',
+        color_discrete_sequence=color_sequence,
+        points=show_points,
+        hover_data={'Variable': False}  # Don't show variable name in hover (redundant)
+    )
+    
+    # Customize the layout
+    fig.update_layout(
+        height=height,
+        showlegend=False,  # Hide legend since x-axis already shows variable names
+        xaxis_title="Variables",
+        yaxis_title="Values",
+        hovermode='closest',
+        template='plotly_white'
+    )
+    
+    # Improve hover information
+    fig.update_traces(
+        hovertemplate='<b>%{x}</b><br>' +
+                     'Value: %{y}<br>' +
+                     '<extra></extra>'  # Remove the trace box
+    )
+    
+    # Add some styling improvements
+    fig.update_xaxes(
+        tickangle=45 if len(valid_cols) > 5 else 0,
+        title_font_size=14
+    )
+    fig.update_yaxes(title_font_size=14)
+    
+    # Display summary statistics if verbose
+    if verbose:
+        print("\n📈 Interactive Boxplot Summary:")
+        print("=" * 50)
+        for col in valid_cols:
+            col_data = df[col].dropna()
+            if len(col_data) > 0:
+                q1, q3 = col_data.quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                outliers = col_data[(col_data < lower_bound) | (col_data > upper_bound)]
+                
+                print(f"📊 {col}:")
+                print(f"   📏 Range: {col_data.min():.2f} to {col_data.max():.2f}")
+                print(f"   📍 Median: {col_data.median():.2f}")
+                print(f"   📦 IQR: {iqr:.2f} (Q1: {q1:.2f}, Q3: {q3:.2f})")
+                print(f"   🎯 Outliers: {len(outliers)} values")
+                print()
+        
+        print("🖱️  Interactive Features:")
+        print("   • Hover over points to see exact values")
+        print("   • Click and drag to zoom into specific regions")
+        print("   • Double-click to reset zoom")
+        print("   • Use the toolbar to pan, select, and download the plot")
+        print()
+    
+    # Show the interactive plot
+    fig.show()
+    
+    if verbose:
+        print("✅ Interactive boxplot visualization completed!")
+        print("🎉 Use the interactive features to explore your data distributions!")

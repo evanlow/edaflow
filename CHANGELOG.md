@@ -19,7 +19,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
-## [0.5.1] - 2025-08-04
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [0.6.0] - 2024-01-15
+
+### Added
+- **NEW**: `visualize_interactive_boxplots()` function with full Plotly Express integration
+- Interactive boxplot visualization with hover tooltips, zoom, and pan functionality
+- Statistical summaries with emoji-formatted output for better readability
+- Customizable styling options (colors, dimensions, margins)
+- Smart column selection for numerical data
+- Complete Plotly Express px.box equivalent functionality
+- Added plotly>=5.0.0 dependency for interactive visualizations
+- Comprehensive test suite for interactive visualization function
+- Updated Complete EDA Workflow Example to include interactive visualization as Step 10
+- Enhanced README documentation with interactive visualization examples and features
+
+### Enhanced
+- Complete EDA workflow now includes 10 steps with interactive final visualization
+- Updated requirements documentation to include plotly dependency
+- Improved package feature list to highlight interactive capabilities
+
+## [0.5.1] - 2024-01-14
 
 ### Fixed
 - Updated PyPI documentation to properly showcase handle_outliers_median() function in Complete EDA Workflow Example
