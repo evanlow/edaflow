@@ -623,7 +623,7 @@ edaflow.visualize_interactive_boxplots(
     df_outliers_handled,
     title="Final Interactive Data Exploration",
     height=600,
-    points='outliers'  # Show any remaining outliers as interactive points
+    show_points='outliers'  # Show any remaining outliers as interactive points
 )
 
 # Now your data is ready for further analysis!
@@ -738,7 +738,7 @@ edaflow.visualize_interactive_boxplots(
     columns=['age', 'salary'],  # Specific columns only
     title="Age and Salary Distribution Analysis",
     height=500,
-    points='all',  # Show all data points
+    show_points='all',  # Show all data points
     color_sequence=['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4']
 )
 
@@ -747,10 +747,8 @@ edaflow.visualize_interactive_boxplots(
     df,
     title="Complete Salary Analysis Dashboard",
     height=700,
-    points='outliers',  # Only show outlier points
-    color_sequence=['steelblue'],
-    margin_top=80,
-    margin_bottom=100
+    show_points='outliers',  # Only show outlier points
+    color_sequence=['steelblue']
 )
 ```
 
