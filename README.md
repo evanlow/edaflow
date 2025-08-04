@@ -15,6 +15,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Column Type Classification**: Simple categorization of DataFrame columns into categorical and numerical types
 - **Data Imputation**: Smart missing value imputation using median for numerical and mode for categorical columns
 - **Numerical Distribution Visualization**: Advanced boxplot analysis with outlier detection and statistical summaries
+- **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
 - **Easy Integration**: Works seamlessly with pandas, numpy, and other popular libraries
@@ -58,20 +59,37 @@ import edaflow
 # Test the installation
 print(edaflow.hello())
 
-# Check null values in your dataset
+# Complete EDA workflow with all 9 functions:
 import pandas as pd
 df = pd.read_csv('your_data.csv')
 
-# Analyze missing data with styled output
+# 1. Analyze missing data with styled output
 null_analysis = edaflow.check_null_columns(df, threshold=10)
-print(null_analysis)
 
-# Analyze categorical columns to identify data type issues
+# 2. Analyze categorical columns to identify data type issues
 edaflow.analyze_categorical_columns(df, threshold=35)
 
-# Convert appropriate object columns to numeric automatically
+# 3. Convert appropriate object columns to numeric automatically
 df_cleaned = edaflow.convert_to_numeric(df, threshold=35)
-print("Data types after conversion:", df_cleaned.dtypes)
+
+# 4. Visualize categorical column values
+edaflow.visualize_categorical_values(df_cleaned)
+
+# 5. Display column type classification
+edaflow.display_column_types(df_cleaned)
+
+# 6. Impute missing values
+df_numeric_imputed = edaflow.impute_numerical_median(df_cleaned)
+df_fully_imputed = edaflow.impute_categorical_mode(df_numeric_imputed)
+
+# 7. Visualize numerical distributions and detect outliers
+edaflow.visualize_numerical_boxplots(df_fully_imputed, show_skewness=True)
+
+# 8. Handle outliers automatically (NEW!)
+df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbose=True)
+
+# 9. Verify final results
+edaflow.visualize_numerical_boxplots(df_final, title="Clean Data Distribution")
 ```
 
 ## Usage Examples
@@ -556,15 +574,43 @@ edaflow.visualize_numerical_boxplots(
     orientation='horizontal'
 )
 
-# Step 8: Final data review
-print("\n8. DATA CLEANING SUMMARY")
+# Step 8: Handle outliers with median replacement (NEW!)
+print("\n8. OUTLIER HANDLING")
+print("-" * 40)
+df_outliers_handled = edaflow.handle_outliers_median(
+    df_fully_imputed,
+    method='iqr',
+    iqr_multiplier=1.5,
+    verbose=True
+)
+
+# Optional: Visualize after outlier handling to verify
+print("\n8b. POST-OUTLIER HANDLING VERIFICATION")
+print("-" * 40)
+edaflow.visualize_numerical_boxplots(
+    df_outliers_handled,
+    title="After Outlier Handling - Clean Distribution",
+    show_skewness=True,
+    orientation='horizontal'
+)
+
+# Step 9: Final data review
+print("\n9. DATA CLEANING SUMMARY")
 print("-" * 40)
 print("Original data types:")
 print(df.dtypes)
 print("\nCleaned data types:")
-print(df_fully_imputed.dtypes)
-print(f"\nFinal dataset shape: {df_fully_imputed.shape}")
-print(f"Missing values remaining: {df_fully_imputed.isnull().sum().sum()}")
+print(df_outliers_handled.dtypes)
+print(f"\nOriginal dataset shape: {df.shape}")
+print(f"Final dataset shape: {df_outliers_handled.shape}")
+print(f"Missing values remaining: {df_outliers_handled.isnull().sum().sum()}")
+
+# Compare outlier statistics
+print("\nOutlier handling summary:")
+for col in df_fully_imputed.select_dtypes(include=['number']).columns:
+    original_range = f"{df_fully_imputed[col].min():.2f} to {df_fully_imputed[col].max():.2f}"
+    cleaned_range = f"{df_outliers_handled[col].min():.2f} to {df_outliers_handled[col].max():.2f}"
+    print(f"  {col}: {original_range} → {cleaned_range}")
 
 # Now your data is ready for further analysis!
 # You can proceed with:
