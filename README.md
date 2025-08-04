@@ -674,6 +674,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### v0.4.1 (Advanced Visualization Release)
+- **NEW**: `visualize_numerical_boxplots()` function for comprehensive outlier detection and statistical analysis
+- **NEW**: Advanced boxplot visualization with customizable layouts (rows/cols), orientations, and color palettes
+- **NEW**: Automatic numerical column detection for boxplot analysis
+- **NEW**: Detailed statistical summaries including skewness analysis and interpretation
+- **NEW**: IQR-based outlier detection with threshold reporting and actual outlier values displayed
+- **NEW**: Support for horizontal and vertical boxplot orientations with seaborn styling integration
+- **FIXED**: `impute_categorical_mode()` function now properly returns DataFrame instead of None
+- **FIXED**: Corrected inplace parameter handling for categorical imputation function
+- Enhanced testing coverage with 67 comprehensive tests including 13 new boxplot tests
+
 ### v0.4.0 (Data Imputation Release)
 - **NEW**: `impute_numerical_median()` function for numerical missing value imputation using median
 - **NEW**: `impute_categorical_mode()` function for categorical missing value imputation using mode

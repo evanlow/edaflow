@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.4.2] - 2025-08-04
+
+### Fixed
+- Updated README.md changelog to properly reflect v0.4.1 boxplot features on PyPI page
+- Corrected version history display for proper PyPI documentation
+
 ## [0.4.1] - 2025-08-04
 
 ### Added
