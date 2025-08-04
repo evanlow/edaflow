@@ -19,6 +19,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.5.1] - 2025-08-04
+
+### Fixed
+- Updated PyPI documentation to properly showcase handle_outliers_median() function in Complete EDA Workflow Example
+- Ensured PyPI page displays the complete 9-step EDA workflow including outlier handling
+- Synchronized local documentation improvements with PyPI display
+
 ## [0.5.0] - 2025-08-04
 
 ### Added

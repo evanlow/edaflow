@@ -796,6 +796,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
+### v0.5.1 (Documentation Sync Release)
+- **FIXED**: Updated PyPI documentation to properly showcase handle_outliers_median() function in Complete EDA Workflow Example
+- **ENHANCED**: Ensured PyPI page displays the complete 9-step EDA workflow including outlier handling
+- **SYNCHRONIZED**: Local documentation improvements now reflected on PyPI for better user experience
+
 ### v0.5.0 (Outlier Handling Release)
 - **NEW**: `handle_outliers_median()` function for automated outlier detection and replacement
 - **NEW**: Multiple outlier detection methods: IQR, Z-score, and Modified Z-score
