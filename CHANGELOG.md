@@ -19,6 +19,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.11.0] - 2025-01-30 - Image Feature Analysis Release 🎨
+
+### Added
+- `analyze_image_features()` function for deep statistical analysis of visual features
+- Edge density analysis using Canny, Sobel, and Laplacian edge detection methods  
+- Texture analysis with Local Binary Patterns (LBP) for pattern characterization
+- Color histogram analysis across RGB, HSV, LAB, and grayscale color spaces
+- Gradient magnitude and direction analysis for understanding image structure
+- Feature ranking system to identify most discriminative features between classes
+- Statistical comparison framework for quantifying inter-class visual differences
+- Comprehensive visualization suite with box plots for feature distributions
+- Automated recommendation system for feature engineering and preprocessing decisions
+- Production-ready feature extraction with optional raw feature vector export
+- OpenCV and scikit-image integration with graceful fallback mechanisms
+- Support for custom analysis parameters (LBP radius, edge thresholds, color spaces)
+
+### Enhanced
+- Expanded edaflow from 16 to 17 comprehensive EDA functions
+- Complete computer vision EDA trinity: Visualization + Quality + Features
+- Advanced dependency handling for optimal performance with available libraries
+
+### Technical
+- Added CV2_AVAILABLE and SKIMAGE_AVAILABLE flags for robust dependency checking
+- Implemented comprehensive edge detection fallbacks using scipy when advanced libraries unavailable
+- Enhanced texture analysis with multiple feature extraction methods
+- Added multi-color-space support with automatic conversion handling
+
 ## [0.8.6] - 2025-08-05
 
 ### Fixed - PyPI Changelog Display Issue

@@ -17,10 +17,11 @@ from .analysis import (
     visualize_histograms,
     visualize_scatter_matrix,
     visualize_image_classes,
-    assess_image_quality
+    assess_image_quality,
+    analyze_image_features
 )
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 
@@ -56,5 +57,6 @@ __all__ = [
     'visualize_histograms',
     'visualize_scatter_matrix',
     'visualize_image_classes',
-    'assess_image_quality'
+    'assess_image_quality',
+    'analyze_image_features'
 ]

@@ -1484,6 +1484,114 @@ print(f"✅ Dataset validated: {quality_report['quality_score']}/100 quality sco
 - **Quantitative Assessment**: Apply statistical methods to image quality
 - **Production Readiness**: Build robust data validation pipelines
 
+## 🎨 Image Feature Analysis with `analyze_image_features()` (NEW in v0.11.0!)
+
+Deep statistical analysis of visual features across image classes including edge density, texture patterns, color distributions, and gradient characteristics. Perfect for understanding dataset characteristics, guiding feature engineering decisions, and identifying visual patterns that distinguish different classes.
+
+### Complete Feature Analysis Workflow
+
+```python
+import edaflow
+
+# Comprehensive feature analysis
+features = edaflow.analyze_image_features(
+    'dataset/train/',           # Dataset directory
+    analyze_edges=True,         # Edge detection analysis
+    analyze_texture=True,       # Texture pattern analysis
+    analyze_color=True,         # Color distribution analysis
+    analyze_gradients=True,     # Gradient pattern analysis
+    create_visualizations=True  # Generate comprehensive plots
+)
+
+# Check most discriminative features
+print("Top discriminative features:")
+for feature, score in features['feature_rankings'][:5]:
+    print(f"  {feature}: {score:.3f}")
+
+# Get actionable insights
+for rec in features['recommendations']:
+    print(f"💡 {rec}")
+```
+
+### Advanced Feature Engineering Guidance
+
+```python
+# Focus on specific feature types for different domains
+medical_features = edaflow.analyze_image_features(
+    medical_df,
+    image_path_column='scan_path',
+    class_column='diagnosis',
+    analyze_color=False,        # Medical scans often grayscale
+    analyze_texture=True,       # Critical for medical diagnosis
+    analyze_edges=True,         # Important for structure detection
+    texture_method='lbp',
+    lbp_radius=5,              # Larger radius for medical details
+    edge_method='canny'
+)
+
+# Production feature selection pipeline
+production_features = edaflow.analyze_image_features(
+    production_dataset,
+    sample_size=500,           # Sample for efficiency
+    color_spaces=['RGB', 'HSV', 'LAB'],  # Multiple color spaces
+    bins_per_channel=32,       # Balanced detail vs speed
+    return_feature_vectors=True # Get raw features for ML
+)
+
+# Use results for feature selection
+top_features = production_features['feature_rankings'][:10]
+feature_vectors = production_features['feature_vectors']
+```
+
+### Understanding Feature Analysis Results
+
+The function returns a comprehensive dictionary with:
+
+- **`'edge_analysis'`**: Edge density statistics and distributions per class
+- **`'texture_analysis'`**: Texture descriptor statistics and patterns (LBP, uniformity, contrast)
+- **`'color_analysis'`**: Color histogram distributions across RGB, HSV, LAB color spaces
+- **`'gradient_analysis'`**: Gradient magnitude and direction statistics
+- **`'feature_rankings'`**: Most discriminative features between classes (sorted by discriminative power)
+- **`'recommendations'`**: Actionable insights for feature engineering and preprocessing
+- **`'class_comparisons'`**: Statistical comparisons between classes
+
+### Complete Computer Vision EDA Pipeline
+
+```python
+# Complete workflow: Quality → Features → Visualization
+import edaflow
+
+# Step 1: Quality assessment
+quality_report = edaflow.assess_image_quality('dataset/')
+
+# Step 2: Feature analysis
+feature_report = edaflow.analyze_image_features(
+    'dataset/',
+    create_visualizations=True
+)
+
+# Step 3: Visual exploration
+class_stats = edaflow.visualize_image_classes(
+    'dataset/',
+    samples_per_class=6
+)
+
+# Step 4: Comprehensive dataset insights
+print(f"📊 Quality Score: {quality_report['quality_score']}/100")
+print(f"🎯 Top Feature: {feature_report['feature_rankings'][0][0]}")
+print(f"📈 Class Balance: {class_stats['class_balance']}")
+print(f"🔍 Total Images: {class_stats['total_images']}")
+
+# Ready for informed model development!
+```
+
+**🎓 Educational Benefits:**
+- **Feature Engineering Guidance**: Understand which visual features distinguish your classes
+- **Quantitative Analysis**: Learn to apply statistical methods to visual data
+- **Model Architecture Decisions**: Use insights to choose appropriate CNN architectures
+- **Dataset Understanding**: Identify biases, patterns, and preprocessing needs
+- **Research Applications**: Compare feature distributions across different datasets
+
 ### Working with Data (Future Implementation)
 ```python
 import pandas as pd
@@ -1553,6 +1661,23 @@ isort edaflow/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.11.0 (2025-01-30) - Image Feature Analysis Release 🎨
+- **NEW**: `analyze_image_features()` function for deep statistical analysis of visual features
+- **NEW**: Edge density analysis using Canny, Sobel, and Laplacian edge detection methods
+- **NEW**: Texture analysis with Local Binary Patterns (LBP) for pattern characterization
+- **NEW**: Color histogram analysis across RGB, HSV, LAB, and grayscale color spaces
+- **NEW**: Gradient magnitude and direction analysis for understanding image structure
+- **NEW**: Feature ranking system to identify most discriminative features between classes
+- **NEW**: Statistical comparison framework for quantifying inter-class visual differences
+- **NEW**: Comprehensive visualization suite with box plots for feature distributions
+- **NEW**: Automated recommendation system for feature engineering and preprocessing decisions
+- **NEW**: Production-ready feature extraction with optional raw feature vector export
+- **NEW**: OpenCV and scikit-image integration with graceful fallback mechanisms
+- **NEW**: Support for custom analysis parameters (LBP radius, edge thresholds, color spaces)
+- **ENHANCED**: Expanded edaflow from 16 to 17 comprehensive EDA functions
+- **ENHANCED**: Complete computer vision EDA trinity: Visualization + Quality + Features
+- **ENHANCED**: Advanced dependency handling for optimal performance with available libraries
 
 ### v0.10.0 (2025-08-05) - Image Quality Assessment Release 🔍
 - **NEW**: `assess_image_quality()` function for comprehensive image dataset quality assessment

@@ -26,6 +26,19 @@ try:
 except ImportError:
     PIL_AVAILABLE = False
 
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    CV2_AVAILABLE = False
+
+try:
+    from skimage import feature, filters, color
+    from skimage.feature import local_binary_pattern
+    SKIMAGE_AVAILABLE = True
+except ImportError:
+    SKIMAGE_AVAILABLE = False
+
 
 def check_null_columns(df: pd.DataFrame,
                        threshold: Optional[float] = 10) -> pd.DataFrame:
@@ -2876,6 +2889,998 @@ def assess_image_quality(
         _display_quality_results(results)
     
     return results
+
+
+def analyze_image_features(
+    data_source: Union[str, pd.DataFrame, List[str]],
+    class_column: Optional[str] = None,
+    image_path_column: Optional[str] = None,
+    sample_size: Optional[int] = None,
+    analyze_edges: bool = True,
+    analyze_texture: bool = True,
+    analyze_color: bool = True,
+    analyze_gradients: bool = True,
+    edge_method: str = "canny",
+    texture_method: str = "lbp",
+    color_spaces: List[str] = ["RGB", "HSV"],
+    bins_per_channel: int = 64,
+    lbp_radius: int = 3,
+    lbp_n_points: int = 24,
+    canny_low_threshold: float = 50,
+    canny_high_threshold: float = 150,
+    create_visualizations: bool = True,
+    figsize: Tuple[int, int] = (20, 12),
+    save_path: Optional[str] = None,
+    verbose: bool = True,
+    return_feature_vectors: bool = False
+) -> Dict[str, Any]:
+    """
+    🎨 Comprehensive image feature distribution and statistical analysis for CV datasets.
+    
+    Extracts and analyzes visual features including edge density, texture descriptors,
+    color distributions, and gradient patterns across image classes. Perfect for
+    understanding dataset characteristics, feature engineering guidance, and identifying
+    visual patterns that distinguish different classes.
+    
+    Essential for computer vision model development and preprocessing decisions.
+    
+    Parameters
+    ----------
+    data_source : str, pd.DataFrame, or List[str]
+        Image data source:
+        - str: Directory path containing images (organized in class folders or flat)
+        - pd.DataFrame: DataFrame with image paths and optional class labels
+        - List[str]: List of image file paths
+        
+    class_column : str, optional
+        Column name containing class labels (required if data_source is DataFrame).
+        
+    image_path_column : str, optional  
+        Column name containing image file paths (required if data_source is DataFrame).
+        
+    sample_size : int, optional
+        Maximum number of images to analyze per class. If None, analyzes all images.
+        
+    analyze_edges : bool, default=True
+        Whether to perform edge detection and density analysis.
+        
+    analyze_texture : bool, default=True
+        Whether to analyze texture patterns using Local Binary Patterns.
+        
+    analyze_color : bool, default=True
+        Whether to analyze color distribution histograms.
+        
+    analyze_gradients : bool, default=True
+        Whether to analyze gradient magnitude and direction patterns.
+        
+    edge_method : str, default="canny"
+        Edge detection method. Options: 'canny', 'sobel', 'laplacian'.
+        
+    texture_method : str, default="lbp"
+        Texture analysis method. Options: 'lbp' (Local Binary Patterns), 'glcm'.
+        
+    color_spaces : List[str], default=["RGB", "HSV"]
+        Color spaces to analyze. Options: 'RGB', 'HSV', 'LAB', 'GRAY'.
+        
+    bins_per_channel : int, default=64
+        Number of bins for color histogram analysis per channel.
+        
+    lbp_radius : int, default=3
+        Radius for Local Binary Pattern analysis.
+        
+    lbp_n_points : int, default=24
+        Number of points for Local Binary Pattern analysis.
+        
+    canny_low_threshold : float, default=50
+        Lower threshold for Canny edge detection.
+        
+    canny_high_threshold : float, default=150
+        Upper threshold for Canny edge detection.
+        
+    create_visualizations : bool, default=True
+        Whether to create comprehensive feature distribution visualizations.
+        
+    figsize : tuple, default=(20, 12)
+        Figure size for visualizations as (width, height) in inches.
+        
+    save_path : str, optional
+        Path to save the analysis visualization. If None, plot is only displayed.
+        
+    verbose : bool, default=True
+        Whether to display detailed progress and analysis results.
+        
+    return_feature_vectors : bool, default=False
+        Whether to return raw feature vectors for each image (memory intensive).
+        
+    Returns
+    -------
+    dict
+        Comprehensive feature analysis report containing:
+        - 'edge_analysis': Edge density statistics and distributions per class
+        - 'texture_analysis': Texture descriptor statistics and patterns
+        - 'color_analysis': Color histogram distributions across color spaces
+        - 'gradient_analysis': Gradient magnitude and direction statistics
+        - 'class_comparisons': Statistical comparisons between classes
+        - 'feature_rankings': Most discriminative features between classes
+        - 'recommendations': Actionable insights for feature engineering
+        - 'statistical_tests': Inter-class statistical significance tests
+        - 'feature_vectors': Raw feature data (if requested)
+        
+    Examples
+    --------
+    🎨 **Complete Feature Analysis Workflow**:
+    
+    >>> import edaflow
+    >>> 
+    >>> # Comprehensive feature analysis
+    >>> features = edaflow.analyze_image_features(
+    ...     'dataset/train/',
+    ...     analyze_edges=True,
+    ...     analyze_texture=True,
+    ...     analyze_color=True,
+    ...     create_visualizations=True
+    ... )
+    >>> 
+    >>> # Check most discriminative features
+    >>> print("Top discriminative features:")
+    >>> for feature, score in features['feature_rankings'][:5]:
+    ...     print(f"  {feature}: {score:.3f}")
+    >>> 
+    >>> # Get recommendations
+    >>> for rec in features['recommendations']:
+    ...     print(f"💡 {rec}")
+    
+    🔍 **Custom Feature Analysis**:
+    
+    >>> # Focus on texture and edges for medical imaging
+    >>> medical_features = edaflow.analyze_image_features(
+    ...     medical_df,
+    ...     image_path_column='scan_path',
+    ...     class_column='diagnosis',
+    ...     analyze_color=False,        # Medical scans often grayscale
+    ...     analyze_texture=True,       # Critical for medical diagnosis
+    ...     analyze_edges=True,         # Important for structure detection
+    ...     texture_method='lbp',
+    ...     lbp_radius=5,              # Larger radius for medical details
+    ...     edge_method='canny'
+    ... )
+    
+    📊 **Production Feature Engineering**:
+    
+    >>> # Analyze features for model development
+    >>> production_features = edaflow.analyze_image_features(
+    ...     production_dataset,
+    ...     sample_size=500,           # Sample for efficiency
+    ...     color_spaces=['RGB', 'HSV', 'LAB'],  # Multiple color spaces
+    ...     bins_per_channel=32,       # Balanced detail vs speed
+    ...     return_feature_vectors=True # Get raw features for ML
+    ... )
+    >>> 
+    >>> # Use results for feature selection
+    >>> top_features = production_features['feature_rankings'][:10]
+    >>> feature_vectors = production_features['feature_vectors']
+    
+    🧪 **Research & Comparison**:
+    
+    >>> # Compare different datasets
+    >>> dataset_a = edaflow.analyze_image_features('dataset_a/')
+    >>> dataset_b = edaflow.analyze_image_features('dataset_b/')
+    >>> 
+    >>> # Compare edge density distributions
+    >>> print(f"Dataset A edge density: {dataset_a['edge_analysis']['mean_density']:.3f}")
+    >>> print(f"Dataset B edge density: {dataset_b['edge_analysis']['mean_density']:.3f}")
+    
+    🎓 **Educational Feature Exploration**:
+    
+    >>> # Learn about visual characteristics
+    >>> features = edaflow.analyze_image_features(
+    ...     student_dataset,
+    ...     create_visualizations=True,
+    ...     verbose=True
+    ... )
+    >>> 
+    >>> # Understand class differences
+    >>> class_stats = features['class_comparisons']
+    >>> for class_name, stats in class_stats.items():
+    ...     print(f"{class_name}: Edge density={stats['edge_density']:.3f}")
+    
+    Statistical Insights:
+        - Identifies visual patterns that distinguish different classes
+        - Provides quantitative metrics for subjective visual differences
+        - Guides feature engineering and preprocessing decisions
+        - Enables data-driven model architecture selection
+        - Reveals dataset biases and collection artifacts
+    
+    Integration with other edaflow functions:
+        - Use after assess_image_quality() to understand clean dataset features
+        - Combine with visualize_image_classes() for comprehensive analysis
+        - Perfect for preprocessing pipeline design and validation
+    """
+    
+    # Check dependencies
+    if not PIL_AVAILABLE:
+        raise ImportError(
+            "🚨 PIL (Pillow) is required for image feature analysis.\n"
+            "📦 Install with: pip install Pillow"
+        )
+    
+    missing_deps = []
+    if analyze_edges and edge_method == "canny" and not CV2_AVAILABLE:
+        if not SKIMAGE_AVAILABLE:
+            missing_deps.append("opencv-python or scikit-image for edge detection")
+    
+    if analyze_texture and texture_method == "lbp" and not SKIMAGE_AVAILABLE:
+        missing_deps.append("scikit-image for texture analysis")
+    
+    if missing_deps:
+        deps_str = " and ".join(missing_deps)
+        raise ImportError(
+            f"🚨 Missing required dependencies: {deps_str}\n"
+            f"📦 Install with: pip install opencv-python scikit-image"
+        )
+    
+    if verbose:
+        print("🎨 Starting Image Feature Analysis...")
+        print("=" * 60)
+    
+    # Parse data source and organize by class
+    image_data = _parse_image_data_with_classes(data_source, class_column, image_path_column, sample_size)
+    
+    total_images = sum(len(paths) for paths in image_data.values())
+    if verbose:
+        print(f"🖼️  Analyzing {total_images:,} images across {len(image_data)} classes")
+        for class_name, paths in image_data.items():
+            print(f"   📁 {class_name}: {len(paths)} images")
+    
+    # Initialize results
+    results = {
+        'total_images': total_images,
+        'num_classes': len(image_data),
+        'edge_analysis': {},
+        'texture_analysis': {},
+        'color_analysis': {},
+        'gradient_analysis': {},
+        'class_comparisons': {},
+        'feature_rankings': [],
+        'recommendations': [],
+        'statistical_tests': {},
+        'feature_vectors': {} if return_feature_vectors else None
+    }
+    
+    # Analyze features for each class
+    class_features = {}
+    
+    for class_name, image_paths in image_data.items():
+        if verbose:
+            print(f"\n🔍 Analyzing class: {class_name}")
+        
+        class_features[class_name] = _analyze_class_features(
+            image_paths, analyze_edges, analyze_texture, analyze_color,
+            analyze_gradients, edge_method, texture_method, color_spaces,
+            bins_per_channel, lbp_radius, lbp_n_points, 
+            canny_low_threshold, canny_high_threshold, verbose
+        )
+    
+    # Generate comparative analysis
+    results.update(_generate_feature_comparisons(class_features, image_data))
+    
+    # Create visualizations
+    if create_visualizations:
+        _create_feature_visualizations(
+            class_features, results, figsize, save_path, 
+            analyze_edges, analyze_texture, analyze_color, analyze_gradients
+        )
+    
+    # Generate recommendations
+    results['recommendations'] = _generate_feature_recommendations(results, class_features)
+    
+    if verbose:
+        _display_feature_results(results)
+    
+    return results
+
+
+def _parse_image_data_with_classes(
+    data_source: Union[str, pd.DataFrame, List[str]], 
+    class_column: Optional[str], 
+    image_path_column: Optional[str],
+    sample_size: Optional[int]
+) -> Dict[str, List[str]]:
+    """Parse data source and organize images by class."""
+    
+    if isinstance(data_source, str):
+        # Directory-based input - organized by class folders
+        if not os.path.exists(data_source):
+            raise FileNotFoundError(f"🚨 Directory not found: {data_source}")
+        
+        image_data = {}
+        supported_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp'}
+        
+        # Check if directory has class subdirectories
+        subdirs = [d for d in os.listdir(data_source) 
+                  if os.path.isdir(os.path.join(data_source, d))]
+        
+        if subdirs:
+            # Class-organized structure
+            for class_dir in subdirs:
+                class_path = os.path.join(data_source, class_dir)
+                class_images = []
+                
+                for file in os.listdir(class_path):
+                    if any(file.lower().endswith(ext) for ext in supported_extensions):
+                        class_images.append(os.path.join(class_path, file))
+                
+                if class_images:
+                    if sample_size:
+                        class_images = random.sample(class_images, min(sample_size, len(class_images)))
+                    image_data[class_dir] = class_images
+        else:
+            # Flat structure - treat as single class
+            all_images = []
+            for file in os.listdir(data_source):
+                if any(file.lower().endswith(ext) for ext in supported_extensions):
+                    all_images.append(os.path.join(data_source, file))
+            
+            if all_images:
+                if sample_size:
+                    all_images = random.sample(all_images, min(sample_size, len(all_images)))
+                image_data['all_images'] = all_images
+        
+        return image_data
+        
+    elif isinstance(data_source, pd.DataFrame):
+        # DataFrame input
+        if image_path_column is None:
+            raise ValueError("🚨 image_path_column must be specified for DataFrame input")
+        
+        if class_column is None:
+            # No class column - treat as single class
+            paths = data_source[image_path_column].dropna().tolist()
+            if sample_size:
+                paths = random.sample(paths, min(sample_size, len(paths)))
+            return {'all_images': paths}
+        
+        # Group by class
+        image_data = {}
+        for class_name, group in data_source.groupby(class_column):
+            paths = group[image_path_column].dropna().tolist()
+            if sample_size:
+                paths = random.sample(paths, min(sample_size, len(paths)))
+            if paths:
+                image_data[str(class_name)] = paths
+        
+        return image_data
+        
+    elif isinstance(data_source, list):
+        # List of image paths - treat as single class
+        paths = data_source
+        if sample_size:
+            paths = random.sample(paths, min(sample_size, len(paths)))
+        return {'all_images': paths}
+        
+    else:
+        raise TypeError("🚨 data_source must be str, DataFrame, or List[str]")
+
+
+def _analyze_class_features(
+    image_paths: List[str],
+    analyze_edges: bool,
+    analyze_texture: bool,
+    analyze_color: bool,
+    analyze_gradients: bool,
+    edge_method: str,
+    texture_method: str,
+    color_spaces: List[str],
+    bins_per_channel: int,
+    lbp_radius: int,
+    lbp_n_points: int,
+    canny_low_threshold: float,
+    canny_high_threshold: float,
+    verbose: bool
+) -> Dict[str, Any]:
+    """Analyze features for a single class."""
+    
+    features = {
+        'edge_features': [],
+        'texture_features': [],
+        'color_features': [],
+        'gradient_features': []
+    }
+    
+    for i, img_path in enumerate(image_paths):
+        if verbose and (i + 1) % max(1, len(image_paths) // 5) == 0:
+            progress = ((i + 1) / len(image_paths)) * 100
+            print(f"   📈 Progress: {i + 1}/{len(image_paths)} ({progress:.1f}%)")
+        
+        try:
+            with Image.open(img_path) as img:
+                # Convert to RGB if needed
+                if img.mode != 'RGB':
+                    img = img.convert('RGB')
+                
+                # Convert to numpy array
+                img_array = np.array(img)
+                
+                # Edge analysis
+                if analyze_edges:
+                    edge_density = _calculate_edge_density(img_array, edge_method, 
+                                                         canny_low_threshold, canny_high_threshold)
+                    features['edge_features'].append(edge_density)
+                
+                # Texture analysis
+                if analyze_texture:
+                    texture_features = _calculate_texture_features(img_array, texture_method,
+                                                                 lbp_radius, lbp_n_points)
+                    features['texture_features'].append(texture_features)
+                
+                # Color analysis
+                if analyze_color:
+                    color_features = _calculate_color_features(img_array, color_spaces, bins_per_channel)
+                    features['color_features'].append(color_features)
+                
+                # Gradient analysis
+                if analyze_gradients:
+                    gradient_features = _calculate_gradient_features(img_array)
+                    features['gradient_features'].append(gradient_features)
+                    
+        except Exception as e:
+            if verbose:
+                print(f"   ⚠️  Skipped {img_path}: {str(e)}")
+            continue
+    
+    return features
+
+
+def _calculate_edge_density(img_array: np.ndarray, method: str, low_thresh: float, high_thresh: float) -> float:
+    """Calculate edge density using specified method."""
+    
+    # Convert to grayscale
+    if len(img_array.shape) == 3:
+        gray = np.dot(img_array[...,:3], [0.2989, 0.5870, 0.1140])
+    else:
+        gray = img_array
+    
+    gray = gray.astype(np.uint8)
+        
+    if method == "canny":
+        if CV2_AVAILABLE:
+            edges = cv2.Canny(gray, low_thresh, high_thresh)
+        elif SKIMAGE_AVAILABLE:
+            edges = feature.canny(gray, sigma=1, low_threshold=low_thresh/255, high_threshold=high_thresh/255)
+            edges = (edges * 255).astype(np.uint8)
+        else:
+            # Simple gradient-based fallback
+            gy, gx = np.gradient(gray.astype(float))
+            edges = np.sqrt(gx**2 + gy**2)
+            edges = (edges > np.percentile(edges, 90)).astype(np.uint8) * 255
+    
+    elif method == "sobel":
+        if SKIMAGE_AVAILABLE:
+            edges = filters.sobel(gray)
+            edges = (edges > np.percentile(edges, 90)).astype(np.uint8) * 255
+        else:
+            # Manual Sobel
+            sobel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+            sobel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
+            
+            from scipy import ndimage
+            edge_x = ndimage.convolve(gray.astype(float), sobel_x)
+            edge_y = ndimage.convolve(gray.astype(float), sobel_y)
+            edges = np.sqrt(edge_x**2 + edge_y**2)
+            edges = (edges > np.percentile(edges, 90)).astype(np.uint8) * 255
+    
+    elif method == "laplacian":
+        if SKIMAGE_AVAILABLE:
+            edges = filters.laplace(gray)
+            edges = np.abs(edges)
+            edges = (edges > np.percentile(edges, 90)).astype(np.uint8) * 255
+        else:
+            # Manual Laplacian
+            laplacian_kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]])
+            from scipy import ndimage
+            edges = np.abs(ndimage.convolve(gray.astype(float), laplacian_kernel))
+            edges = (edges > np.percentile(edges, 90)).astype(np.uint8) * 255
+    
+    # Calculate edge density (percentage of edge pixels)
+    return np.sum(edges > 0) / edges.size
+
+
+def _calculate_texture_features(img_array: np.ndarray, method: str, radius: int, n_points: int) -> Dict[str, float]:
+    """Calculate texture features using specified method."""
+    
+    # Convert to grayscale
+    if len(img_array.shape) == 3:
+        gray = np.dot(img_array[...,:3], [0.2989, 0.5870, 0.1140])
+    else:
+        gray = img_array
+    
+    features = {}
+    
+    if method == "lbp" and SKIMAGE_AVAILABLE:
+        # Local Binary Patterns
+        lbp = local_binary_pattern(gray, n_points, radius, method='uniform')
+        
+        # Calculate LBP histogram
+        hist, _ = np.histogram(lbp.ravel(), bins=n_points + 2, range=(0, n_points + 2))
+        hist = hist.astype(float)
+        hist /= (hist.sum() + 1e-7)  # Normalize
+        
+        features['lbp_uniformity'] = np.sum(hist**2)  # Measure of pattern uniformity
+        features['lbp_entropy'] = -np.sum(hist * np.log2(hist + 1e-7))  # Pattern diversity
+        features['lbp_contrast'] = np.var(lbp)  # Local contrast measure
+        
+    else:
+        # Fallback: Basic texture measures
+        features['intensity_variance'] = np.var(gray)
+        features['intensity_range'] = np.max(gray) - np.min(gray)
+        
+        # Simple texture energy
+        gy, gx = np.gradient(gray.astype(float))
+        gradient_magnitude = np.sqrt(gx**2 + gy**2)
+        features['texture_energy'] = np.mean(gradient_magnitude**2)
+    
+    return features
+
+
+def _calculate_color_features(img_array: np.ndarray, color_spaces: List[str], bins: int) -> Dict[str, np.ndarray]:
+    """Calculate color histogram features across different color spaces."""
+    
+    features = {}
+    
+    for space in color_spaces:
+        if space == "RGB":
+            # Use original RGB
+            color_img = img_array
+        elif space == "HSV":
+            # Convert to HSV
+            if SKIMAGE_AVAILABLE:
+                color_img = color.rgb2hsv(img_array)
+            elif CV2_AVAILABLE:
+                color_img = cv2.cvtColor(img_array, cv2.COLOR_RGB2HSV)
+            else:
+                # Skip HSV if no conversion available
+                continue
+        elif space == "LAB":
+            # Convert to LAB
+            if SKIMAGE_AVAILABLE:
+                color_img = color.rgb2lab(img_array)
+            elif CV2_AVAILABLE:
+                color_img = cv2.cvtColor(img_array, cv2.COLOR_RGB2LAB)
+            else:
+                # Skip LAB if no conversion available
+                continue
+        elif space == "GRAY":
+            # Convert to grayscale
+            gray = np.dot(img_array[...,:3], [0.2989, 0.5870, 0.1140])
+            hist, _ = np.histogram(gray, bins=bins, range=(0, 255))
+            features[f'{space.lower()}_hist'] = hist / np.sum(hist)
+            continue
+        else:
+            continue
+        
+        # Calculate histogram for each channel
+        if len(color_img.shape) == 3:
+            for i in range(color_img.shape[2]):
+                channel_name = f'{space.lower()}_ch{i}'
+                if space == "HSV" and i == 0:  # Hue channel
+                    hist, _ = np.histogram(color_img[:,:,i], bins=bins, range=(0, 1))
+                elif space == "LAB":
+                    if i == 0:  # L channel
+                        hist, _ = np.histogram(color_img[:,:,i], bins=bins, range=(0, 100))
+                    else:  # A, B channels
+                        hist, _ = np.histogram(color_img[:,:,i], bins=bins, range=(-128, 127))
+                else:  # RGB or other
+                    hist, _ = np.histogram(color_img[:,:,i], bins=bins, range=(0, 255))
+                
+                features[channel_name] = hist / np.sum(hist)
+    
+    return features
+
+
+def _calculate_gradient_features(img_array: np.ndarray) -> Dict[str, float]:
+    """Calculate gradient-based features."""
+    
+    # Convert to grayscale
+    if len(img_array.shape) == 3:
+        gray = np.dot(img_array[...,:3], [0.2989, 0.5870, 0.1140])
+    else:
+        gray = img_array
+    
+    # Calculate gradients
+    gy, gx = np.gradient(gray.astype(float))
+    
+    # Gradient magnitude
+    magnitude = np.sqrt(gx**2 + gy**2)
+    
+    # Gradient direction
+    direction = np.arctan2(gy, gx)
+    
+    features = {
+        'gradient_magnitude_mean': np.mean(magnitude),
+        'gradient_magnitude_std': np.std(magnitude),
+        'gradient_magnitude_max': np.max(magnitude),
+        'gradient_direction_uniformity': _calculate_direction_uniformity(direction)
+    }
+    
+    return features
+
+
+def _calculate_direction_uniformity(directions: np.ndarray) -> float:
+    """Calculate uniformity of gradient directions."""
+    
+    # Bin directions into 8 sectors (45 degrees each)
+    hist, _ = np.histogram(directions, bins=8, range=(-np.pi, np.pi))
+    hist = hist / np.sum(hist)
+    
+    # Calculate uniformity (inverse of entropy)
+    entropy = -np.sum(hist * np.log2(hist + 1e-7))
+    max_entropy = np.log2(8)  # Maximum possible entropy for 8 bins
+    
+    return 1 - (entropy / max_entropy)
+
+
+def _generate_feature_comparisons(class_features: Dict[str, Dict], image_data: Dict[str, List[str]]) -> Dict[str, Any]:
+    """Generate statistical comparisons between classes."""
+    
+    comparisons = {}
+    
+    # Calculate class-wise statistics
+    class_stats = {}
+    for class_name, features in class_features.items():
+        stats = {}
+        
+        # Edge statistics
+        if features['edge_features']:
+            edge_data = np.array(features['edge_features'])
+            stats['edge_density'] = {
+                'mean': np.mean(edge_data),
+                'std': np.std(edge_data),
+                'median': np.median(edge_data),
+                'range': (np.min(edge_data), np.max(edge_data))
+            }
+        
+        # Texture statistics
+        if features['texture_features']:
+            # Aggregate texture features
+            texture_keys = features['texture_features'][0].keys()
+            for key in texture_keys:
+                values = [f[key] for f in features['texture_features']]
+                stats[f'texture_{key}'] = {
+                    'mean': np.mean(values),
+                    'std': np.std(values)
+                }
+        
+        # Gradient statistics
+        if features['gradient_features']:
+            gradient_keys = features['gradient_features'][0].keys()
+            for key in gradient_keys:
+                values = [f[key] for f in features['gradient_features']]
+                stats[f'gradient_{key}'] = {
+                    'mean': np.mean(values),
+                    'std': np.std(values)
+                }
+        
+        class_stats[class_name] = stats
+    
+    comparisons['class_statistics'] = class_stats
+    
+    # Feature ranking (simple variance-based for now)
+    feature_rankings = _rank_discriminative_features(class_features)
+    
+    return {
+        'class_comparisons': comparisons,
+        'feature_rankings': feature_rankings
+    }
+
+
+def _rank_discriminative_features(class_features: Dict[str, Dict]) -> List[Tuple[str, float]]:
+    """Rank features by their discriminative power between classes."""
+    
+    feature_scores = {}
+    
+    # Collect all feature values by class
+    if len(class_features) < 2:
+        return []
+    
+    class_names = list(class_features.keys())
+    
+    # Edge density comparison
+    edge_data = {}
+    for class_name, features in class_features.items():
+        if features['edge_features']:
+            edge_data[class_name] = np.array(features['edge_features'])
+    
+    if len(edge_data) >= 2:
+        # Calculate between-class variance vs within-class variance
+        all_values = np.concatenate(list(edge_data.values()))
+        between_var = np.var([np.mean(values) for values in edge_data.values()])
+        within_var = np.mean([np.var(values) for values in edge_data.values()])
+        
+        if within_var > 0:
+            feature_scores['edge_density'] = between_var / within_var
+    
+    # Texture feature comparison
+    for class_name, features in class_features.items():
+        if features['texture_features']:
+            texture_keys = features['texture_features'][0].keys()
+            break
+    else:
+        texture_keys = []
+    
+    for texture_key in texture_keys:
+        texture_data = {}
+        for class_name, features in class_features.items():
+            if features['texture_features']:
+                values = [f[texture_key] for f in features['texture_features']]
+                texture_data[class_name] = np.array(values)
+        
+        if len(texture_data) >= 2:
+            all_values = np.concatenate(list(texture_data.values()))
+            between_var = np.var([np.mean(values) for values in texture_data.values()])
+            within_var = np.mean([np.var(values) for values in texture_data.values()])
+            
+            if within_var > 0:
+                feature_scores[f'texture_{texture_key}'] = between_var / within_var
+    
+    # Sort by discriminative power
+    ranked_features = sorted(feature_scores.items(), key=lambda x: x[1], reverse=True)
+    
+    return ranked_features
+
+
+def _create_feature_visualizations(
+    class_features: Dict[str, Dict],
+    results: Dict[str, Any],
+    figsize: Tuple[int, int],
+    save_path: Optional[str],
+    analyze_edges: bool,
+    analyze_texture: bool,
+    analyze_color: bool,
+    analyze_gradients: bool
+) -> None:
+    """Create comprehensive feature distribution visualizations."""
+    
+    # Count active analyses
+    active_analyses = sum([analyze_edges, analyze_texture, analyze_color, analyze_gradients])
+    if active_analyses == 0:
+        return
+    
+    # Create subplot layout
+    fig, axes = plt.subplots(2, 2, figsize=figsize, facecolor='white')
+    fig.suptitle('Image Feature Distribution Analysis', fontsize=16, fontweight='bold')
+    axes = axes.ravel()
+    
+    plot_idx = 0
+    
+    # Edge density visualization
+    if analyze_edges and plot_idx < 4:
+        ax = axes[plot_idx]
+        _plot_edge_distributions(class_features, ax)
+        plot_idx += 1
+    
+    # Texture visualization
+    if analyze_texture and plot_idx < 4:
+        ax = axes[plot_idx]
+        _plot_texture_distributions(class_features, ax)
+        plot_idx += 1
+    
+    # Color visualization
+    if analyze_color and plot_idx < 4:
+        ax = axes[plot_idx]
+        _plot_color_distributions(class_features, ax)
+        plot_idx += 1
+    
+    # Gradient visualization
+    if analyze_gradients and plot_idx < 4:
+        ax = axes[plot_idx]
+        _plot_gradient_distributions(class_features, ax)
+        plot_idx += 1
+    
+    # Hide unused subplots
+    for i in range(plot_idx, 4):
+        axes[i].set_visible(False)
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    
+    plt.show()
+
+
+def _plot_edge_distributions(class_features: Dict[str, Dict], ax) -> None:
+    """Plot edge density distributions by class."""
+    
+    ax.set_title('Edge Density Distribution by Class', fontsize=12, fontweight='bold')
+    
+    edge_data = []
+    labels = []
+    
+    for class_name, features in class_features.items():
+        if features['edge_features']:
+            edge_data.append(features['edge_features'])
+            labels.append(class_name)
+    
+    if edge_data:
+        ax.boxplot(edge_data, labels=labels)
+        ax.set_ylabel('Edge Density')
+        ax.tick_params(axis='x', rotation=45)
+    else:
+        ax.text(0.5, 0.5, 'No edge data available', ha='center', va='center', transform=ax.transAxes)
+
+
+def _plot_texture_distributions(class_features: Dict[str, Dict], ax) -> None:
+    """Plot texture feature distributions by class."""
+    
+    ax.set_title('Texture Uniformity by Class', fontsize=12, fontweight='bold')
+    
+    # Use LBP uniformity if available
+    texture_data = []
+    labels = []
+    
+    for class_name, features in class_features.items():
+        if features['texture_features']:
+            # Try to get LBP uniformity, fallback to variance
+            uniformity_values = []
+            for texture_feat in features['texture_features']:
+                if 'lbp_uniformity' in texture_feat:
+                    uniformity_values.append(texture_feat['lbp_uniformity'])
+                elif 'intensity_variance' in texture_feat:
+                    uniformity_values.append(texture_feat['intensity_variance'])
+            
+            if uniformity_values:
+                texture_data.append(uniformity_values)
+                labels.append(class_name)
+    
+    if texture_data:
+        ax.boxplot(texture_data, labels=labels)
+        ax.set_ylabel('Texture Uniformity')
+        ax.tick_params(axis='x', rotation=45)
+    else:
+        ax.text(0.5, 0.5, 'No texture data available', ha='center', va='center', transform=ax.transAxes)
+
+
+def _plot_color_distributions(class_features: Dict[str, Dict], ax) -> None:
+    """Plot color distribution characteristics by class."""
+    
+    ax.set_title('Average Color Diversity by Class', fontsize=12, fontweight='bold')
+    
+    # Calculate color diversity (entropy of RGB channels)
+    diversity_data = []
+    labels = []
+    
+    for class_name, features in class_features.items():
+        if features['color_features']:
+            class_diversity = []
+            for color_feat in features['color_features']:
+                # Calculate entropy of RGB channels if available
+                diversity_sum = 0
+                count = 0
+                for key, hist in color_feat.items():
+                    if 'rgb_ch' in key:
+                        entropy = -np.sum(hist * np.log2(hist + 1e-7))
+                        diversity_sum += entropy
+                        count += 1
+                
+                if count > 0:
+                    class_diversity.append(diversity_sum / count)
+            
+            if class_diversity:
+                diversity_data.append(class_diversity)
+                labels.append(class_name)
+    
+    if diversity_data:
+        ax.boxplot(diversity_data, labels=labels)
+        ax.set_ylabel('Color Diversity (Entropy)')
+        ax.tick_params(axis='x', rotation=45)
+    else:
+        ax.text(0.5, 0.5, 'No color data available', ha='center', va='center', transform=ax.transAxes)
+
+
+def _plot_gradient_distributions(class_features: Dict[str, Dict], ax) -> None:
+    """Plot gradient magnitude distributions by class."""
+    
+    ax.set_title('Gradient Magnitude by Class', fontsize=12, fontweight='bold')
+    
+    gradient_data = []
+    labels = []
+    
+    for class_name, features in class_features.items():
+        if features['gradient_features']:
+            magnitude_values = [f['gradient_magnitude_mean'] for f in features['gradient_features']]
+            if magnitude_values:
+                gradient_data.append(magnitude_values)
+                labels.append(class_name)
+    
+    if gradient_data:
+        ax.boxplot(gradient_data, labels=labels)
+        ax.set_ylabel('Mean Gradient Magnitude')
+        ax.tick_params(axis='x', rotation=45)
+    else:
+        ax.text(0.5, 0.5, 'No gradient data available', ha='center', va='center', transform=ax.transAxes)
+
+
+def _generate_feature_recommendations(results: Dict[str, Any], class_features: Dict[str, Dict]) -> List[str]:
+    """Generate actionable recommendations based on feature analysis."""
+    
+    recommendations = []
+    
+    # Check feature rankings
+    if results['feature_rankings']:
+        top_feature = results['feature_rankings'][0]
+        recommendations.append(
+            f"🎯 '{top_feature[0]}' is the most discriminative feature (score: {top_feature[1]:.3f})"
+        )
+        
+        if top_feature[0].startswith('edge'):
+            recommendations.append(
+                "📐 Consider edge-based preprocessing or edge-enhanced augmentation"
+            )
+        elif top_feature[0].startswith('texture'):
+            recommendations.append(
+                "🎨 Texture features are key - consider texture-aware architectures"
+            )
+        elif top_feature[0].startswith('gradient'):
+            recommendations.append(
+                "📈 Gradient patterns matter - consider gradient-based features"
+            )
+    
+    # Check class balance in features
+    num_classes = len(class_features)
+    if num_classes > 1:
+        recommendations.append(
+            f"⚖️  Analyzed {num_classes} classes - check feature distributions for bias"
+        )
+    
+    # General recommendations
+    recommendations.append(
+        "💡 Use these insights for feature engineering and preprocessing decisions"
+    )
+    
+    if len(results['feature_rankings']) > 5:
+        recommendations.append(
+            f"🔍 Top 5 features explain most class differences - consider feature selection"
+        )
+    
+    return recommendations
+
+
+def _display_feature_results(results: Dict[str, Any]) -> None:
+    """Display comprehensive feature analysis results."""
+    
+    print(f"\n🎯 FEATURE ANALYSIS RESULTS")
+    print("=" * 60)
+    print(f"📊 Total Images: {results['total_images']:,}")
+    print(f"🏷️  Classes: {results['num_classes']}")
+    
+    # Feature rankings
+    if results['feature_rankings']:
+        print(f"\n🏆 TOP DISCRIMINATIVE FEATURES:")
+        for i, (feature, score) in enumerate(results['feature_rankings'][:5], 1):
+            print(f"   {i}. {feature}: {score:.3f}")
+    
+    # Class comparisons
+    if 'class_statistics' in results['class_comparisons']:
+        print(f"\n📈 CLASS COMPARISONS:")
+        class_stats = results['class_comparisons']['class_statistics']
+        
+        # Show edge density comparison if available
+        edge_stats = {}
+        for class_name, stats in class_stats.items():
+            if 'edge_density' in stats:
+                edge_stats[class_name] = stats['edge_density']['mean']
+        
+        if edge_stats:
+            print(f"   📐 Edge Density:")
+            for class_name, density in sorted(edge_stats.items(), key=lambda x: x[1], reverse=True):
+                print(f"     {class_name}: {density:.4f}")
+    
+    # Recommendations
+    print(f"\n💡 RECOMMENDATIONS:")
+    for i, rec in enumerate(results['recommendations'], 1):
+        print(f"   {i}. {rec}")
+    
+    print(f"\n✅ Feature analysis completed!")
 
 
 def _parse_image_data_source(

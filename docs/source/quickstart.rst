@@ -8,7 +8,16 @@ This guide will get you up and running with edaflow in just a few minutes!
 
 First, install and import edaflow:
 
-.. code-block:: python
+   # Smart conversion
+   df_converted = edaflow.convert_to_numeric(df_original, threshold=35)
+   print(df_converted.dtypes)  # 'pr   product_photos = glob.glob('ecommerce_images/*/*.jpg')
+   edaflow.visualize_image_classes(product_photos, samples_per_class=8)
+
+🔍 **Function Categories**
+--------------------------ext' now converted to float
+
+🖼️ **Computer Vision EDA** ⭐ *New in v0.9.0-v0.11.0*
+---------------------------------------------------------e-block:: python
 
    # Install (if not already done)
    # pip install edaflow
@@ -22,7 +31,7 @@ First, install and import edaflow:
 📊 **Complete EDA Workflow**
 ----------------------------
 
-Here's how to perform a complete exploratory data analysis with edaflow's 14 functions:
+Here's how to perform a complete exploratory data analysis with edaflow's 17 functions (14 for tabular data + 3 for computer vision):
 
 .. code-block:: python
 
@@ -200,7 +209,133 @@ Here's how to perform a complete exploratory data analysis with edaflow's 14 fun
    df_converted = edaflow.convert_to_numeric(df_original, threshold=35)
    print(df_converted.dtypes)  # 'price_text' now converted to float
 
-🔍 **Function Categories**
+�️ **Computer Vision EDA** ⭐ *New in v0.9.0-v0.11.0*
+---------------------------------------------------------
+
+Explore image datasets with the same systematic approach as tabular data! edaflow's Computer Vision EDA provides a complete pipeline for understanding image collections.
+
+**Complete CV EDA Workflow**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import edaflow
+   import glob
+   
+   # Load image dataset
+   image_paths = glob.glob('dataset/train/*/*.jpg')  # Organized by class folders
+   
+   # Step 1: Visual Dataset Overview
+   print("🎯 STEP 1: DATASET VISUALIZATION")
+   print("-" * 50)
+   edaflow.visualize_image_classes(
+       image_paths,
+       samples_per_class=6,        # Show 6 examples per class
+       figsize=(15, 10),
+       title="Dataset Overview: Class Distribution & Samples"
+   )
+   
+   # Step 2: Image Quality Assessment
+   print("\\n🔍 STEP 2: QUALITY ASSESSMENT")
+   print("-" * 50)
+   quality_report = edaflow.assess_image_quality(
+       image_paths,
+       check_resolution=True,      # Resolution analysis
+       check_corruption=True,      # Corruption detection
+       sample_size=100            # Analyze subset for speed
+   )
+   
+   # Step 3: Advanced Feature Analysis
+   print("\\n📊 STEP 3: FEATURE ANALYSIS")  
+   print("-" * 50)
+   feature_analysis = edaflow.analyze_image_features(
+       image_paths,
+       analyze_colors=True,        # Color distribution analysis
+       analyze_edges=True,         # Edge detection patterns
+       analyze_texture=True,       # Texture characteristics
+       sample_size=50             # Deep analysis on subset
+   )
+
+**Individual Function Examples**
+
+**1. Dataset Visualization**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Understand your image dataset at a glance
+   edaflow.visualize_image_classes(
+       image_paths=['path/to/class1/*.jpg', 'path/to/class2/*.jpg'],
+       samples_per_class=4,
+       max_classes=8,              # Limit displayed classes
+       figsize=(12, 8),
+       title="Training Set Overview"
+   )
+   
+   # Output: Beautiful grid showing class distribution and sample images
+
+**2. Quality Assessment** ⭐ *New in v0.10.0*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Comprehensive image quality analysis
+   quality_metrics = edaflow.assess_image_quality(
+       image_paths,
+       check_resolution=True,      # Resolution statistics
+       check_corruption=True,      # Find corrupted files
+       check_format=True,          # Format consistency
+       sample_size=200,            # Balance speed vs completeness
+       verbose=True               # Detailed progress reporting
+   )
+   
+   # Returns detailed report with:
+   # - Resolution distribution analysis
+   # - Corrupted file identification  
+   # - Format distribution statistics
+   # - Quality recommendations
+
+**3. Advanced Feature Analysis** ⭐ *New in v0.11.0*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Deep feature analysis for dataset understanding
+   features = edaflow.analyze_image_features(
+       image_paths,
+       analyze_colors=True,        # RGB histogram analysis
+       analyze_edges=True,         # Edge density patterns
+       analyze_texture=True,       # Texture complexity metrics
+       analyze_gradients=True,     # Gradient magnitude analysis
+       sample_size=100,            # Computational efficiency
+       bins=50                    # Histogram granularity
+   )
+   
+   # Comprehensive visualizations:
+   # - Color distribution heatmaps across dataset
+   # - Edge density patterns by class
+   # - Texture complexity analysis
+   # - Gradient magnitude distributions
+   # - Statistical summaries with actionable insights
+
+**Computer Vision Use Cases**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   # Medical Imaging Dataset
+   medical_scans = glob.glob('medical_data/*/*.dcm')
+   edaflow.assess_image_quality(medical_scans, check_corruption=True)
+   
+   # Satellite Imagery Analysis  
+   satellite_images = glob.glob('satellite_data/**/*.tif', recursive=True)
+   edaflow.analyze_image_features(satellite_images, analyze_texture=True)
+   
+   # Product Photography Quality Control
+   product_photos = glob.glob('ecommerce_images/*/*.jpg')
+   edaflow.visualize_image_classes(product_photos, samples_per_class=8)
+
+�🔍 **Function Categories**
 --------------------------
 
 **Data Quality & Analysis**
@@ -225,14 +360,28 @@ Here's how to perform a complete exploratory data analysis with edaflow's 14 fun
 * ``visualize_histograms()`` - Statistical distributions
 * ``visualize_scatter_matrix()`` - Pairwise relationships
 
+**Computer Vision EDA** ⭐ *New*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* ``visualize_image_classes()`` - Dataset visualization & class distribution
+* ``assess_image_quality()`` - Quality analysis & corruption detection  
+* ``analyze_image_features()`` - Advanced feature analysis (colors, edges, texture)
+
 💡 **Pro Tips**
 ---------------
 
+**For Tabular Data:**
 1. **Jupyter Notebooks**: Use edaflow in Jupyter for the best visual experience with color-coded outputs
 2. **Large Datasets**: For datasets with >10,000 rows, consider sampling for visualization functions
 3. **Memory Management**: Process data in chunks for very large datasets
 4. **Custom Thresholds**: Adjust threshold parameters based on your data quality tolerance
 5. **Interactive Mode**: Use ``visualize_interactive_boxplots()`` for presentations and exploratory analysis
+
+**For Computer Vision:**
+6. **Start Small**: Use ``sample_size`` parameters to test workflows on subsets before full analysis
+7. **Quality First**: Always run ``assess_image_quality()`` before feature analysis to identify issues
+8. **Organized Data**: Structure images in class folders for automatic class detection
+9. **Memory Efficiency**: CV functions are optimized for memory usage but consider batch processing for huge datasets
+10. **Dependencies**: Install OpenCV (``pip install opencv-python``) for enhanced edge detection and texture analysis
 
 🚀 **Next Steps**
 -----------------
