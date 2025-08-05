@@ -18,7 +18,8 @@ from .core import (
     visualize_heatmap,
     visualize_histograms,
     visualize_scatter_matrix,
-    visualize_image_classes
+    visualize_image_classes,
+    assess_image_quality
 )
 
 __all__ = [
@@ -35,5 +36,6 @@ __all__ = [
     'visualize_heatmap',
     'visualize_histograms',
     'visualize_scatter_matrix',
-    'visualize_image_classes'
+    'visualize_image_classes',
+    'assess_image_quality'
 ]

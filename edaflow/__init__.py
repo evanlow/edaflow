@@ -16,10 +16,11 @@ from .analysis import (
     visualize_heatmap,
     visualize_histograms,
     visualize_scatter_matrix,
-    visualize_image_classes
+    visualize_image_classes,
+    assess_image_quality
 )
 
-__version__ = "0.9.0"
+__version__ = "0.10.0"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 
@@ -53,5 +54,7 @@ __all__ = [
     'visualize_interactive_boxplots',
     'visualize_heatmap',
     'visualize_histograms',
-    'visualize_scatter_matrix'
+    'visualize_scatter_matrix',
+    'visualize_image_classes',
+    'assess_image_quality'
 ]

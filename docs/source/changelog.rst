@@ -6,6 +6,43 @@ All notable changes to edaflow are documented here.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Changelog
+=========
+
+Version 0.10.0 (2025-08-05) - Image Quality Assessment Release 🔍
+----------------------------------------------------------------
+
+**Major New Feature: Comprehensive Image Quality Assessment**
+
+**NEW Functions:**
+- **assess_image_quality()**: Complete automated quality assessment for image datasets
+
+**Key Capabilities:**
+- **Corruption Detection**: Automatically identify unreadable or damaged image files
+- **Brightness Analysis**: Flag overly dark or bright images with statistical thresholds  
+- **Contrast Assessment**: Detect low-contrast images that might impact training
+- **Blur Detection**: Use Laplacian variance to identify potentially blurry images
+- **Color Analysis**: Distinguish between grayscale and color images, detect mixed modes
+- **Dimension Consistency**: Find unusual aspect ratios and size outliers using statistical methods
+- **Artifact Detection**: Identify compression artifacts and unusual patterns
+- **Quality Scoring**: Statistical quality scoring system (0-100) for overall dataset health
+- **Automated Recommendations**: Actionable suggestions for dataset improvement
+- **Production Integration**: Quality gates with customizable thresholds for ML pipelines
+- **Scalable Analysis**: Sampling support for efficient processing of large datasets
+
+**Enhanced Capabilities:**
+- Expanded from 15 to 16 comprehensive EDA functions
+- Extended computer vision capabilities with production-ready quality assessment
+- Added scipy optimization for advanced blur detection algorithms
+- Comprehensive statistical analysis with detailed reporting
+- Educational focus on image quality standards and best practices
+
+**Perfect For:**
+- Medical and scientific imaging with strict quality requirements
+- Production ML pipelines with automated data validation
+- Research and development with dataset quality monitoring
+- Educational purposes for learning image quality assessment
+
 Version 0.9.0 (2025-08-05) - Computer Vision EDA Release 🖼️
 ------------------------------------------------------------
 

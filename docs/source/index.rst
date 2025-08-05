@@ -13,9 +13,9 @@ edaflow Documentation
    :target: https://github.com/evanlow/edaflow/blob/main/LICENSE
    :alt: License
 
-A comprehensive Python package for streamlined exploratory data analysis (EDA) workflows.
+edaflow is a Python package designed to streamline exploratory data analysis (EDA) workflows. It provides 16 comprehensive functions that cover the essential steps of data exploration, from missing data analysis to advanced visualizations and computer vision dataset assessment.
 
-**edaflow** simplifies and accelerates the EDA process by providing a collection of 15 powerful functions for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing - now including computer vision datasets.
+**edaflow** simplifies and accelerates the EDA process by providing a collection of 16 powerful functions for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing - now including computer vision datasets and quality assessment.
 
 🎯 **Key Features**
 -------------------
@@ -48,7 +48,7 @@ A comprehensive Python package for streamlined exploratory data analysis (EDA) w
    # Load your data
    df = pd.read_csv('your_data.csv')
 
-   # Complete EDA workflow with 15 functions
+   # Complete EDA workflow with 16 functions
    edaflow.check_null_columns(df)                    # 1. Missing data analysis
    edaflow.analyze_categorical_columns(df)           # 2. Categorical insights
    df_clean = edaflow.convert_to_numeric(df)         # 3. Smart type conversion
@@ -56,10 +56,11 @@ A comprehensive Python package for streamlined exploratory data analysis (EDA) w
    edaflow.visualize_scatter_matrix(df_clean)        # 5. Relationship analysis
    edaflow.visualize_heatmap(df_clean)              # 6. Correlation heatmaps
    edaflow.visualize_histograms(df_clean)           # 7. Distribution analysis
-   # ... and 8 more powerful functions!
+   # ... and 9 more powerful functions!
    
-   # NEW: Computer Vision EDA
+   # NEW: Computer Vision EDA & Quality Assessment
    edaflow.visualize_image_classes('dataset/images/')  # Image classification analysis
+   edaflow.assess_image_quality('dataset/images/')     # Image quality assessment
 
 📚 **Documentation Contents**
 -----------------------------
@@ -87,7 +88,7 @@ A comprehensive Python package for streamlined exploratory data analysis (EDA) w
 📊 **Function Overview**
 ------------------------
 
-edaflow provides 15 comprehensive EDA functions organized into logical categories:
+edaflow provides 16 comprehensive EDA functions organized into logical categories:
 
 **Data Quality & Analysis**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -114,6 +115,10 @@ edaflow provides 15 comprehensive EDA functions organized into logical categorie
 **Computer Vision EDA** 🖼️ **NEW in v0.9.0!**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * :func:`~edaflow.visualize_image_classes` - Class-wise image sample visualization for image classification datasets
+
+**Image Quality Assessment** 🔍 **NEW in v0.10.0!**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* :func:`~edaflow.assess_image_quality` - Comprehensive automated quality assessment and corruption detection for image datasets
 
 **Helper Functions**
 ~~~~~~~~~~~~~~~~~~~~

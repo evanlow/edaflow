@@ -21,7 +21,7 @@ import os
 import random
 from pathlib import Path
 try:
-    from PIL import Image
+    from PIL import Image, ImageStat
     PIL_AVAILABLE = True
 except ImportError:
     PIL_AVAILABLE = False
@@ -2612,6 +2612,877 @@ def visualize_scatter_matrix(df: pd.DataFrame,
     
     # Show the plot
     plt.show()
+
+
+def assess_image_quality(
+    data_source: Union[str, pd.DataFrame, List[str]],
+    class_column: Optional[str] = None,
+    image_path_column: Optional[str] = None,
+    sample_size: Optional[int] = None,
+    check_corruption: bool = True,
+    analyze_color: bool = True,
+    detect_blur: bool = True,
+    check_artifacts: bool = True,
+    brightness_threshold: Tuple[float, float] = (30.0, 220.0),
+    contrast_threshold: float = 20.0,
+    aspect_ratio_tolerance: float = 0.1,
+    file_size_outlier_factor: float = 3.0,
+    verbose: bool = True,
+    return_detailed_report: bool = False
+) -> Dict[str, Any]:
+    """
+    🔍 Comprehensive image quality and integrity assessment for ML datasets.
+    
+    Analyzes image datasets to detect corrupted files, quality issues, outliers,
+    and potential problems that could affect model training performance. Provides
+    statistical insights and actionable recommendations for dataset improvement.
+    
+    Perfect for data validation pipelines and ensuring high-quality training data.
+    
+    Parameters
+    ----------
+    data_source : str, pd.DataFrame, or List[str]
+        Image data source:
+        - str: Directory path containing images (organized in class folders or flat)
+        - pd.DataFrame: DataFrame with image paths and optional class labels
+        - List[str]: List of image file paths
+        
+    class_column : str, optional
+        Column name containing class labels (required if data_source is DataFrame).
+        
+    image_path_column : str, optional  
+        Column name containing image file paths (required if data_source is DataFrame).
+        
+    sample_size : int, optional
+        Maximum number of images to analyze (for large datasets). If None, analyzes all.
+        
+    check_corruption : bool, default=True
+        Whether to check for corrupted or unreadable images.
+        
+    analyze_color : bool, default=True
+        Whether to analyze color properties (grayscale vs color, color distribution).
+        
+    detect_blur : bool, default=True
+        Whether to detect potentially blurry images using Laplacian variance.
+        
+    check_artifacts : bool, default=True
+        Whether to check for compression artifacts and unusual patterns.
+        
+    brightness_threshold : tuple, default=(30.0, 220.0)
+        (min, max) brightness values. Images outside this range are flagged.
+        
+    contrast_threshold : float, default=20.0
+        Minimum contrast level. Images below this are flagged as low contrast.
+        
+    aspect_ratio_tolerance : float, default=0.1
+        Tolerance for aspect ratio clustering (0.1 = 10% deviation).
+        
+    file_size_outlier_factor : float, default=3.0
+        Multiplier for file size outlier detection using IQR method.
+        
+    verbose : bool, default=True
+        Whether to display detailed progress and results.
+        
+    return_detailed_report : bool, default=False
+        Whether to return individual image analysis results.
+        
+    Returns
+    -------
+    dict
+        Comprehensive quality assessment report containing:
+        - 'total_images': Total number of images analyzed
+        - 'corrupted_images': List of corrupted/unreadable image paths
+        - 'quality_issues': Dictionary of detected quality problems
+        - 'color_analysis': Color distribution and grayscale detection results
+        - 'dimension_analysis': Image size and aspect ratio statistics
+        - 'file_size_analysis': File size distribution and outliers
+        - 'brightness_analysis': Brightness statistics and problematic images
+        - 'contrast_analysis': Contrast statistics and low-contrast images  
+        - 'blur_analysis': Blur detection results (if enabled)
+        - 'artifact_analysis': Compression artifact detection (if enabled)
+        - 'recommendations': List of actionable recommendations
+        - 'quality_score': Overall dataset quality score (0-100)
+        - 'detailed_results': Individual image results (if requested)
+        
+    Examples
+    --------
+    🔍 **Directory-based Quality Assessment**:
+    
+    >>> import edaflow
+    >>> 
+    >>> # Comprehensive quality check
+    >>> report = edaflow.assess_image_quality('dataset/train/')
+    >>> print(f"Quality Score: {report['quality_score']}/100")
+    >>> print(f"Corrupted Images: {len(report['corrupted_images'])}")
+    >>> 
+    >>> # Focus on specific issues
+    >>> report = edaflow.assess_image_quality(
+    ...     'dataset/',
+    ...     check_corruption=True,
+    ...     detect_blur=True,
+    ...     analyze_color=False,  # Skip color analysis for speed
+    ...     sample_size=1000      # Analyze subset for large datasets
+    ... )
+    
+    📊 **DataFrame-based Analysis**:
+    
+    >>> import pandas as pd
+    >>> df = pd.read_csv('image_metadata.csv')
+    >>> 
+    >>> # Quality assessment with class-wise analysis
+    >>> report = edaflow.assess_image_quality(
+    ...     df,
+    ...     image_path_column='path',
+    ...     class_column='label',
+    ...     brightness_threshold=(40, 200),  # Stricter brightness requirements
+    ...     contrast_threshold=25,           # Higher contrast requirements
+    ...     return_detailed_report=True      # Get per-image details
+    ... )
+    >>> 
+    >>> # Check class-specific quality issues
+    >>> for class_name, issues in report['quality_issues'].items():
+    ...     print(f"{class_name}: {len(issues)} quality problems")
+    
+    🚀 **Production Pipeline Integration**:
+    
+    >>> # Automated quality gates
+    >>> report = edaflow.assess_image_quality(image_paths)
+    >>> 
+    >>> # Quality gates for ML pipeline
+    >>> assert report['quality_score'] >= 80, f"Dataset quality too low: {report['quality_score']}"
+    >>> assert len(report['corrupted_images']) == 0, "Corrupted images detected!"
+    >>> assert report['brightness_analysis']['problematic_count'] < 50, "Too many brightness issues"
+    >>> 
+    >>> # Automated data cleaning
+    >>> clean_paths = [path for path in image_paths 
+    ...                if path not in report['corrupted_images']]
+    
+    🎯 **Medical/Scientific Imaging**:
+    
+    >>> # Stricter quality requirements for medical data
+    >>> report = edaflow.assess_image_quality(
+    ...     medical_scans_df,
+    ...     image_path_column='scan_path',
+    ...     class_column='diagnosis',
+    ...     brightness_threshold=(50, 180),  # Narrow brightness range
+    ...     contrast_threshold=30,           # High contrast requirement
+    ...     check_artifacts=True,            # Critical for medical imaging
+    ...     aspect_ratio_tolerance=0.05      # Strict aspect ratio consistency
+    ... )
+    
+    Statistical Insights:
+        - Identifies systematic quality issues across classes
+        - Detects unusual patterns that might indicate data collection problems
+        - Provides quantitative metrics for dataset quality assessment
+        - Enables automated quality gates in ML pipelines
+    
+    Integration with other edaflow functions:
+        - Use before visualize_image_classes() to validate dataset health
+        - Combine with traditional EDA functions for metadata analysis
+        - Perfect complement to image classification EDA workflows
+    """
+    
+    # Check PIL availability
+    if not PIL_AVAILABLE:
+        raise ImportError(
+            "🚨 PIL (Pillow) is required for image quality assessment.\n"
+            "📦 Install with: pip install Pillow"
+        )
+    
+    if verbose:
+        print("🔍 Starting Image Quality Assessment...")
+        print("=" * 60)
+    
+    # Parse data source and collect image paths
+    image_paths = _parse_image_data_source(data_source, class_column, image_path_column)
+    
+    # Sample if requested
+    if sample_size and len(image_paths) > sample_size:
+        if verbose:
+            print(f"📊 Sampling {sample_size:,} images from {len(image_paths):,} total")
+        image_paths = random.sample(image_paths, sample_size)
+    
+    if verbose:
+        print(f"🖼️  Analyzing {len(image_paths):,} images...")
+    
+    # Initialize results
+    results = {
+        'total_images': len(image_paths),
+        'corrupted_images': [],
+        'quality_issues': {},
+        'color_analysis': {},
+        'dimension_analysis': {},
+        'file_size_analysis': {},
+        'brightness_analysis': {},
+        'contrast_analysis': {},
+        'blur_analysis': {},
+        'artifact_analysis': {},
+        'recommendations': [],
+        'quality_score': 0,
+        'detailed_results': [] if return_detailed_report else None
+    }
+    
+    # Analyze each image
+    valid_images = []
+    dimension_data = []
+    file_size_data = []
+    brightness_data = []
+    contrast_data = []
+    blur_scores = []
+    color_modes = []
+    
+    for i, img_path in enumerate(image_paths):
+        if verbose and (i + 1) % max(1, len(image_paths) // 10) == 0:
+            print(f"   📈 Progress: {i + 1:,}/{len(image_paths):,} ({((i + 1)/len(image_paths)*100):.1f}%)")
+        
+        img_analysis = _analyze_single_image(
+            img_path, check_corruption, analyze_color, detect_blur, 
+            check_artifacts, brightness_threshold, contrast_threshold
+        )
+        
+        if img_analysis['corrupted']:
+            results['corrupted_images'].append(img_path)
+        else:
+            valid_images.append(img_path)
+            dimension_data.append(img_analysis['dimensions'])
+            file_size_data.append(img_analysis['file_size'])
+            brightness_data.append(img_analysis['brightness'])
+            contrast_data.append(img_analysis['contrast'])
+            color_modes.append(img_analysis['color_mode'])
+            
+            if detect_blur and img_analysis['blur_score'] is not None:
+                blur_scores.append(img_analysis['blur_score'])
+        
+        if return_detailed_report:
+            results['detailed_results'].append({
+                'path': img_path,
+                'analysis': img_analysis
+            })
+    
+    # Generate comprehensive analysis
+    results.update(_generate_quality_analysis(
+        valid_images, dimension_data, file_size_data, brightness_data,
+        contrast_data, blur_scores, color_modes, brightness_threshold,
+        contrast_threshold, aspect_ratio_tolerance, file_size_outlier_factor
+    ))
+    
+    # Calculate overall quality score
+    results['quality_score'] = _calculate_quality_score(results)
+    
+    # Generate recommendations
+    results['recommendations'] = _generate_quality_recommendations(results)
+    
+    if verbose:
+        _display_quality_results(results)
+    
+    return results
+
+
+def _parse_image_data_source(
+    data_source: Union[str, pd.DataFrame, List[str]], 
+    class_column: Optional[str], 
+    image_path_column: Optional[str]
+) -> List[str]:
+    """Parse various data source types and extract image paths."""
+    
+    if isinstance(data_source, str):
+        # Directory path
+        if not os.path.exists(data_source):
+            raise FileNotFoundError(f"🚨 Directory not found: {data_source}")
+        
+        image_paths = []
+        supported_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif', '.webp'}
+        
+        for root, dirs, files in os.walk(data_source):
+            for file in files:
+                if any(file.lower().endswith(ext) for ext in supported_extensions):
+                    image_paths.append(os.path.join(root, file))
+        
+        if not image_paths:
+            raise ValueError(f"🚨 No supported images found in {data_source}")
+            
+        return image_paths
+        
+    elif isinstance(data_source, pd.DataFrame):
+        # DataFrame input
+        if image_path_column is None:
+            raise ValueError("🚨 image_path_column must be specified for DataFrame input")
+        
+        if image_path_column not in data_source.columns:
+            raise ValueError(f"🚨 Column '{image_path_column}' not found in DataFrame")
+        
+        return data_source[image_path_column].dropna().tolist()
+        
+    elif isinstance(data_source, list):
+        # List of image paths
+        return data_source
+        
+    else:
+        raise TypeError("🚨 data_source must be str, DataFrame, or List[str]")
+
+
+def _analyze_single_image(
+    img_path: str,
+    check_corruption: bool,
+    analyze_color: bool,
+    detect_blur: bool,
+    check_artifacts: bool,
+    brightness_threshold: Tuple[float, float],
+    contrast_threshold: float
+) -> Dict[str, Any]:
+    """Analyze a single image for quality metrics."""
+    
+    analysis = {
+        'corrupted': False,
+        'dimensions': None,
+        'file_size': None,
+        'brightness': None,
+        'contrast': None,
+        'color_mode': None,
+        'is_grayscale': None,
+        'blur_score': None,
+        'has_artifacts': None,
+        'issues': []
+    }
+    
+    try:
+        # Get file size
+        analysis['file_size'] = os.path.getsize(img_path) / 1024  # KB
+        
+        # Load image
+        with Image.open(img_path) as img:
+            # Basic properties
+            analysis['dimensions'] = img.size
+            analysis['color_mode'] = img.mode
+            
+            # Color analysis
+            if analyze_color:
+                analysis['is_grayscale'] = img.mode in ['L', '1'] or _is_effectively_grayscale(img)
+            
+            # Convert to RGB for analysis
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            
+            # Brightness analysis
+            stat = ImageStat.Stat(img)
+            analysis['brightness'] = sum(stat.mean) / 3  # Average of RGB channels
+            
+            # Contrast analysis (standard deviation of pixel values)
+            analysis['contrast'] = sum(stat.stddev) / 3
+            
+            # Check brightness issues
+            if analysis['brightness'] < brightness_threshold[0]:
+                analysis['issues'].append('too_dark')
+            elif analysis['brightness'] > brightness_threshold[1]:
+                analysis['issues'].append('too_bright')
+            
+            # Check contrast issues
+            if analysis['contrast'] < contrast_threshold:
+                analysis['issues'].append('low_contrast')
+            
+            # Blur detection
+            if detect_blur:
+                analysis['blur_score'] = _calculate_blur_score(img)
+                if analysis['blur_score'] < 100:  # Threshold for blur detection
+                    analysis['issues'].append('blurry')
+            
+            # Artifact detection
+            if check_artifacts:
+                analysis['has_artifacts'] = _detect_compression_artifacts(img)
+                if analysis['has_artifacts']:
+                    analysis['issues'].append('artifacts')
+    
+    except Exception as e:
+        analysis['corrupted'] = True
+        analysis['issues'].append(f'corruption: {str(e)}')
+    
+    return analysis
+
+
+def _is_effectively_grayscale(img: Image.Image, threshold: float = 10.0) -> bool:
+    """Check if a color image is effectively grayscale."""
+    if img.mode == 'RGB':
+        # Sample pixels to check color variation
+        import numpy as np
+        sample_size = min(1000, img.size[0] * img.size[1])
+        pixels = list(img.getdata())
+        
+        if len(pixels) > sample_size:
+            pixels = random.sample(pixels, sample_size)
+        
+        # Calculate color variation
+        color_variations = []
+        for r, g, b in pixels:
+            max_val = max(r, g, b)
+            min_val = min(r, g, b)
+            color_variations.append(max_val - min_val)
+        
+        avg_variation = sum(color_variations) / len(color_variations)
+        return avg_variation < threshold
+    
+    return False
+
+
+def _calculate_blur_score(img: Image.Image) -> float:
+    """Calculate blur score using Laplacian variance."""
+    try:
+        import numpy as np
+        from scipy import ndimage
+        
+        # Convert to grayscale
+        gray = img.convert('L')
+        img_array = np.array(gray)
+        
+        # Calculate Laplacian variance
+        laplacian = ndimage.laplace(img_array)
+        variance = laplacian.var()
+        
+        return variance
+        
+    except ImportError:
+        # Fallback method without scipy
+        return _calculate_blur_score_simple(img)
+
+
+def _calculate_blur_score_simple(img: Image.Image) -> float:
+    """Simple blur detection without scipy dependency."""
+    import numpy as np
+    
+    # Convert to grayscale
+    gray = img.convert('L')
+    img_array = np.array(gray, dtype=float)
+    
+    # Simple edge detection using gradient magnitude
+    gy, gx = np.gradient(img_array)
+    edge_magnitude = np.sqrt(gx**2 + gy**2)
+    
+    # Use variance of edge magnitude as blur metric
+    return edge_magnitude.var()
+
+
+def _detect_compression_artifacts(img: Image.Image) -> bool:
+    """Detect potential compression artifacts."""
+    try:
+        import numpy as np
+        
+        # Convert to numpy array
+        img_array = np.array(img)
+        
+        # Check for block artifacts (8x8 pattern common in JPEG)
+        # This is a simplified detection method
+        if len(img_array.shape) == 3:
+            # Color image - check green channel
+            channel = img_array[:, :, 1]
+        else:
+            channel = img_array
+        
+        # Sample small regions and check for unusual patterns
+        h, w = channel.shape
+        if h >= 16 and w >= 16:
+            # Check for block boundaries (simplified)
+            block_edges_h = []
+            block_edges_v = []
+            
+            for i in range(8, h - 8, 8):
+                diff = abs(int(channel[i].mean()) - int(channel[i-1].mean()))
+                block_edges_h.append(diff)
+            
+            for j in range(8, w - 8, 8):
+                diff = abs(int(channel[:, j].mean()) - int(channel[:, j-1].mean()))
+                block_edges_v.append(diff)
+            
+            # If there are consistent block boundaries, might indicate artifacts
+            if block_edges_h and block_edges_v:
+                avg_h_diff = sum(block_edges_h) / len(block_edges_h)
+                avg_v_diff = sum(block_edges_v) / len(block_edges_v)
+                
+                # Threshold for detecting systematic block patterns
+                return avg_h_diff > 5 or avg_v_diff > 5
+        
+        return False
+        
+    except Exception:
+        return False
+
+
+def _generate_quality_analysis(
+    valid_images: List[str],
+    dimension_data: List[Tuple[int, int]],
+    file_size_data: List[float],
+    brightness_data: List[float],
+    contrast_data: List[float],
+    blur_scores: List[float],
+    color_modes: List[str],
+    brightness_threshold: Tuple[float, float],
+    contrast_threshold: float,
+    aspect_ratio_tolerance: float,
+    file_size_outlier_factor: float
+) -> Dict[str, Any]:
+    """Generate comprehensive quality analysis from collected data."""
+    
+    analysis = {}
+    
+    # Color analysis
+    total_valid = len(valid_images)
+    if total_valid > 0:
+        color_counts = {}
+        for mode in color_modes:
+            color_counts[mode] = color_counts.get(mode, 0) + 1
+        
+        analysis['color_analysis'] = {
+            'color_mode_distribution': color_counts,
+            'total_valid_images': total_valid
+        }
+    
+    # Dimension analysis
+    if dimension_data:
+        widths = [d[0] for d in dimension_data]
+        heights = [d[1] for d in dimension_data]
+        aspect_ratios = [w/h for w, h in dimension_data]
+        
+        analysis['dimension_analysis'] = {
+            'width_stats': {
+                'min': min(widths),
+                'max': max(widths),
+                'mean': sum(widths) / len(widths),
+                'median': sorted(widths)[len(widths)//2]
+            },
+            'height_stats': {
+                'min': min(heights),
+                'max': max(heights),
+                'mean': sum(heights) / len(heights),
+                'median': sorted(heights)[len(heights)//2]
+            },
+            'aspect_ratio_stats': {
+                'min': min(aspect_ratios),
+                'max': max(aspect_ratios),
+                'mean': sum(aspect_ratios) / len(aspect_ratios),
+                'median': sorted(aspect_ratios)[len(aspect_ratios)//2]
+            },
+            'unusual_dimensions': _find_dimension_outliers(dimension_data, aspect_ratio_tolerance)
+        }
+    
+    # File size analysis
+    if file_size_data:
+        analysis['file_size_analysis'] = {
+            'size_stats': {
+                'min_kb': min(file_size_data),
+                'max_kb': max(file_size_data),
+                'mean_kb': sum(file_size_data) / len(file_size_data),
+                'median_kb': sorted(file_size_data)[len(file_size_data)//2]
+            },
+            'outliers': _find_file_size_outliers(file_size_data, file_size_outlier_factor)
+        }
+    
+    # Brightness analysis
+    if brightness_data:
+        problematic_brightness = [
+            b for b in brightness_data 
+            if b < brightness_threshold[0] or b > brightness_threshold[1]
+        ]
+        
+        analysis['brightness_analysis'] = {
+            'brightness_stats': {
+                'min': min(brightness_data),
+                'max': max(brightness_data),
+                'mean': sum(brightness_data) / len(brightness_data),
+                'median': sorted(brightness_data)[len(brightness_data)//2]
+            },
+            'problematic_count': len(problematic_brightness),
+            'percentage_problematic': (len(problematic_brightness) / len(brightness_data)) * 100
+        }
+    
+    # Contrast analysis
+    if contrast_data:
+        low_contrast_count = sum(1 for c in contrast_data if c < contrast_threshold)
+        
+        analysis['contrast_analysis'] = {
+            'contrast_stats': {
+                'min': min(contrast_data),
+                'max': max(contrast_data),
+                'mean': sum(contrast_data) / len(contrast_data),
+                'median': sorted(contrast_data)[len(contrast_data)//2]
+            },
+            'low_contrast_count': low_contrast_count,
+            'percentage_low_contrast': (low_contrast_count / len(contrast_data)) * 100
+        }
+    
+    # Blur analysis
+    if blur_scores:
+        blur_threshold = 100  # Threshold for blur detection
+        blurry_count = sum(1 for score in blur_scores if score < blur_threshold)
+        
+        analysis['blur_analysis'] = {
+            'blur_stats': {
+                'min_score': min(blur_scores),
+                'max_score': max(blur_scores),
+                'mean_score': sum(blur_scores) / len(blur_scores),
+                'median_score': sorted(blur_scores)[len(blur_scores)//2]
+            },
+            'blurry_count': blurry_count,
+            'percentage_blurry': (blurry_count / len(blur_scores)) * 100
+        }
+    
+    return analysis
+
+
+def _find_dimension_outliers(dimension_data: List[Tuple[int, int]], tolerance: float) -> List[Dict]:
+    """Find images with unusual dimensions or aspect ratios."""
+    outliers = []
+    
+    if not dimension_data:
+        return outliers
+    
+    # Calculate mean aspect ratio
+    aspect_ratios = [w/h for w, h in dimension_data]
+    mean_aspect = sum(aspect_ratios) / len(aspect_ratios)
+    
+    for i, (w, h) in enumerate(dimension_data):
+        aspect = w / h
+        deviation = abs(aspect - mean_aspect) / mean_aspect
+        
+        if deviation > tolerance:
+            outliers.append({
+                'index': i,
+                'dimensions': (w, h),
+                'aspect_ratio': aspect,
+                'deviation_from_mean': deviation
+            })
+    
+    return outliers
+
+
+def _find_file_size_outliers(file_sizes: List[float], outlier_factor: float) -> List[Dict]:
+    """Find unusually large or small files using IQR method."""
+    outliers = []
+    
+    if len(file_sizes) < 4:
+        return outliers
+    
+    sorted_sizes = sorted(file_sizes)
+    n = len(sorted_sizes)
+    q1 = sorted_sizes[n // 4]
+    q3 = sorted_sizes[3 * n // 4]
+    iqr = q3 - q1
+    
+    lower_bound = q1 - outlier_factor * iqr
+    upper_bound = q3 + outlier_factor * iqr
+    
+    for i, size in enumerate(file_sizes):
+        if size < lower_bound or size > upper_bound:
+            outliers.append({
+                'index': i,
+                'size_kb': size,
+                'type': 'small' if size < lower_bound else 'large'
+            })
+    
+    return outliers
+
+
+def _calculate_quality_score(results: Dict[str, Any]) -> int:
+    """Calculate overall dataset quality score (0-100)."""
+    score = 100
+    total_images = results['total_images']
+    
+    if total_images == 0:
+        return 0
+    
+    # Deduct for corrupted images
+    corruption_penalty = (len(results['corrupted_images']) / total_images) * 30
+    score -= corruption_penalty
+    
+    # Deduct for brightness issues
+    if 'brightness_analysis' in results and results['brightness_analysis']:
+        brightness_penalty = (results['brightness_analysis']['percentage_problematic'] / 100) * 20
+        score -= brightness_penalty
+    
+    # Deduct for contrast issues
+    if 'contrast_analysis' in results and results['contrast_analysis']:
+        contrast_penalty = (results['contrast_analysis']['percentage_low_contrast'] / 100) * 15
+        score -= contrast_penalty
+    
+    # Deduct for blur issues
+    if 'blur_analysis' in results and results['blur_analysis']:
+        blur_penalty = (results['blur_analysis']['percentage_blurry'] / 100) * 20
+        score -= blur_penalty
+    
+    # Deduct for file size outliers
+    if 'file_size_analysis' in results and results['file_size_analysis']:
+        outliers = results['file_size_analysis']['outliers']
+        outlier_penalty = (len(outliers) / total_images) * 10
+        score -= outlier_penalty
+    
+    # Deduct for dimension inconsistencies
+    if 'dimension_analysis' in results and results['dimension_analysis']:
+        dim_outliers = results['dimension_analysis']['unusual_dimensions']
+        dim_penalty = (len(dim_outliers) / total_images) * 5
+        score -= dim_penalty
+    
+    return max(0, int(score))
+
+
+def _generate_quality_recommendations(results: Dict[str, Any]) -> List[str]:
+    """Generate actionable recommendations based on quality analysis."""
+    recommendations = []
+    
+    # Corruption recommendations
+    if results['corrupted_images']:
+        count = len(results['corrupted_images'])
+        recommendations.append(
+            f"🚨 Remove {count} corrupted image(s) before training"
+        )
+    
+    # Brightness recommendations
+    if 'brightness_analysis' in results and results['brightness_analysis']:
+        problematic_pct = results['brightness_analysis']['percentage_problematic']
+        if problematic_pct > 10:
+            recommendations.append(
+                f"💡 {problematic_pct:.1f}% of images have brightness issues - consider histogram equalization"
+            )
+    
+    # Contrast recommendations
+    if 'contrast_analysis' in results and results['contrast_analysis']:
+        low_contrast_pct = results['contrast_analysis']['percentage_low_contrast']
+        if low_contrast_pct > 15:
+            recommendations.append(
+                f"🔍 {low_contrast_pct:.1f}% of images have low contrast - consider CLAHE enhancement"
+            )
+    
+    # Blur recommendations
+    if 'blur_analysis' in results and results['blur_analysis']:
+        blurry_pct = results['blur_analysis']['percentage_blurry']
+        if blurry_pct > 5:
+            recommendations.append(
+                f"📷 {blurry_pct:.1f}% of images may be blurry - consider sharpening or removal"
+            )
+    
+    # Dimension recommendations
+    if 'dimension_analysis' in results and results['dimension_analysis']:
+        outliers = results['dimension_analysis']['unusual_dimensions']
+        if len(outliers) > results['total_images'] * 0.1:
+            recommendations.append(
+                "📐 Inconsistent image dimensions detected - consider standardization"
+            )
+    
+    # File size recommendations
+    if 'file_size_analysis' in results and results['file_size_analysis']:
+        outliers = results['file_size_analysis']['outliers']
+        if len(outliers) > results['total_images'] * 0.05:
+            recommendations.append(
+                "💾 File size outliers detected - check for compression inconsistencies"
+            )
+    
+    # Color mode recommendations
+    if 'color_analysis' in results and results['color_analysis']:
+        modes = results['color_analysis']['color_mode_distribution']
+        if len(modes) > 1:
+            recommendations.append(
+                "🎨 Mixed color modes detected - ensure consistent preprocessing"
+            )
+    
+    # Overall quality recommendations
+    quality_score = results['quality_score']
+    if quality_score < 70:
+        recommendations.append(
+            f"⚠️  Dataset quality score is {quality_score}/100 - comprehensive cleanup recommended"
+        )
+    elif quality_score < 85:
+        recommendations.append(
+            f"📈 Dataset quality score is {quality_score}/100 - minor improvements suggested"
+        )
+    
+    if not recommendations:
+        recommendations.append("✅ Dataset appears to be in good condition!")
+    
+    return recommendations
+
+
+def _display_quality_results(results: Dict[str, Any]) -> None:
+    """Display comprehensive quality assessment results."""
+    
+    print(f"\n🎯 QUALITY ASSESSMENT RESULTS")
+    print("=" * 60)
+    print(f"📊 Total Images Analyzed: {results['total_images']:,}")
+    print(f"🏆 Overall Quality Score: {results['quality_score']}/100")
+    
+    # Corruption results
+    if results['corrupted_images']:
+        print(f"\n🚨 CORRUPTION ISSUES:")
+        print(f"   Corrupted Images: {len(results['corrupted_images'])}")
+        if len(results['corrupted_images']) <= 5:
+            for img_path in results['corrupted_images']:
+                print(f"     ❌ {img_path}")
+        else:
+            print(f"     ❌ (showing first 5 of {len(results['corrupted_images'])})")
+            for img_path in results['corrupted_images'][:5]:
+                print(f"        {img_path}")
+    
+    # Color analysis
+    if 'color_analysis' in results and results['color_analysis']:
+        print(f"\n🎨 COLOR ANALYSIS:")
+        color_dist = results['color_analysis']['color_mode_distribution']
+        for mode, count in color_dist.items():
+            percentage = (count / results['color_analysis']['total_valid_images']) * 100
+            print(f"   {mode}: {count:,} images ({percentage:.1f}%)")
+    
+    # Dimension analysis
+    if 'dimension_analysis' in results and results['dimension_analysis']:
+        dim_analysis = results['dimension_analysis']
+        print(f"\n📐 DIMENSION ANALYSIS:")
+        print(f"   Width: {dim_analysis['width_stats']['min']}-{dim_analysis['width_stats']['max']} " +
+              f"(avg: {dim_analysis['width_stats']['mean']:.0f})")
+        print(f"   Height: {dim_analysis['height_stats']['min']}-{dim_analysis['height_stats']['max']} " +
+              f"(avg: {dim_analysis['height_stats']['mean']:.0f})")
+        print(f"   Aspect Ratio: {dim_analysis['aspect_ratio_stats']['min']:.2f}-{dim_analysis['aspect_ratio_stats']['max']:.2f} " +
+              f"(avg: {dim_analysis['aspect_ratio_stats']['mean']:.2f})")
+        if dim_analysis['unusual_dimensions']:
+            print(f"   ⚠️  Unusual Dimensions: {len(dim_analysis['unusual_dimensions'])} images")
+    
+    # Brightness analysis
+    if 'brightness_analysis' in results and results['brightness_analysis']:
+        bright_analysis = results['brightness_analysis']
+        print(f"\n☀️  BRIGHTNESS ANALYSIS:")
+        print(f"   Range: {bright_analysis['brightness_stats']['min']:.1f}-{bright_analysis['brightness_stats']['max']:.1f} " +
+              f"(avg: {bright_analysis['brightness_stats']['mean']:.1f})")
+        if bright_analysis['problematic_count'] > 0:
+            print(f"   ⚠️  Problematic: {bright_analysis['problematic_count']} images " +
+                  f"({bright_analysis['percentage_problematic']:.1f}%)")
+    
+    # Contrast analysis
+    if 'contrast_analysis' in results and results['contrast_analysis']:
+        contrast_analysis = results['contrast_analysis']
+        print(f"\n🔍 CONTRAST ANALYSIS:")
+        print(f"   Range: {contrast_analysis['contrast_stats']['min']:.1f}-{contrast_analysis['contrast_stats']['max']:.1f} " +
+              f"(avg: {contrast_analysis['contrast_stats']['mean']:.1f})")
+        if contrast_analysis['low_contrast_count'] > 0:
+            print(f"   ⚠️  Low Contrast: {contrast_analysis['low_contrast_count']} images " +
+                  f"({contrast_analysis['percentage_low_contrast']:.1f}%)")
+    
+    # Blur analysis
+    if 'blur_analysis' in results and results['blur_analysis']:
+        blur_analysis = results['blur_analysis']
+        print(f"\n📷 BLUR ANALYSIS:")
+        print(f"   Sharpness Score Range: {blur_analysis['blur_stats']['min_score']:.1f}-{blur_analysis['blur_stats']['max_score']:.1f} " +
+              f"(avg: {blur_analysis['blur_stats']['mean_score']:.1f})")
+        if blur_analysis['blurry_count'] > 0:
+            print(f"   ⚠️  Potentially Blurry: {blur_analysis['blurry_count']} images " +
+                  f"({blur_analysis['percentage_blurry']:.1f}%)")
+    
+    # File size analysis
+    if 'file_size_analysis' in results and results['file_size_analysis']:
+        size_analysis = results['file_size_analysis']
+        print(f"\n💾 FILE SIZE ANALYSIS:")
+        print(f"   Size Range: {size_analysis['size_stats']['min_kb']:.1f}-{size_analysis['size_stats']['max_kb']:.1f} KB " +
+              f"(avg: {size_analysis['size_stats']['mean_kb']:.1f} KB)")
+        if size_analysis['outliers']:
+            print(f"   ⚠️  Size Outliers: {len(size_analysis['outliers'])} images")
+    
+    # Recommendations
+    print(f"\n💡 RECOMMENDATIONS:")
+    for i, rec in enumerate(results['recommendations'], 1):
+        print(f"   {i}. {rec}")
+    
+    print(f"\n✅ Quality assessment completed!")
 
 
 def visualize_image_classes(

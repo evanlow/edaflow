@@ -23,7 +23,8 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Comprehensive Heatmap Visualizations**: Correlation matrices, missing data patterns, values heatmaps, and cross-tabulations
 - **Statistical Histogram Analysis**: Advanced histogram visualization with skewness detection, normality testing, and distribution analysis
 - **Scatter Matrix Analysis**: Advanced pairwise relationship visualization with customizable matrix layouts, regression lines, and statistical insights
-- **Computer Vision EDA**: Class-wise image sample visualization for image classification datasets with balance analysis
+- **Computer Vision EDA**: Class-wise image sample visualization and comprehensive quality assessment for image classification datasets
+- **Image Quality Assessment**: Automated detection of corrupted images, quality issues, blur, artifacts, and dataset health metrics
 - **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
@@ -1318,6 +1319,171 @@ edaflow.visualize_heatmap(metadata_df)
 - **Statistical Thinking**: Apply EDA principles to computer vision
 - **Best Practices**: Learn industry-standard dataset validation techniques
 
+## 🔍 Image Quality Assessment with `assess_image_quality()` (NEW in v0.10.0!)
+
+Comprehensive automated quality assessment for image datasets, designed to identify potential issues that could impact model training performance.
+
+### Complete Quality Assessment Workflow
+
+```python
+import edaflow
+
+# Method 1: Comprehensive Quality Check
+report = edaflow.assess_image_quality(
+    'dataset/train/',              # Directory with images
+    check_corruption=True,         # Detect corrupted files
+    analyze_color=True,           # Color vs grayscale analysis
+    detect_blur=True,             # Blur detection
+    check_artifacts=True,         # Compression artifact detection
+    brightness_threshold=(30, 220), # Brightness range
+    contrast_threshold=20,        # Minimum contrast
+    verbose=True                  # Detailed progress
+)
+
+print(f"📊 Quality Score: {report['quality_score']}/100")
+print(f"🚨 Corrupted Images: {len(report['corrupted_images'])}")
+print(f"💡 Recommendations: {len(report['recommendations'])}")
+
+# Method 2: Production Pipeline Integration  
+validation_report = edaflow.assess_image_quality(
+    production_df,
+    image_path_column='file_path',
+    class_column='label',
+    sample_size=1000,             # Sample for large datasets
+    return_detailed_report=True   # Per-image analysis
+)
+
+# Automated quality gates
+assert validation_report['quality_score'] >= 80, "Dataset quality too low!"
+assert len(validation_report['corrupted_images']) == 0, "Corrupted images found!"
+
+# Method 3: Medical/Scientific Imaging (Stricter Requirements)
+medical_report = edaflow.assess_image_quality(
+    medical_scans_paths,
+    brightness_threshold=(50, 180),  # Narrow brightness range
+    contrast_threshold=30,           # High contrast requirement
+    aspect_ratio_tolerance=0.05,     # Strict dimension consistency
+    file_size_outlier_factor=2.0,    # Sensitive to size anomalies
+    check_artifacts=True             # Critical for medical data
+)
+```
+
+### Key Features
+
+**🔍 Comprehensive Quality Metrics:**
+- **Corruption Detection**: Identify unreadable or damaged image files
+- **Brightness Analysis**: Flag overly dark or bright images with statistical thresholds
+- **Contrast Assessment**: Detect low-contrast images that might hurt training
+- **Blur Detection**: Use Laplacian variance to identify potentially blurry images
+- **Color Analysis**: Distinguish between grayscale and color images, detect mixed modes
+- **Dimension Consistency**: Find unusual aspect ratios and size outliers
+- **Artifact Detection**: Identify compression artifacts and unusual patterns
+
+**📊 Statistical Insights:**
+```python
+# What you get from the analysis:
+{
+    'total_images': 5000,
+    'corrupted_images': ['path/to/bad1.jpg', 'path/to/bad2.jpg'],
+    'quality_score': 87,  # Overall score 0-100
+    'brightness_analysis': {
+        'brightness_stats': {'min': 25.3, 'max': 245.1, 'mean': 128.4},
+        'problematic_count': 23,
+        'percentage_problematic': 0.46
+    },
+    'blur_analysis': {
+        'blurry_count': 15,
+        'percentage_blurry': 0.3
+    },
+    'recommendations': [
+        '🚨 Remove 2 corrupted image(s) before training',
+        '💡 0.5% of images have brightness issues - consider histogram equalization'
+    ]
+}
+```
+
+**🎯 Production-Ready Features:**
+- **Automated Quality Gates**: Set thresholds for pipeline validation
+- **Scalable Analysis**: Sample large datasets for efficient processing
+- **Detailed Reporting**: Per-image analysis for debugging issues
+- **Class-wise Analysis**: Identify quality issues specific to certain classes
+- **Flexible Thresholds**: Customize quality criteria for your domain
+
+### Perfect For:
+
+**🏥 Medical Imaging:**
+```python
+# Strict quality requirements for medical data
+report = edaflow.assess_image_quality(
+    medical_dataset,
+    brightness_threshold=(60, 180),   # Narrow brightness range
+    contrast_threshold=35,            # High contrast requirement
+    detect_blur=True,                # Critical for diagnosis
+    check_artifacts=True,            # Detect compression issues
+    aspect_ratio_tolerance=0.03      # Very strict consistency
+)
+```
+
+**🏭 Production ML Pipelines:**
+```python
+# Automated data validation
+quality_report = edaflow.assess_image_quality(new_batch_images)
+
+# Automated filtering
+clean_images = [
+    img for img in all_images 
+    if img not in quality_report['corrupted_images']
+]
+
+# Quality monitoring
+if quality_report['quality_score'] < 85:
+    alert_data_team("Dataset quality degraded!")
+```
+
+**🔬 Research & Development:**
+```python
+# Compare dataset quality across experiments
+before_report = edaflow.assess_image_quality('dataset_v1/')
+after_report = edaflow.assess_image_quality('dataset_v2_cleaned/')
+
+print(f"Quality improvement: {after_report['quality_score'] - before_report['quality_score']} points")
+```
+
+### Integration with Computer Vision EDA
+
+```python
+# Complete CV dataset validation workflow
+import edaflow
+
+# Step 1: Quality Assessment (NEW!)
+quality_report = edaflow.assess_image_quality(
+    'dataset/', 
+    return_detailed_report=True
+)
+
+# Step 2: Remove problematic images
+clean_dataset = [
+    img for img in all_images 
+    if img not in quality_report['corrupted_images']
+]
+
+# Step 3: Visual exploration with clean data
+edaflow.visualize_image_classes(
+    clean_dataset,
+    samples_per_class=6,
+    show_image_info=True
+)
+
+# Step 4: Ready for model training with confidence!
+print(f"✅ Dataset validated: {quality_report['quality_score']}/100 quality score")
+```
+
+**🎓 Educational Benefits:**
+- **Learn Quality Standards**: Understand what makes images suitable for ML
+- **Identify Common Issues**: Learn to spot systematic problems in datasets
+- **Quantitative Assessment**: Apply statistical methods to image quality
+- **Production Readiness**: Build robust data validation pipelines
+
 ### Working with Data (Future Implementation)
 ```python
 import pandas as pd
@@ -1387,6 +1553,22 @@ isort edaflow/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.10.0 (2025-08-05) - Image Quality Assessment Release 🔍
+- **NEW**: `assess_image_quality()` function for comprehensive image dataset quality assessment
+- **NEW**: Automated corruption detection for identifying unreadable or damaged images  
+- **NEW**: Brightness and contrast analysis with configurable thresholds
+- **NEW**: Blur detection using Laplacian variance for identifying potentially blurry images
+- **NEW**: Color mode analysis to distinguish grayscale vs color images and detect mixed modes
+- **NEW**: Dimension consistency analysis for detecting unusual aspect ratios and size outliers
+- **NEW**: Compression artifact detection for identifying potential quality issues
+- **NEW**: Statistical quality scoring system (0-100) for overall dataset health assessment
+- **NEW**: Automated recommendation system for actionable dataset improvement suggestions
+- **NEW**: Production-ready quality gates with customizable thresholds for ML pipelines
+- **NEW**: Scalable analysis with sampling support for large datasets
+- **ENHANCED**: Expanded edaflow from 15 to 16 comprehensive EDA functions
+- **ENHANCED**: Extended computer vision capabilities with quality assessment workflows
+- **ENHANCED**: Added scipy optimization for advanced blur detection algorithms
 
 ### v0.9.0 (2025-08-05) - Computer Vision EDA Release 🖼️
 - **NEW**: `visualize_image_classes()` function for comprehensive image classification dataset analysis
