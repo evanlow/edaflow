@@ -15,10 +15,11 @@ from .analysis import (
     visualize_interactive_boxplots,
     visualize_heatmap,
     visualize_histograms,
-    visualize_scatter_matrix
+    visualize_scatter_matrix,
+    visualize_image_classes
 )
 
-__version__ = "0.8.6"
+__version__ = "0.9.0"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 

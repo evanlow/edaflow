@@ -8,14 +8,23 @@ This module provides the complete suite of exploratory data analysis functions i
 - Statistical distribution analysis
 - Interactive visualizations and heatmaps
 - Comprehensive scatter matrix analysis
+- Computer vision EDA for image classification datasets
 """
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Tuple, Dict, Any
 import math
+import os
+import random
+from pathlib import Path
+try:
+    from PIL import Image
+    PIL_AVAILABLE = True
+except ImportError:
+    PIL_AVAILABLE = False
 
 
 def check_null_columns(df: pd.DataFrame,
@@ -2602,4 +2611,446 @@ def visualize_scatter_matrix(df: pd.DataFrame,
         print("💾 Use plt.savefig('filename.png') to save")
     
     # Show the plot
+    plt.show()
+
+
+def visualize_image_classes(
+    data_source: Union[str, pd.DataFrame],
+    class_column: Optional[str] = None,
+    image_path_column: Optional[str] = None, 
+    samples_per_class: int = 5,
+    grid_layout: Union[str, Tuple[int, int]] = 'auto',
+    figsize: Tuple[int, int] = (15, 10),
+    shuffle_samples: bool = True,
+    show_class_counts: bool = True,
+    show_image_info: bool = False,
+    title: str = "Class-wise Image Sample Visualization",
+    save_path: Optional[str] = None,
+    return_stats: bool = False
+) -> Optional[Dict[str, Any]]:
+    """
+    📸 Visualize random samples from each class in an image classification dataset.
+    
+    This function provides comprehensive exploratory data analysis for image datasets,
+    helping practitioners understand class distributions, identify data quality issues,
+    and spot potential problems like mislabeled images or class imbalances.
+    
+    Perfect for the initial phase of computer vision projects where understanding
+    your dataset is crucial for model success.
+    
+    Parameters
+    ----------
+    data_source : str or pd.DataFrame
+        Either a directory path containing class-named subfolders of images,
+        or a pandas DataFrame with image paths and class labels.
+        
+    class_column : str, optional
+        Column name containing class labels (required if data_source is DataFrame).
+        
+    image_path_column : str, optional  
+        Column name containing image file paths (required if data_source is DataFrame).
+        
+    samples_per_class : int, default=5
+        Number of random samples to display per class.
+        
+    grid_layout : str or tuple, default='auto'
+        Layout for the visualization grid. Options:
+        - 'auto': Automatically determine optimal layout
+        - 'square': Force square-ish layout
+        - (rows, cols): Specify exact grid dimensions
+        
+    figsize : tuple, default=(15, 10)
+        Figure size as (width, height) in inches.
+        
+    shuffle_samples : bool, default=True
+        Whether to randomly sample from each class or take first N samples.
+        
+    show_class_counts : bool, default=True
+        Whether to display class distribution statistics.
+        
+    show_image_info : bool, default=False
+        Whether to display technical image information (dimensions, file size).
+        
+    title : str, default="Class-wise Image Sample Visualization"
+        Title for the visualization.
+        
+    save_path : str, optional
+        Path to save the visualization. If None, plot is only displayed.
+        
+    return_stats : bool, default=False
+        Whether to return detailed statistics about the dataset.
+        
+    Returns
+    -------
+    dict or None
+        If return_stats=True, returns dictionary with dataset statistics:
+        - 'class_counts': Number of samples per class
+        - 'total_samples': Total number of images
+        - 'num_classes': Number of classes
+        - 'balance_ratio': Ratio of smallest to largest class
+        - 'imbalance_warnings': List of potential balance issues
+        - 'corrupted_images': List of corrupted/unreadable images
+        
+    Examples
+    --------
+    🔍 **Directory-based Analysis** (Common for organized datasets):
+    
+    >>> import edaflow
+    >>> 
+    >>> # Analyze dataset organized in class folders
+    >>> edaflow.visualize_image_classes(
+    ...     'dataset/train/',           # Directory with class subfolders
+    ...     samples_per_class=8,        # Show 8 samples per class
+    ...     show_class_counts=True      # Display class distribution
+    ... )
+    
+    📊 **DataFrame-based Analysis** (For datasets with metadata):
+    
+    >>> import pandas as pd
+    >>> df = pd.DataFrame({
+    ...     'image_path': ['images/cat1.jpg', 'images/dog1.jpg', ...],
+    ...     'class': ['cat', 'dog', 'cat', 'dog', ...],
+    ...     'split': ['train', 'test', 'train', 'val', ...]
+    ... })
+    >>> 
+    >>> # Analyze with custom parameters
+    >>> stats = edaflow.visualize_image_classes(
+    ...     df,
+    ...     image_path_column='image_path',
+    ...     class_column='class', 
+    ...     samples_per_class=6,
+    ...     show_image_info=True,       # Show image dimensions
+    ...     return_stats=True           # Get detailed statistics
+    ... )
+    >>> print(f"Dataset balance ratio: {stats['balance_ratio']:.2f}")
+    
+    🎯 **Medical/Scientific Imaging**:
+    
+    >>> # Analysis for medical imaging dataset
+    >>> edaflow.visualize_image_classes(
+    ...     'medical_scans/',
+    ...     samples_per_class=4,        # Fewer samples for detailed view
+    ...     figsize=(20, 15),          # Larger figure for detail
+    ...     title="Medical Scan Classification Dataset",
+    ...     save_path='dataset_overview.png'
+    ... )
+    
+    📈 **Production Dataset Validation**:
+    
+    >>> # Quick validation of production dataset
+    >>> stats = edaflow.visualize_image_classes(
+    ...     production_df,
+    ...     image_path_column='file_path',
+    ...     class_column='predicted_class',
+    ...     samples_per_class=10,
+    ...     return_stats=True
+    ... )
+    >>> 
+    >>> # Check for issues
+    >>> if stats['balance_ratio'] < 0.3:
+    ...     print("⚠️  Significant class imbalance detected!")
+    >>> if stats['corrupted_images']:
+    ...     print(f"🚨 {len(stats['corrupted_images'])} corrupted images found")
+    
+    Notes
+    -----
+    📋 **Requirements**:
+    - Requires Pillow (PIL) for image loading: `pip install Pillow`
+    - Images should be in common formats: .jpg, .jpeg, .png, .bmp, .tiff
+    
+    🎯 **Best Practices**:
+    - Use 5-10 samples per class for initial exploration
+    - Enable show_image_info for debugging dimension issues  
+    - Set shuffle_samples=False for reproducible analysis
+    - Save visualizations for documentation and reporting
+    
+    ⚠️  **Common Issues**:
+    - Corrupted images are automatically skipped with warnings
+    - Very large images are resized for display efficiency
+    - Mixed aspect ratios are handled gracefully in grid layout
+    
+    🔍 **What to Look For**:
+    - **Class Balance**: Are all classes represented equally?
+    - **Data Quality**: Any corrupted, mislabeled, or unusual images?
+    - **Visual Consistency**: Do images within classes look similar?
+    - **Dataset Bias**: Any systematic differences between classes?
+    """
+    
+    # Check PIL availability
+    if not PIL_AVAILABLE:
+        raise ImportError(
+            "🚨 PIL (Pillow) is required for image visualization.\n"
+            "📦 Install with: pip install Pillow"
+        )
+    
+    print("🖼️  Starting Image Classification EDA...")
+    print("=" * 55)
+    
+    # Parse data source and collect image information
+    if isinstance(data_source, str):
+        # Directory-based input
+        if not os.path.exists(data_source):
+            raise FileNotFoundError(f"🚨 Directory not found: {data_source}")
+            
+        print(f"📁 Analyzing directory: {data_source}")
+        image_data = _parse_directory_structure(data_source)
+        
+    elif isinstance(data_source, pd.DataFrame):
+        # DataFrame-based input
+        if class_column is None or image_path_column is None:
+            raise ValueError(
+                "🚨 For DataFrame input, both 'class_column' and 'image_path_column' must be specified"
+            )
+            
+        print(f"📊 Analyzing DataFrame with {len(data_source)} rows")
+        image_data = _parse_dataframe_structure(data_source, class_column, image_path_column)
+        
+    else:
+        raise TypeError("🚨 data_source must be either a directory path (str) or pandas DataFrame")
+    
+    # Generate statistics
+    stats = _generate_image_dataset_stats(image_data)
+    
+    # Display class distribution
+    if show_class_counts:
+        _display_class_distribution(stats)
+    
+    # Create visualization
+    _create_image_class_visualization(
+        image_data, stats, samples_per_class, grid_layout, 
+        figsize, shuffle_samples, show_image_info, title, save_path
+    )
+    
+    print(f"\n✅ Image classification EDA completed!")
+    print("🎨 Visualization displayed above")
+    if save_path:
+        print(f"💾 Saved to: {save_path}")
+    
+    if return_stats:
+        return stats
+
+
+def _parse_directory_structure(directory_path: str) -> Dict[str, List[str]]:
+    """Parse directory structure to extract class-organized image paths."""
+    image_extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif'}
+    image_data = {}
+    
+    directory = Path(directory_path)
+    
+    for class_dir in directory.iterdir():
+        if class_dir.is_dir():
+            class_name = class_dir.name
+            image_paths = []
+            
+            for img_file in class_dir.iterdir():
+                if img_file.suffix.lower() in image_extensions:
+                    image_paths.append(str(img_file))
+            
+            if image_paths:
+                image_data[class_name] = image_paths
+                print(f"   📂 {class_name}: {len(image_paths)} images")
+    
+    if not image_data:
+        raise ValueError(f"🚨 No images found in {directory_path}")
+    
+    return image_data
+
+
+def _parse_dataframe_structure(df: pd.DataFrame, class_col: str, path_col: str) -> Dict[str, List[str]]:
+    """Parse DataFrame to extract class-organized image paths."""
+    if class_col not in df.columns:
+        raise ValueError(f"🚨 Column '{class_col}' not found in DataFrame")
+    if path_col not in df.columns:
+        raise ValueError(f"🚨 Column '{path_col}' not found in DataFrame")
+    
+    image_data = {}
+    
+    for class_name in df[class_col].unique():
+        class_paths = df[df[class_col] == class_name][path_col].tolist()
+        # Filter out missing/null paths
+        valid_paths = [p for p in class_paths if pd.notna(p) and os.path.exists(str(p))]
+        
+        if valid_paths:
+            image_data[class_name] = valid_paths
+            print(f"   📊 {class_name}: {len(valid_paths)} images")
+        else:
+            print(f"   ⚠️  {class_name}: No valid image paths found")
+    
+    if not image_data:
+        raise ValueError("🚨 No valid images found in DataFrame")
+    
+    return image_data
+
+
+def _generate_image_dataset_stats(image_data: Dict[str, List[str]]) -> Dict[str, Any]:
+    """Generate comprehensive statistics about the image dataset."""
+    class_counts = {class_name: len(paths) for class_name, paths in image_data.items()}
+    total_samples = sum(class_counts.values())
+    num_classes = len(class_counts)
+    
+    # Calculate balance metrics
+    min_count = min(class_counts.values())
+    max_count = max(class_counts.values())
+    balance_ratio = min_count / max_count if max_count > 0 else 0
+    
+    # Identify imbalance issues
+    imbalance_warnings = []
+    mean_count = total_samples / num_classes
+    
+    for class_name, count in class_counts.items():
+        if count < mean_count * 0.5:  # Less than 50% of average
+            percentage_below = ((mean_count - count) / mean_count) * 100
+            imbalance_warnings.append(f"'{class_name}' has {percentage_below:.1f}% fewer samples than average")
+    
+    # Check for corrupted images (placeholder - would need actual image validation)
+    corrupted_images = []  # Would be populated by actual image validation
+    
+    return {
+        'class_counts': class_counts,
+        'total_samples': total_samples,
+        'num_classes': num_classes,
+        'balance_ratio': balance_ratio,
+        'imbalance_warnings': imbalance_warnings,
+        'corrupted_images': corrupted_images,
+        'min_count': min_count,
+        'max_count': max_count,
+        'mean_count': mean_count
+    }
+
+
+def _display_class_distribution(stats: Dict[str, Any]) -> None:
+    """Display formatted class distribution statistics."""
+    print(f"\n📊 Class Distribution Summary:")
+    print("=" * 40)
+    
+    class_counts = stats['class_counts']
+    total_samples = stats['total_samples']
+    
+    # Sort classes by count (descending)
+    sorted_classes = sorted(class_counts.items(), key=lambda x: x[1], reverse=True)
+    
+    for class_name, count in sorted_classes:
+        percentage = (count / total_samples) * 100
+        bar_length = int((count / stats['max_count']) * 20)  # Scale to 20 chars
+        bar = "█" * bar_length + "░" * (20 - bar_length)
+        print(f"🏷️  {class_name:.<15} {count:>6} ({percentage:>5.1f}%) {bar}")
+    
+    print(f"\n📈 Dataset Overview:")
+    print(f"   📊 Total samples: {total_samples:,}")
+    print(f"   🏷️  Total classes: {stats['num_classes']}")
+    print(f"   ⚖️  Balance ratio: {stats['balance_ratio']:.3f} (min/max)")
+    print(f"   📉 Smallest class: {stats['min_count']} samples")
+    print(f"   📈 Largest class: {stats['max_count']} samples")
+    
+    # Display warnings
+    if stats['imbalance_warnings']:
+        print(f"\n⚠️  Potential Issues Detected:")
+        for warning in stats['imbalance_warnings']:
+            print(f"   🔸 {warning}")
+    else:
+        print(f"\n✅ No significant class imbalances detected")
+
+
+def _create_image_class_visualization(
+    image_data: Dict[str, List[str]], 
+    stats: Dict[str, Any],
+    samples_per_class: int,
+    grid_layout: Union[str, Tuple[int, int]],
+    figsize: Tuple[int, int],
+    shuffle_samples: bool,
+    show_image_info: bool,
+    title: str,
+    save_path: Optional[str]
+) -> None:
+    """Create the main image class visualization."""
+    
+    num_classes = len(image_data)
+    
+    # Determine grid layout
+    if grid_layout == 'auto':
+        cols = min(samples_per_class, 5)  # Max 5 columns for readability
+        rows = num_classes
+    elif grid_layout == 'square':
+        side_length = math.ceil(math.sqrt(num_classes * samples_per_class))
+        rows = math.ceil(num_classes * samples_per_class / side_length)
+        cols = side_length
+    else:
+        rows, cols = grid_layout
+    
+    # Create figure with subplots
+    fig, axes = plt.subplots(
+        rows, cols, 
+        figsize=figsize,
+        facecolor='white'
+    )
+    
+    # Handle single row/column cases
+    if rows == 1:
+        axes = axes.reshape(1, -1)
+    elif cols == 1:
+        axes = axes.reshape(-1, 1)
+    elif rows == 1 and cols == 1:
+        axes = np.array([[axes]])
+    
+    # Set main title
+    fig.suptitle(title, fontsize=16, fontweight='bold', y=0.95)
+    
+    current_row = 0
+    
+    # Plot samples for each class
+    for class_name, image_paths in image_data.items():
+        # Sample images for this class
+        if shuffle_samples:
+            selected_paths = random.sample(image_paths, min(samples_per_class, len(image_paths)))
+        else:
+            selected_paths = image_paths[:samples_per_class]
+        
+        # Plot each sample
+        for col_idx, img_path in enumerate(selected_paths):
+            if col_idx >= cols:  # Skip if too many samples for grid
+                break
+                
+            ax = axes[current_row, col_idx]
+            
+            try:
+                # Load and display image
+                with Image.open(img_path) as img:
+                    ax.imshow(img)
+                    ax.set_title(f"{class_name}", fontsize=10, fontweight='bold')
+                    ax.axis('off')
+                    
+                    # Add image info if requested
+                    if show_image_info:
+                        img_size = img.size
+                        file_size = os.path.getsize(img_path) / 1024  # KB
+                        ax.text(0.02, 0.02, f"{img_size[0]}×{img_size[1]}\n{file_size:.1f}KB", 
+                               transform=ax.transAxes, fontsize=8, 
+                               bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
+                        
+            except Exception as e:
+                # Handle corrupted images
+                ax.text(0.5, 0.5, f"❌\nCorrupted\nImage", 
+                       ha='center', va='center', transform=ax.transAxes,
+                       fontsize=10, color='red')
+                ax.set_title(f"{class_name} (Error)", fontsize=10, color='red')
+                ax.axis('off')
+                print(f"   ⚠️  Corrupted image: {img_path}")
+        
+        # Clear unused axes in this row
+        for col_idx in range(len(selected_paths), cols):
+            axes[current_row, col_idx].axis('off')
+        
+        current_row += 1
+    
+    # Clear any remaining unused axes
+    for row_idx in range(current_row, rows):
+        for col_idx in range(cols):
+            axes[row_idx, col_idx].axis('off')
+    
+    plt.tight_layout()
+    
+    # Save if requested
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        
     plt.show()

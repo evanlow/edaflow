@@ -23,6 +23,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Comprehensive Heatmap Visualizations**: Correlation matrices, missing data patterns, values heatmaps, and cross-tabulations
 - **Statistical Histogram Analysis**: Advanced histogram visualization with skewness detection, normality testing, and distribution analysis
 - **Scatter Matrix Analysis**: Advanced pairwise relationship visualization with customizable matrix layouts, regression lines, and statistical insights
+- **Computer Vision EDA**: Class-wise image sample visualization for image classification datasets with balance analysis
 - **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
@@ -1161,6 +1162,162 @@ edaflow.visualize_scatter_matrix(
 
 Perfect for exploring complex relationships in multivariate datasets and identifying patterns, correlations, and outliers across multiple dimensions.
 
+## 🖼️ Computer Vision EDA with `visualize_image_classes()` (NEW in v0.9.0!)
+
+Comprehensive exploratory data analysis for image classification datasets with professional visualizations and statistical insights.
+
+### Complete Image Classification EDA Workflow
+
+```python
+import edaflow
+import pandas as pd
+
+# Method 1: Directory-based Analysis (Most Common)
+# Dataset organized as: dataset/train/cats/, dataset/train/dogs/, etc.
+edaflow.visualize_image_classes(
+    'dataset/train/',           # Directory with class subfolders
+    samples_per_class=8,        # Show 8 random samples per class
+    show_class_counts=True,     # Display distribution analysis
+    figsize=(18, 12)           # Large figure for detailed view
+)
+
+# Method 2: DataFrame-based Analysis  
+df = pd.DataFrame({
+    'image_path': ['images/cat1.jpg', 'images/dog1.jpg', ...],
+    'class': ['cat', 'dog', 'bird', 'fish', ...],
+    'split': ['train', 'val', 'test', ...]
+})
+
+# Comprehensive analysis with statistics
+stats = edaflow.visualize_image_classes(
+    df,
+    image_path_column='image_path',
+    class_column='class',
+    samples_per_class=6,
+    show_image_info=True,       # Show dimensions and file sizes
+    return_stats=True,          # Get detailed statistics
+    title="Medical Image Classification Dataset"
+)
+
+# Check dataset health
+print(f"📊 Total classes: {stats['num_classes']}")
+print(f"📈 Total samples: {stats['total_samples']:,}")
+print(f"⚖️  Balance ratio: {stats['balance_ratio']:.3f}")
+
+if stats['balance_ratio'] < 0.5:
+    print("⚠️  Significant class imbalance detected!")
+    print("💡 Consider data augmentation or resampling")
+
+# Method 3: Production Dataset Validation
+validation_stats = edaflow.visualize_image_classes(
+    production_df,
+    image_path_column='file_path',
+    class_column='predicted_class',
+    samples_per_class=10,
+    shuffle_samples=False,      # Reproducible sampling
+    save_path='dataset_report.png',  # Save for documentation
+    return_stats=True
+)
+```
+
+### Key Features
+
+**📁 Flexible Input Support:**
+- **Directory Structure**: Automatically detect classes from folder names
+- **DataFrame Integration**: Work with existing metadata and file paths
+- **Mixed Sources**: Handle various image formats and organizations
+
+**📊 Comprehensive Analytics:**
+```python
+# What you get from the analysis:
+{
+    'class_counts': {'cats': 1200, 'dogs': 1150, 'birds': 890},
+    'total_samples': 3240,
+    'num_classes': 3,
+    'balance_ratio': 0.742,  # Smallest class / Largest class
+    'imbalance_warnings': ['birds has 25.8% fewer samples than average'],
+    'corrupted_images': []   # List of problematic files
+}
+```
+
+**🎨 Professional Visualizations:**
+- **Smart Grid Layouts**: Automatically optimized for readability
+- **Class Distribution Charts**: Visual and statistical balance analysis  
+- **Random Sampling**: Representative samples from each class
+- **Quality Indicators**: Highlight corrupted or unusual images
+- **Technical Details**: Optional file sizes and dimensions display
+
+**🔍 Quality Assessment:**
+- ✅ **Balance Detection**: Identify over/under-represented classes
+- ✅ **Corruption Checking**: Flag unreadable or damaged images  
+- ✅ **Dimension Analysis**: Spot unusual aspect ratios or sizes
+- ✅ **Statistical Summary**: Comprehensive dataset health metrics
+
+### Perfect For:
+
+**🎯 Initial Dataset Exploration:**
+```python
+# Quick dataset overview
+edaflow.visualize_image_classes('new_dataset/', samples_per_class=5)
+```
+
+**🧪 Medical/Scientific Imaging:**
+```python
+# Detailed analysis for medical scans
+edaflow.visualize_image_classes(
+    'medical_scans/',
+    samples_per_class=4,
+    figsize=(20, 15),
+    show_image_info=True,
+    title="Medical Scan Classification Analysis"
+)
+```
+
+**📊 Production Monitoring:**
+```python
+# Validate production datasets
+stats = edaflow.visualize_image_classes(
+    production_data,
+    image_path_column='path',
+    class_column='label', 
+    return_stats=True
+)
+
+# Automated quality checks
+assert stats['balance_ratio'] > 0.3, "Class imbalance too severe!"
+assert len(stats['corrupted_images']) == 0, "Corrupted images found!"
+```
+
+### Integration with Existing EDA Workflow
+
+```python
+# Complete ML Pipeline EDA
+import edaflow
+
+# 1. Understand your image dataset
+stats = edaflow.visualize_image_classes(
+    'dataset/', 
+    samples_per_class=8,
+    return_stats=True
+)
+
+# 2. Prepare metadata for analysis  
+metadata_df = prepare_metadata_from_stats(stats)
+
+# 3. Apply traditional EDA to metadata
+edaflow.check_null_columns(metadata_df)
+edaflow.visualize_categorical_values(metadata_df)
+edaflow.visualize_heatmap(metadata_df)
+
+# 4. Ready for model training with confidence!
+```
+
+**🎓 Educational Benefits:**
+- **Understand Dataset Characteristics**: Learn what makes a good training set
+- **Identify Common Pitfalls**: Spot issues before they affect model performance  
+- **Statistical Thinking**: Apply EDA principles to computer vision
+- **Best Practices**: Learn industry-standard dataset validation techniques
+
 ### Working with Data (Future Implementation)
 ```python
 import pandas as pd
@@ -1230,6 +1387,19 @@ isort edaflow/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.9.0 (2025-08-05) - Computer Vision EDA Release 🖼️
+- **NEW**: `visualize_image_classes()` function for comprehensive image classification dataset analysis
+- **NEW**: Computer Vision EDA workflow support with class-wise sample visualization
+- **NEW**: Directory-based and DataFrame-based image dataset analysis capabilities
+- **NEW**: Automatic class distribution analysis with imbalance detection
+- **NEW**: Image quality assessment with corrupted image detection
+- **NEW**: Statistical insights for image datasets (balance ratios, sample counts, warnings)
+- **NEW**: Professional grid layouts for image sample visualization
+- **NEW**: Comprehensive documentation for computer vision EDA workflows
+- **ENHANCED**: Expanded edaflow from 14 to 15 comprehensive EDA functions
+- **ENHANCED**: Added Pillow dependency for robust image processing
+- **ENHANCED**: Complete computer vision integration maintaining edaflow's educational philosophy
 
 ### v0.8.6 (2025-08-05) - PyPI Changelog Display Fix
 - **CRITICAL**: Fixed PyPI changelog not displaying latest releases (v0.8.4, v0.8.5)

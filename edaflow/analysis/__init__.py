@@ -17,7 +17,8 @@ from .core import (
     visualize_interactive_boxplots,
     visualize_heatmap,
     visualize_histograms,
-    visualize_scatter_matrix
+    visualize_scatter_matrix,
+    visualize_image_classes
 )
 
 __all__ = [
@@ -33,5 +34,6 @@ __all__ = [
     'visualize_interactive_boxplots',
     'visualize_heatmap',
     'visualize_histograms',
-    'visualize_scatter_matrix'
+    'visualize_scatter_matrix',
+    'visualize_image_classes'
 ]

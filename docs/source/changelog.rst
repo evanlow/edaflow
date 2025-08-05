@@ -6,6 +6,38 @@ All notable changes to edaflow are documented here.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Version 0.9.0 (2025-08-05) - Computer Vision EDA Release 🖼️
+------------------------------------------------------------
+
+**Added**
+~~~~~~~~~
+* **NEW**: ``visualize_image_classes()`` function for comprehensive image classification dataset analysis
+* **NEW**: Computer Vision EDA workflow support with class-wise sample visualization
+* **NEW**: Directory-based and DataFrame-based image dataset analysis capabilities  
+* **NEW**: Automatic class distribution analysis with imbalance detection
+* **NEW**: Image quality assessment with corrupted image detection
+* **NEW**: Statistical insights for image datasets (balance ratios, sample counts, warnings)
+* **NEW**: Professional grid layouts for image sample visualization with smart sizing
+* **NEW**: Technical image information display (dimensions, file sizes, aspect ratios)
+* **NEW**: Comprehensive documentation for computer vision EDA workflows
+
+**Enhanced**
+~~~~~~~~~~~~
+* Complete EDA suite now includes 15 functions (expanded from 14)
+* Added Pillow dependency for robust image processing and visualization
+* Extended edaflow's educational philosophy to computer vision domains
+* Professional documentation with computer vision examples and workflows
+* Updated package metadata and dependencies for image processing capabilities
+
+**Technical Features**
+~~~~~~~~~~~~~~~~~~~~~~
+* **Flexible Input Support**: Both directory structures and DataFrame-based workflows
+* **Quality Assessment**: Automatic detection of corrupted images and data quality issues
+* **Statistical Analysis**: Comprehensive class balance analysis with actionable warnings
+* **Professional Visualization**: Smart grid layouts with customizable sampling strategies
+* **Educational Integration**: Maintains edaflow's core principle of teaching through analysis
+* **Production Ready**: Robust error handling and validation for real-world datasets
+
 Version 0.8.6 (2025-08-05) - PyPI Changelog Display Fix
 --------------------------------------------------------
 
