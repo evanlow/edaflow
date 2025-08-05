@@ -18,6 +18,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Interactive Boxplot Visualization**: Interactive Plotly Express boxplots with zoom, hover, and statistical tooltips
 - **Comprehensive Heatmap Visualizations**: Correlation matrices, missing data patterns, values heatmaps, and cross-tabulations
 - **Statistical Histogram Analysis**: Advanced histogram visualization with skewness detection, normality testing, and distribution analysis
+- **Scatter Matrix Analysis**: Advanced pairwise relationship visualization with customizable matrix layouts, regression lines, and statistical insights
 - **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
@@ -65,7 +66,7 @@ import edaflow
 # Test the installation
 print(edaflow.hello())
 
-# Complete EDA workflow with all 12 functions:
+# Complete EDA workflow with all 14 functions:
 import pandas as pd
 df = pd.read_csv('your_data.csv')
 
@@ -88,23 +89,27 @@ edaflow.display_column_types(df_cleaned)
 df_numeric_imputed = edaflow.impute_numerical_median(df_cleaned)
 df_fully_imputed = edaflow.impute_categorical_mode(df_numeric_imputed)
 
-# 7. Visualize numerical distributions and detect outliers
-edaflow.visualize_numerical_boxplots(df_fully_imputed, show_skewness=True)
-
-# 8. Interactive boxplot analysis
-edaflow.visualize_interactive_boxplots(df_fully_imputed)
-
-# 9. Comprehensive heatmap analysis
-edaflow.visualize_heatmaps(df_fully_imputed, heatmap_type='all')
-
-# 10. Statistical histogram analysis with skewness detection (NEW!)
+# 7. Statistical distribution analysis with advanced insights
 edaflow.visualize_histograms(df_fully_imputed, kde=True, show_normal_curve=True)
 
-# 11. Handle outliers automatically
+# 8. Comprehensive relationship analysis
+edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='correlation')
+edaflow.visualize_scatter_matrix(df_fully_imputed, show_regression=True)  # NEW!
+
+# 9. Outlier detection and visualization
+edaflow.visualize_numerical_boxplots(df_fully_imputed, show_skewness=True)
+edaflow.visualize_interactive_boxplots(df_fully_imputed)
+
+# 10. Advanced heatmap analysis
+edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='missing')
+edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='values')
+
+# 11. Final data cleaning with outlier handling
 df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbose=True)
 
-# 12. Verify final results
-edaflow.visualize_numerical_boxplots(df_final, title="Clean Data Distribution")
+# 12. Results verification with comprehensive relationship validation
+edaflow.visualize_scatter_matrix(df_final, title="Clean Data Relationships")  # NEW!
+edaflow.visualize_numerical_boxplots(df_final, title="Final Clean Distribution")
 ```
 
 ## Usage Examples
@@ -1066,6 +1071,82 @@ edaflow.analyze_categorical_columns(df, threshold=35)
 # - Mixed data type issues
 ```
 
+### Scatter Matrix Analysis
+
+Create comprehensive pairwise relationship visualizations with advanced customization options:
+
+```python
+import pandas as pd
+import edaflow
+
+# Load your dataset
+df = pd.read_csv('data.csv')
+
+# Basic scatter matrix for numerical columns
+edaflow.visualize_scatter_matrix(df)
+
+# Custom scatter matrix with specific columns
+numeric_cols = ['age', 'income', 'score', 'rating']
+edaflow.visualize_scatter_matrix(df, columns=numeric_cols)
+
+# Advanced configuration with color coding
+edaflow.visualize_scatter_matrix(
+    df, 
+    columns=['feature1', 'feature2', 'feature3'],
+    color_column='category',  # Color points by category
+    diagonal_type='kde',      # Use KDE plots on diagonal
+    upper_triangle='corr',    # Show correlations in upper triangle
+    lower_triangle='scatter', # Scatter plots in lower triangle
+    figsize=(12, 12)
+)
+
+# Matrix with regression lines
+edaflow.visualize_scatter_matrix(
+    df,
+    regression_line='linear',     # Add linear regression lines
+    alpha=0.7,                   # Semi-transparent points
+    diagonal_type='hist',        # Histograms on diagonal
+    bins=30                      # Custom bin count for histograms
+)
+
+# Advanced statistical analysis
+edaflow.visualize_scatter_matrix(
+    df,
+    columns=['x1', 'x2', 'x3', 'x4'],
+    regression_line='lowess',    # LOWESS smoothing curves
+    upper_triangle='blank',      # Clean upper triangle
+    lower_triangle='scatter',    # Focus on lower scatter plots
+    color_column='group',        # Color by categorical variable
+    figsize=(15, 15)
+)
+```
+
+**Key Features:**
+- **Flexible Layout**: Configure diagonal, upper triangle, and lower triangle independently
+- **Multiple Plot Types**: Histograms, KDE plots, box plots, scatter plots, correlation values
+- **Statistical Analysis**: Linear, polynomial, and LOWESS regression lines
+- **Color Coding**: Visualize relationships by categorical variables
+- **Customizable Styling**: Control figure size, transparency, colors, and more
+- **Smart Defaults**: Automatically handles missing data and optimal plot configurations
+
+**Diagonal Options:**
+- `'hist'`: Histograms showing distribution of each variable
+- `'kde'`: Kernel Density Estimation plots for smooth distributions  
+- `'box'`: Box plots showing quartiles and outliers
+
+**Triangle Options:**
+- `'scatter'`: Scatter plots showing pairwise relationships
+- `'corr'`: Correlation coefficients with color coding
+- `'blank'`: Empty space for cleaner presentation
+
+**Regression Line Types:**
+- `'linear'`: Linear regression lines
+- `'poly2'`: 2nd degree polynomial curves
+- `'poly3'`: 3rd degree polynomial curves
+- `'lowess'`: LOWESS smoothing curves
+
+Perfect for exploring complex relationships in multivariate datasets and identifying patterns, correlations, and outliers across multiple dimensions.
+
 ### Working with Data (Future Implementation)
 ```python
 import pandas as pd
@@ -1135,6 +1216,37 @@ isort edaflow/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.8.6 (2025-08-05) - PyPI Changelog Display Fix
+- **CRITICAL**: Fixed PyPI changelog not displaying latest releases (v0.8.4, v0.8.5)
+- **DOCUMENTATION**: Updated README.md changelog section that PyPI displays instead of CHANGELOG.md
+- **PYPI**: Synchronized README.md changelog with comprehensive CHANGELOG.md content
+- **ENHANCED**: Ensured PyPI users see complete version history and latest features
+
+### v0.8.5 (2025-08-05) - Code Organization and Structure Improvement Release
+- **REFACTORED**: Renamed `missing_data.py` to `core.py` to better reflect comprehensive EDA functionality
+- **ENHANCED**: Updated module docstring to describe complete suite of analysis functions
+- **IMPROVED**: Better project structure with appropriately named core module containing all 14 EDA functions
+- **FIXED**: Updated all imports and tests to reference the new core module structure
+- **MAINTAINED**: Full backward compatibility - all functions work exactly the same
+
+### v0.8.4 (2025-08-05) - Comprehensive Scatter Matrix Visualization Release
+- **NEW**: `visualize_scatter_matrix()` function with advanced pairwise relationship analysis
+- **NEW**: Flexible diagonal plots: histograms, KDE curves, and box plots
+- **NEW**: Customizable upper/lower triangles: scatter plots, correlation coefficients, or blank
+- **NEW**: Color coding by categorical variables for group-specific pattern analysis
+- **NEW**: Multiple regression line types: linear, polynomial (2nd/3rd degree), and LOWESS smoothing
+- **NEW**: Comprehensive statistical insights: correlation analysis, pattern identification
+- **NEW**: Professional scatter matrix layouts with adaptive figure sizing
+- **NEW**: Full integration with existing edaflow workflow and styling consistency
+- **ENHANCED**: Complete EDA visualization suite now includes 14 functions (from 13)
+- **ENHANCED**: Added scikit-learn and statsmodels dependencies for advanced analytics
+- **ENHANCED**: Updated package metadata and documentation for scatter matrix capabilities
+
+### v0.8.3 (2025-08-04) - Critical Documentation Fix Release
+- **CRITICAL**: Updated README.md changelog section that PyPI was displaying instead of CHANGELOG.md
+- **PYPI**: Fixed PyPI changelog display by synchronizing README.md changelog with main CHANGELOG.md
+- **DOCUMENTATION**: Ensured consistent changelog information across all package files
 
 ### v0.8.2 (2025-08-04) - Metadata Enhancement Release
 - **METADATA**: Enhanced PyPI metadata to ensure proper changelog display

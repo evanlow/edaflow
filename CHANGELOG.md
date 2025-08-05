@@ -19,6 +19,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.8.6] - 2025-08-05
+
+### Fixed - PyPI Changelog Display Issue
+- **CRITICAL**: Fixed PyPI changelog not displaying latest releases (v0.8.4, v0.8.5)
+- **DOCUMENTATION**: Updated README.md changelog section that PyPI displays instead of CHANGELOG.md
+- **PYPI**: Synchronized README.md changelog with comprehensive CHANGELOG.md content
+- **ENHANCED**: Ensured PyPI users see complete version history and latest features
+
+## [0.8.5] - 2025-08-05
+
+### Changed - Code Organization and Structure Improvement Release
+- **REFACTORED**: Renamed `missing_data.py` to `core.py` to better reflect comprehensive EDA functionality
+- **ENHANCED**: Updated module docstring to describe complete suite of analysis functions
+- **IMPROVED**: Better project structure with appropriately named core module containing all 14 EDA functions
+- **FIXED**: Updated all imports and tests to reference the new core module structure
+- **MAINTAINED**: Full backward compatibility - all functions work exactly the same
+
+## [0.8.4] - 2025-08-05
+
+### Added - Comprehensive Scatter Matrix Visualization Release
+- **NEW**: `visualize_scatter_matrix()` function with advanced pairwise relationship analysis
+- **NEW**: Flexible diagonal plots: histograms, KDE curves, and box plots
+- **NEW**: Customizable upper/lower triangles: scatter plots, correlation coefficients, or blank
+- **NEW**: Color coding by categorical variables for group-specific pattern analysis
+- **NEW**: Multiple regression line types: linear, polynomial (2nd/3rd degree), and LOWESS smoothing
+- **NEW**: Comprehensive statistical insights: correlation analysis, pattern identification
+- **NEW**: Professional scatter matrix layouts with adaptive figure sizing
+- **NEW**: Full integration with existing edaflow workflow and styling consistency
+- **ENHANCED**: Complete EDA visualization suite now includes 14 functions (from 13)
+- **ENHANCED**: Added scikit-learn and statsmodels dependencies for advanced analytics
+- **ENHANCED**: Updated package metadata and documentation for scatter matrix capabilities
+
+### Technical Features
+- **Matrix Customization**: Independent control of diagonal, upper, and lower triangle content
+- **Statistical Analysis**: Automatic correlation strength categorization and reporting  
+- **Regression Analysis**: Advanced trend line fitting with multiple algorithm options
+- **Color Intelligence**: Automatic categorical/numerical variable handling for color coding
+- **Performance Optimization**: Efficient handling of large datasets with smart sampling suggestions
+- **Error Handling**: Comprehensive validation with informative error messages
+- **Professional Output**: Publication-ready visualizations with consistent edaflow styling
+
 ## [0.8.3] - 2025-08-04
 
 ### Fixed

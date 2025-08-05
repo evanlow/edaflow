@@ -554,7 +554,7 @@ def test_impute_numerical_median_import():
 
 def test_impute_numerical_median_basic():
     """Test basic numerical imputation with median"""
-    from edaflow.analysis.missing_data import impute_numerical_median
+    from edaflow.analysis.core import impute_numerical_median
     
     df = pd.DataFrame({
         'age': [25, None, 35, None, 45],
@@ -578,7 +578,7 @@ def test_impute_numerical_median_basic():
 
 def test_impute_numerical_median_inplace():
     """Test inplace imputation"""
-    from edaflow.analysis.missing_data import impute_numerical_median
+    from edaflow.analysis.core import impute_numerical_median
     
     df = pd.DataFrame({
         'age': [20, None, 40],
@@ -599,7 +599,7 @@ def test_impute_numerical_median_inplace():
 
 def test_impute_numerical_median_specific_columns():
     """Test imputation of specific columns only"""
-    from edaflow.analysis.missing_data import impute_numerical_median
+    from edaflow.analysis.core import impute_numerical_median
     
     df = pd.DataFrame({
         'age': [25, None, 35],
@@ -619,7 +619,7 @@ def test_impute_numerical_median_specific_columns():
 
 def test_impute_numerical_median_no_missing():
     """Test with DataFrame that has no missing values"""
-    from edaflow.analysis.missing_data import impute_numerical_median
+    from edaflow.analysis.core import impute_numerical_median
     
     df = pd.DataFrame({
         'age': [25, 30, 35],
@@ -634,7 +634,7 @@ def test_impute_numerical_median_no_missing():
 
 def test_impute_numerical_median_all_missing():
     """Test with column that has all missing values"""
-    from edaflow.analysis.missing_data import impute_numerical_median
+    from edaflow.analysis.core import impute_numerical_median
     
     df = pd.DataFrame({
         'age': [25, 30, 35],
@@ -650,7 +650,7 @@ def test_impute_numerical_median_all_missing():
 
 def test_impute_numerical_median_empty_dataframe():
     """Test with empty DataFrame"""
-    from edaflow.analysis.missing_data import impute_numerical_median
+    from edaflow.analysis.core import impute_numerical_median
     
     df = pd.DataFrame()
     result = impute_numerical_median(df)
@@ -660,7 +660,7 @@ def test_impute_numerical_median_empty_dataframe():
 
 def test_impute_numerical_median_invalid_input():
     """Test with invalid input"""
-    from edaflow.analysis.missing_data import impute_numerical_median
+    from edaflow.analysis.core import impute_numerical_median
     
     with pytest.raises(ValueError, match="Input must be a pandas DataFrame"):
         impute_numerical_median("not a dataframe")
@@ -668,7 +668,7 @@ def test_impute_numerical_median_invalid_input():
 
 def test_impute_numerical_median_invalid_columns():
     """Test with invalid column specifications"""
-    from edaflow.analysis.missing_data import impute_numerical_median
+    from edaflow.analysis.core import impute_numerical_median
     
     df = pd.DataFrame({
         'age': [25, None, 35],
@@ -696,7 +696,7 @@ def test_impute_categorical_mode_import():
 
 def test_impute_categorical_mode_basic():
     """Test basic categorical imputation with mode"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame({
         'category': ['A', 'B', 'A', None, 'A'],
@@ -720,7 +720,7 @@ def test_impute_categorical_mode_basic():
 
 def test_impute_categorical_mode_inplace():
     """Test inplace imputation"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame({
         'category': ['X', None, 'X'],
@@ -741,7 +741,7 @@ def test_impute_categorical_mode_inplace():
 
 def test_impute_categorical_mode_specific_columns():
     """Test imputation of specific columns only"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame({
         'category': ['A', None, 'A'],
@@ -761,7 +761,7 @@ def test_impute_categorical_mode_specific_columns():
 
 def test_impute_categorical_mode_no_missing():
     """Test with DataFrame that has no missing values"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame({
         'category': ['A', 'B', 'C'],
@@ -776,7 +776,7 @@ def test_impute_categorical_mode_no_missing():
 
 def test_impute_categorical_mode_all_missing():
     """Test with column that has all missing values"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame({
         'category': ['A', 'B', 'C'],
@@ -792,7 +792,7 @@ def test_impute_categorical_mode_all_missing():
 
 def test_impute_categorical_mode_mode_ties():
     """Test with mode ties (multiple values with same frequency)"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame({
         'category': ['A', 'B', 'A', 'B', None]  # A and B both appear twice
@@ -807,7 +807,7 @@ def test_impute_categorical_mode_mode_ties():
 
 def test_impute_categorical_mode_empty_dataframe():
     """Test with empty DataFrame"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame()
     result = impute_categorical_mode(df)
@@ -817,7 +817,7 @@ def test_impute_categorical_mode_empty_dataframe():
 
 def test_impute_categorical_mode_invalid_input():
     """Test with invalid input"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     with pytest.raises(ValueError, match="Input must be a pandas DataFrame"):
         impute_categorical_mode("not a dataframe")
@@ -825,7 +825,7 @@ def test_impute_categorical_mode_invalid_input():
 
 def test_impute_categorical_mode_invalid_columns():
     """Test with invalid column specifications"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame({
         'category': ['A', None, 'B'],
@@ -839,7 +839,7 @@ def test_impute_categorical_mode_invalid_columns():
 
 def test_impute_categorical_mode_no_categorical_columns():
     """Test with DataFrame that has no categorical columns"""
-    from edaflow.analysis.missing_data import impute_categorical_mode
+    from edaflow.analysis.core import impute_categorical_mode
     
     df = pd.DataFrame({
         'age': [25, 30, 35],

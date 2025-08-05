@@ -14,10 +14,11 @@ from .analysis import (
     handle_outliers_median,
     visualize_interactive_boxplots,
     visualize_heatmap,
-    visualize_histograms
+    visualize_histograms,
+    visualize_scatter_matrix
 )
 
-__version__ = "0.5.1"
+__version__ = "0.8.6"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 
@@ -48,5 +49,8 @@ __all__ = [
     'impute_categorical_mode',
     'visualize_numerical_boxplots',
     'handle_outliers_median',
-    'visualize_interactive_boxplots'
+    'visualize_interactive_boxplots',
+    'visualize_heatmap',
+    'visualize_histograms',
+    'visualize_scatter_matrix'
 ]

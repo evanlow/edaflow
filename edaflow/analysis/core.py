@@ -1,7 +1,13 @@
 """
-Missing data analysis functions for edaflow.
+Core EDA functions for edaflow.
 
-This module provides utilities for analyzing and visualizing missing data patterns.
+This module provides the complete suite of exploratory data analysis functions including:
+- Missing data analysis and visualization
+- Categorical data insights and type conversion  
+- Data imputation and outlier handling
+- Statistical distribution analysis
+- Interactive visualizations and heatmaps
+- Comprehensive scatter matrix analysis
 """
 
 import pandas as pd
@@ -2091,6 +2097,507 @@ def visualize_histograms(df: pd.DataFrame,
             print("   📉 Left skew: Try square, exponential, or reflect + transform")
         
         print(f"\n✅ Histogram analysis completed!")
+        print("🎨 Use plt.show() to display the plot")
+        print("💾 Use plt.savefig('filename.png') to save")
+    
+    # Show the plot
+    plt.show()
+
+
+def visualize_scatter_matrix(df: pd.DataFrame,
+                           columns: Optional[Union[str, List[str]]] = None,
+                           diagonal: str = "hist",
+                           upper: str = "scatter",
+                           lower: str = "scatter",
+                           color_by: Optional[str] = None,
+                           show_regression: bool = True,
+                           regression_type: str = "linear",
+                           alpha: float = 0.6,
+                           figsize: Optional[tuple] = None,
+                           title: str = "Scatter Matrix Analysis",
+                           color_palette: str = "Set2",
+                           verbose: bool = True) -> None:
+    """
+    Create comprehensive scatter matrix visualization for pairwise relationship analysis.
+    
+    This function provides a powerful scatter matrix (also known as pairs plot) that shows:
+    - Diagonal: Distribution of individual variables (histograms, KDE, or box plots)
+    - Off-diagonal: Scatter plots showing pairwise relationships between variables
+    - Optional: Color coding by categorical variables
+    - Optional: Regression lines to highlight trends
+    - Statistical insights: Correlation coefficients and relationship patterns
+    
+    Perfect for:
+    - Exploring pairwise relationships between numerical variables
+    - Validating correlation analysis with visual patterns
+    - Identifying non-linear relationships missed by correlation coefficients
+    - Feature engineering and transformation planning
+    - Publication-ready relationship visualization
+    
+    Args:
+        df (pd.DataFrame): The input DataFrame
+        columns (Optional[Union[str, List[str]]], optional): Columns to include in scatter matrix.
+                                                            If None, uses all numerical columns.
+                                                            If str, uses single column with others.
+                                                            If list, uses specified columns.
+                                                            Defaults to None.
+        diagonal (str, optional): Type of plot for diagonal elements. Options:
+                                - "hist": Histograms (default)
+                                - "kde": Kernel Density Estimation curves
+                                - "box": Box plots
+                                Defaults to "hist".
+        upper (str, optional): Type of plot for upper triangle. Options:
+                             - "scatter": Scatter plots (default)
+                             - "corr": Correlation coefficients
+                             - "blank": Empty (for cleaner look)
+                             Defaults to "scatter".
+        lower (str, optional): Type of plot for lower triangle. Options:
+                             - "scatter": Scatter plots (default)
+                             - "corr": Correlation coefficients
+                             - "blank": Empty (for cleaner look)
+                             Defaults to "scatter".
+        color_by (Optional[str], optional): Name of categorical column to use for color coding.
+                                          If provided, scatter plots will be colored by this variable.
+                                          Defaults to None.
+        show_regression (bool, optional): Whether to add regression lines to scatter plots.
+                                        Defaults to True.
+        regression_type (str, optional): Type of regression line. Options:
+                                       - "linear": Linear regression (default)
+                                       - "poly2": 2nd degree polynomial
+                                       - "poly3": 3rd degree polynomial
+                                       - "lowess": LOWESS smoothing
+                                       Defaults to "linear".
+        alpha (float, optional): Transparency level for scatter plot points (0.0 to 1.0).
+                                Defaults to 0.6.
+        figsize (Optional[tuple], optional): Figure size as (width, height). If None, 
+                                           automatically calculated based on number of variables.
+                                           Defaults to None.
+        title (str, optional): Main title for the scatter matrix. Defaults to "Scatter Matrix Analysis".
+        color_palette (str, optional): Color palette for categorical coloring. Defaults to "Set2".
+        verbose (bool, optional): If True, displays detailed information about the analysis.
+                                Defaults to True.
+    
+    Returns:
+        None: Displays the scatter matrix plot directly
+    
+    Raises:
+        ValueError: If DataFrame is empty or no numerical columns found
+        ValueError: If specified columns don't exist or aren't numerical
+        ValueError: If color_by column doesn't exist or isn't categorical
+        ValueError: If invalid diagonal, upper, or lower options provided
+    
+    Examples:
+        >>> import pandas as pd
+        >>> import numpy as np
+        >>> import edaflow
+        >>> 
+        >>> # Create sample data
+        >>> np.random.seed(42)
+        >>> df = pd.DataFrame({
+        ...     'height': np.random.normal(170, 10, 100),
+        ...     'weight': np.random.normal(70, 15, 100),
+        ...     'age': np.random.uniform(20, 60, 100),
+        ...     'income': np.random.lognormal(10, 0.5, 100),
+        ...     'category': np.random.choice(['A', 'B', 'C'], 100)
+        ... })
+        >>> 
+        >>> # Basic scatter matrix (all numerical columns)
+        >>> edaflow.visualize_scatter_matrix(df)
+        >>> 
+        >>> # Custom configuration with specific columns
+        >>> edaflow.visualize_scatter_matrix(
+        ...     df,
+        ...     columns=['height', 'weight', 'age'],
+        ...     diagonal='kde',
+        ...     upper='corr',
+        ...     lower='scatter',
+        ...     show_regression=True,
+        ...     title="Body Measurements Relationships"
+        ... )
+        >>> 
+        >>> # Color-coded by categorical variable
+        >>> edaflow.visualize_scatter_matrix(
+        ...     df,
+        ...     columns=['height', 'weight', 'income'],
+        ...     color_by='category',
+        ...     regression_type='poly2',
+        ...     alpha=0.7
+        ... )
+        >>> 
+        >>> # Alternative import style:
+        >>> from edaflow.analysis import visualize_scatter_matrix
+        >>> visualize_scatter_matrix(df, diagonal='box', upper='blank')
+    
+    Notes:
+        - Scatter matrices work best with 2-7 numerical variables (readability)
+        - For large datasets (>1000 rows), consider sampling for performance
+        - Regression lines help identify linear vs non-linear relationships
+        - Color coding reveals group-specific patterns in relationships
+        - Upper/lower triangle customization allows focus on specific aspects
+        - Compatible with matplotlib.pyplot.savefig() for export
+        
+    Statistical Insights:
+        - Diagonal plots show univariate distributions and skewness
+        - Scatter plots reveal bivariate relationship patterns
+        - Regression lines indicate trend strength and direction
+        - Color coding shows group differences in relationships
+        - Correlation values validate visual relationship strength
+    
+    Integration with other edaflow functions:
+        - Use after visualize_heatmap() to validate correlation patterns
+        - Combine with visualize_histograms() for detailed distribution analysis
+        - Follow up with handle_outliers_median() based on scatter plot insights
+        - Use before feature engineering to identify transformation needs
+    """
+    
+    try:
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        from sklearn.preprocessing import LabelEncoder
+        from scipy import stats
+        from sklearn.linear_model import LinearRegression
+        from sklearn.preprocessing import PolynomialFeatures
+        from sklearn.pipeline import Pipeline
+        import warnings
+        warnings.filterwarnings('ignore')
+    except ImportError as e:
+        missing_lib = str(e).split("'")[1] if "'" in str(e) else "required library"
+        raise ImportError(f"Missing required library: {missing_lib}. "
+                        f"Please install it using: pip install {missing_lib}")
+    
+    # Input validation
+    if df is None or df.empty:
+        raise ValueError("DataFrame is empty")
+    
+    # Handle column selection
+    if columns is None:
+        # Get all numerical columns
+        numerical_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    elif isinstance(columns, str):
+        numerical_cols = [columns]
+    else:
+        numerical_cols = list(columns)
+    
+    # Validate columns exist
+    missing_cols = [col for col in numerical_cols if col not in df.columns]
+    if missing_cols:
+        raise KeyError(f"Column(s) not found in DataFrame: {missing_cols}")
+    
+    # Filter for actual numerical columns
+    valid_cols = []
+    for col in numerical_cols:
+        if df[col].dtype in ['object', 'category', 'bool']:
+            if verbose:
+                print(f"⚠️  Skipping non-numerical column: {col}")
+        else:
+            valid_cols.append(col)
+    
+    if len(valid_cols) < 2:
+        raise ValueError(f"At least 2 numerical columns required for scatter matrix. Found: {len(valid_cols)}")
+    
+    # Validate options
+    valid_diagonal = ["hist", "kde", "box"]
+    valid_triangles = ["scatter", "corr", "blank"]
+    
+    if diagonal not in valid_diagonal:
+        raise ValueError(f"Invalid diagonal option '{diagonal}'. Must be one of: {valid_diagonal}")
+    if upper not in valid_triangles:
+        raise ValueError(f"Invalid upper option '{upper}'. Must be one of: {valid_triangles}")
+    if lower not in valid_triangles:
+        raise ValueError(f"Invalid lower option '{lower}'. Must be one of: {valid_triangles}")
+    
+    # Validate color_by column
+    color_data = None
+    if color_by is not None:
+        if color_by not in df.columns:
+            raise KeyError(f"Color column '{color_by}' not found in DataFrame")
+        
+        if df[color_by].dtype in ['object', 'category']:
+            color_data = df[color_by]
+        else:
+            # Convert numerical to categorical for coloring
+            color_data = pd.cut(df[color_by], bins=5, labels=['Low', 'Low-Mid', 'Mid', 'Mid-High', 'High'])
+        
+        if verbose:
+            unique_vals = color_data.nunique()
+            print(f"🎨 Color coding by '{color_by}': {unique_vals} unique values")
+    
+    n_vars = len(valid_cols)
+    
+    if verbose:
+        print(f"📊 Creating scatter matrix for {n_vars} variables: {', '.join(valid_cols)}")
+        print(f"🎯 Configuration: diagonal='{diagonal}', upper='{upper}', lower='{lower}'")
+        if show_regression:
+            print(f"📈 Adding {regression_type} regression lines")
+        if color_by:
+            print(f"🌈 Color coding by: {color_by}")
+    
+    # Calculate figure size if not provided
+    if figsize is None:
+        base_size = max(3, min(5, 12 / n_vars))  # Adaptive sizing
+        figsize = (base_size * n_vars, base_size * n_vars)
+    
+    # Set style
+    plt.style.use('default')
+    if color_data is not None:
+        sns.set_palette(color_palette)
+    
+    # Create the figure and subplots
+    fig, axes = plt.subplots(n_vars, n_vars, figsize=figsize)
+    fig.suptitle(title, fontsize=16, fontweight='bold', y=0.98)
+    
+    # Handle case where there are only 2 variables
+    if n_vars == 2:
+        axes = np.array(axes).reshape(2, 2)
+    
+    # Data preparation
+    df_plot = df[valid_cols].copy()
+    
+    # Calculate correlation matrix for correlation displays
+    corr_matrix = df_plot.corr()
+    
+    # Color setup
+    if color_data is not None:
+        unique_colors = color_data.nunique()
+        colors = sns.color_palette(color_palette, unique_colors)
+        color_map = dict(zip(color_data.unique(), colors))
+    
+    # Create plots for each cell
+    for i in range(n_vars):
+        for j in range(n_vars):
+            ax = axes[i, j]
+            
+            if i == j:
+                # Diagonal: Distribution plots
+                col_data = df_plot.iloc[:, i].dropna()
+                col_name = valid_cols[i]
+                
+                if diagonal == "hist":
+                    if color_data is not None:
+                        # Stacked histogram by color
+                        for category in color_data.unique():
+                            mask = (color_data == category) & (~df_plot.iloc[:, i].isna())
+                            subset_data = df_plot.iloc[:, i][mask]
+                            if len(subset_data) > 0:
+                                ax.hist(subset_data, bins=20, alpha=0.7, 
+                                       color=color_map[category], label=str(category), density=True)
+                        ax.legend(fontsize=8)
+                    else:
+                        ax.hist(col_data, bins=20, alpha=0.7, density=True, color='skyblue')
+                
+                elif diagonal == "kde":
+                    if color_data is not None:
+                        for category in color_data.unique():
+                            mask = (color_data == category) & (~df_plot.iloc[:, i].isna())
+                            subset_data = df_plot.iloc[:, i][mask]
+                            if len(subset_data) > 5:  # Need minimum points for KDE
+                                sns.kdeplot(data=subset_data, ax=ax, color=color_map[category], 
+                                          label=str(category), alpha=0.7)
+                        ax.legend(fontsize=8)
+                    else:
+                        sns.kdeplot(data=col_data, ax=ax, color='skyblue', alpha=0.7)
+                
+                elif diagonal == "box":
+                    if color_data is not None:
+                        # Create box plot data
+                        box_data = []
+                        box_labels = []
+                        for category in color_data.unique():
+                            mask = (color_data == category) & (~df_plot.iloc[:, i].isna())
+                            subset_data = df_plot.iloc[:, i][mask]
+                            if len(subset_data) > 0:
+                                box_data.append(subset_data)
+                                box_labels.append(str(category))
+                        
+                        if box_data:
+                            bp = ax.boxplot(box_data, labels=box_labels, patch_artist=True)
+                            for patch, color in zip(bp['boxes'], [color_map[cat] for cat in color_data.unique()]):
+                                patch.set_facecolor(color)
+                                patch.set_alpha(0.7)
+                    else:
+                        ax.boxplot([col_data], patch_artist=True)
+                        ax.set_xticklabels([''])
+                
+                ax.set_title(col_name, fontsize=10, fontweight='bold')
+                ax.tick_params(labelsize=8)
+                
+            elif i > j:
+                # Lower triangle
+                if lower == "scatter":
+                    x_data = df_plot.iloc[:, j]
+                    y_data = df_plot.iloc[:, i]
+                    
+                    if color_data is not None:
+                        for category in color_data.unique():
+                            mask = (color_data == category) & (~x_data.isna()) & (~y_data.isna())
+                            if mask.sum() > 0:
+                                ax.scatter(x_data[mask], y_data[mask], 
+                                         alpha=alpha, s=20, color=color_map[category], 
+                                         label=str(category))
+                    else:
+                        valid_mask = (~x_data.isna()) & (~y_data.isna())
+                        ax.scatter(x_data[valid_mask], y_data[valid_mask], 
+                                 alpha=alpha, s=20, color='steelblue')
+                    
+                    # Add regression line
+                    if show_regression:
+                        valid_mask = (~x_data.isna()) & (~y_data.isna())
+                        if valid_mask.sum() > 2:
+                            x_reg = x_data[valid_mask].values.reshape(-1, 1)
+                            y_reg = y_data[valid_mask].values
+                            
+                            try:
+                                if regression_type == "linear":
+                                    reg = LinearRegression().fit(x_reg, y_reg)
+                                    x_range = np.linspace(x_data.min(), x_data.max(), 100).reshape(-1, 1)
+                                    y_pred = reg.predict(x_range)
+                                    ax.plot(x_range, y_pred, 'r--', alpha=0.8, linewidth=2)
+                                
+                                elif regression_type in ["poly2", "poly3"]:
+                                    degree = 2 if regression_type == "poly2" else 3
+                                    poly_reg = Pipeline([
+                                        ('poly', PolynomialFeatures(degree=degree)),
+                                        ('linear', LinearRegression())
+                                    ])
+                                    poly_reg.fit(x_reg, y_reg)
+                                    x_range = np.linspace(x_data.min(), x_data.max(), 100).reshape(-1, 1)
+                                    y_pred = poly_reg.predict(x_range)
+                                    ax.plot(x_range, y_pred, 'r--', alpha=0.8, linewidth=2)
+                                
+                                elif regression_type == "lowess":
+                                    from statsmodels.nonparametric.smoothers_lowess import lowess
+                                    smoothed = lowess(y_reg, x_reg.flatten(), frac=0.3)
+                                    ax.plot(smoothed[:, 0], smoothed[:, 1], 'r--', alpha=0.8, linewidth=2)
+                            
+                            except Exception:
+                                pass  # Skip regression line if it fails
+                    
+                elif lower == "corr":
+                    # Display correlation coefficient
+                    corr_val = corr_matrix.iloc[i, j]
+                    ax.text(0.5, 0.5, f'{corr_val:.3f}', 
+                           transform=ax.transAxes, fontsize=14, 
+                           ha='center', va='center', fontweight='bold')
+                    ax.set_xlim(0, 1)
+                    ax.set_ylim(0, 1)
+                
+                elif lower == "blank":
+                    ax.set_visible(False)
+                
+                if lower != "blank":
+                    ax.tick_params(labelsize=8)
+                
+            else:
+                # Upper triangle (i < j)
+                if upper == "scatter":
+                    x_data = df_plot.iloc[:, j]
+                    y_data = df_plot.iloc[:, i]
+                    
+                    if color_data is not None:
+                        for category in color_data.unique():
+                            mask = (color_data == category) & (~x_data.isna()) & (~y_data.isna())
+                            if mask.sum() > 0:
+                                ax.scatter(x_data[mask], y_data[mask], 
+                                         alpha=alpha, s=20, color=color_map[category])
+                    else:
+                        valid_mask = (~x_data.isna()) & (~y_data.isna())
+                        ax.scatter(x_data[valid_mask], y_data[valid_mask], 
+                                 alpha=alpha, s=20, color='steelblue')
+                    
+                    # Add regression line
+                    if show_regression:
+                        valid_mask = (~x_data.isna()) & (~y_data.isna())
+                        if valid_mask.sum() > 2:
+                            x_reg = x_data[valid_mask].values.reshape(-1, 1)
+                            y_reg = y_data[valid_mask].values
+                            
+                            try:
+                                if regression_type == "linear":
+                                    reg = LinearRegression().fit(x_reg, y_reg)
+                                    x_range = np.linspace(x_data.min(), x_data.max(), 100).reshape(-1, 1)
+                                    y_pred = reg.predict(x_range)
+                                    ax.plot(x_range, y_pred, 'r--', alpha=0.8, linewidth=2)
+                            except Exception:
+                                pass
+                
+                elif upper == "corr":
+                    # Display correlation coefficient
+                    corr_val = corr_matrix.iloc[i, j]
+                    ax.text(0.5, 0.5, f'{corr_val:.3f}', 
+                           transform=ax.transAxes, fontsize=14, 
+                           ha='center', va='center', fontweight='bold')
+                    ax.set_xlim(0, 1)
+                    ax.set_ylim(0, 1)
+                
+                elif upper == "blank":
+                    ax.set_visible(False)
+                
+                if upper != "blank":
+                    ax.tick_params(labelsize=8)
+            
+            # Set labels only on edges
+            if i == n_vars - 1 and j < n_vars:  # Bottom row
+                ax.set_xlabel(valid_cols[j], fontsize=9)
+            if j == 0 and i > 0:  # Left column
+                ax.set_ylabel(valid_cols[i], fontsize=9)
+    
+    # Adjust layout
+    plt.tight_layout()
+    
+    # Display statistics if verbose
+    if verbose:
+        print("\n📈 Scatter Matrix Analysis Summary:")
+        print("=" * 60)
+        print(f"🔢 Variables analyzed: {n_vars}")
+        print(f"📊 Total plots created: {n_vars * n_vars}")
+        print(f"📏 Matrix dimensions: {n_vars}×{n_vars}")
+        
+        # Correlation insights
+        print(f"\n🔗 Correlation Analysis:")
+        # Get upper triangle correlations (excluding diagonal)
+        mask = np.triu(np.ones_like(corr_matrix.values, dtype=bool), k=1)
+        correlations = corr_matrix.values[mask]
+        
+        if len(correlations) > 0:
+            max_corr = np.max(correlations)
+            min_corr = np.min(correlations)
+            
+            # Find the pairs for max and min correlations
+            max_idx = np.unravel_index(np.argmax(corr_matrix.values * mask), corr_matrix.shape)
+            min_idx = np.unravel_index(np.argmin(corr_matrix.values + (1 - mask)), corr_matrix.shape)
+            
+            max_pair = (valid_cols[max_idx[0]], valid_cols[max_idx[1]])
+            min_pair = (valid_cols[min_idx[0]], valid_cols[min_idx[1]])
+            
+            print(f"🔺 Strongest positive: {max_pair[0]} ↔ {max_pair[1]} ({max_corr:.3f})")
+            print(f"🔻 Strongest negative: {min_pair[0]} ↔ {min_pair[1]} ({min_corr:.3f})")
+            
+            strong_positive = np.sum((correlations > 0.7) & (correlations < 1.0))
+            strong_negative = np.sum(correlations < -0.7)
+            moderate = np.sum((np.abs(correlations) >= 0.3) & (np.abs(correlations) < 0.7))
+            
+            print(f"💪 Strong correlations (|r| > 0.7): {strong_positive + strong_negative}")
+            print(f"📊 Moderate correlations (0.3 ≤ |r| < 0.7): {moderate}")
+        
+        # Configuration summary
+        print(f"\n⚙️  Configuration Used:")
+        print(f"   📊 Diagonal: {diagonal}")
+        print(f"   🔺 Upper triangle: {upper}")
+        print(f"   🔻 Lower triangle: {lower}")
+        if show_regression:
+            print(f"   📈 Regression: {regression_type}")
+        if color_by:
+            print(f"   🎨 Color coding: {color_by}")
+        
+        print(f"\n💡 Analysis Tips:")
+        print("   🔍 Look for non-linear patterns in scatter plots")
+        print("   📊 Compare correlation values with visual patterns")
+        print("   🎯 Identify outliers affecting relationships")
+        print("   📈 Notice clusters or groupings in the data")
+        if color_by:
+            print("   🌈 Observe how relationships differ by category")
+        
+        print(f"\n✅ Scatter matrix analysis completed!")
         print("🎨 Use plt.show() to display the plot")
         print("💾 Use plt.savefig('filename.png') to save")
     
