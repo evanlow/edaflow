@@ -111,11 +111,11 @@ edaflow provides 14 comprehensive EDA functions organized into logical categorie
 ~~~~~~~~~~~~~~~~~~~~
 * :func:`~edaflow.hello` - Package verification function
 
-🎓 **Educational Background**
+🎓 **Background**
 -----------------------------
 
-edaflow was developed during an AI/ML course conducted by NTUC LearningHub as part of Cohort 15. 
-Special thanks to our instructor, Ms. Isha Sehgal, who inspired the development of this comprehensive EDA toolkit.
+edaflow was developed in part of a Capstone project during an AI/ML course conducted by NTUC LearningHub (Cohort 15). 
+Special thanks to our instructor, Ms. Isha Sehgal, who inspired the project works which led to the development of this comprehensive EDA toolkit.
 
 📄 **License**
 --------------
