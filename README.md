@@ -1,5 +1,9 @@
 # edaflow
 
+[![Documentation Status](https://readthedocs.org/projects/edaflow/badge/?version=latest)](https://edaflow.readthedocs.io/en/latest/?badge=latest)
+[![PyPI version](https://badge.fury.io/py/edaflow.svg)](https://badge.fury.io/py/edaflow)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+
 A Python package for streamlined exploratory data analysis workflows.
 
 ## Description
@@ -23,6 +27,16 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
 - **Easy Integration**: Works seamlessly with pandas, numpy, and other popular libraries
+
+## 📚 Documentation
+
+Complete documentation is available at **[edaflow.readthedocs.io](https://edaflow.readthedocs.io)**
+
+- **[Installation Guide](https://edaflow.readthedocs.io/en/latest/installation.html)** - Setup instructions and troubleshooting
+- **[Quick Start Tutorial](https://edaflow.readthedocs.io/en/latest/quickstart.html)** - Comprehensive guide with examples
+- **[API Reference](https://edaflow.readthedocs.io/en/latest/api_reference/index.html)** - Complete function documentation
+- **[User Guide](https://edaflow.readthedocs.io/en/latest/user_guide/index.html)** - Advanced usage patterns
+- **[Examples](https://edaflow.readthedocs.io/en/latest/examples/index.html)** - Real-world applications
 
 ## Installation
 
