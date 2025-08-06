@@ -5087,7 +5087,12 @@ def _create_image_class_visualization(
             try:
                 # Load and display image
                 with Image.open(img_path) as img:
-                    ax.imshow(img)
+                    # Convert PIL Image to RGB numpy array for matplotlib
+                    if img.mode != 'RGB':
+                        img = img.convert('RGB')
+                    img_array = np.array(img)
+                    
+                    ax.imshow(img_array)
                     ax.set_title(f"{class_name}", fontsize=10, fontweight='bold')
                     ax.axis('off')
                     

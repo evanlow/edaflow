@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [0.12.5] - 2025-08-06
+
+### Fixed
+- **CRITICAL**: Fixed corrupted image display in `visualize_image_classes()` visualization output
+- **BUG FIX**: Resolved PIL Image to matplotlib incompatibility causing garbled/unacceptable visualizations
+- **FUNCTIONALITY**: Converted PIL Image objects to numpy arrays for proper matplotlib display
+- **DISPLAY**: Images now render correctly in visualizations instead of corrupted content
+- **COMPATIBILITY**: Enhanced image processing pipeline for matplotlib.imshow() requirements
+
 ## [0.12.4] - 2025-08-06
 
 ### Fixed

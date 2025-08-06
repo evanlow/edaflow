@@ -23,7 +23,7 @@ from .analysis import (
     apply_smart_encoding
 )
 
-__version__ = "0.12.4"
+__version__ = "0.12.5"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 
