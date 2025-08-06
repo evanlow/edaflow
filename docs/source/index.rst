@@ -68,9 +68,10 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
    )
    edaflow.assess_image_quality(
        image_paths=image_list,         # List of image paths
-       check_resolution=True,
        check_corruption=True,
-       check_format=True
+       analyze_color=True,
+       detect_blur=True,
+       sample_size=200
    )
 
 📚 **Documentation Contents**

@@ -283,9 +283,10 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    print("-" * 50)
    quality_report = edaflow.assess_image_quality(
        image_paths,
-       check_resolution=True,      # Resolution statistics
-       check_corruption=True,      # Find corrupted files
-       check_format=True,          # Format consistency
+       check_corruption=True,      # Corruption detection
+       analyze_color=True,         # Color property analysis
+       detect_blur=True,           # Blur detection
+       check_artifacts=True,       # Artifact detection
        sample_size=200,            # Balance speed vs completeness
        verbose=True               # Detailed progress reporting
    )
@@ -340,18 +341,20 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    # Comprehensive image quality analysis
    quality_metrics = edaflow.assess_image_quality(
        image_paths,
-       check_resolution=True,      # Resolution statistics
-       check_corruption=True,      # Find corrupted files
-       check_format=True,          # Format consistency
+       check_corruption=True,      # Detect corrupted files
+       analyze_color=True,         # Color property analysis
+       detect_blur=True,           # Blur detection  
+       check_artifacts=True,       # Compression artifacts
        sample_size=200,            # Balance speed vs completeness
        verbose=True               # Detailed progress reporting
    )
    
    # Returns detailed report with:
-   # - Resolution distribution analysis
-   # - Corrupted file identification  
-   # - Format distribution statistics
-   # - Quality recommendations
+   # - Corruption detection results
+   # - Color distribution analysis (grayscale vs color)
+   # - Blur detection using Laplacian variance
+   # - Artifact and quality issue identification
+   # - Statistical summaries and recommendations
 
 **3. Advanced Feature Analysis** ⭐ *New in v0.11.0*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -385,9 +388,9 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    medical_scans = glob.glob('medical_data/*/*.dcm')
    edaflow.assess_image_quality(
        medical_scans, 
-       check_resolution=True,
        check_corruption=True,
-       check_format=True
+       analyze_color=True,
+       detect_blur=True
    )
    
    # Satellite Imagery Analysis  
