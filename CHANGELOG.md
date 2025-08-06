@@ -46,6 +46,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Jupyter Notebook Fix**: Resolves the specific TypeError reported in Jupyter notebook usage
 - **Migration Path**: Users can migrate at their own pace with clear guidance
 
+## [0.12.3] - 2025-08-06 - Complete Backward Compatibility Fix 🔧
+
+### Fixed
+- **Critical Issue**: Resolved TypeError when calling `visualize_image_classes()` with positional arguments
+- **Positional Arguments**: Added support for legacy positional syntax: `visualize_image_classes(image_paths, ...)`
+- **Function Wrapper**: Implemented comprehensive argument handling to catch all usage patterns
+
+### Enhanced
+- **Complete Compatibility**: Now supports all three calling patterns:
+  1. Positional: `visualize_image_classes(path, samples_per_class=6)` (shows deprecation warning)
+  2. Deprecated keyword: `visualize_image_classes(image_paths=path, samples_per_class=6)` (shows deprecation warning)
+  3. Recommended: `visualize_image_classes(data_source=path, samples_per_class=6)` (no warning)
+- **Clear Warnings**: Improved deprecation messages with specific migration guidance
+- **Educational Value**: Users learn correct API patterns while maintaining backward compatibility
+
+### Documentation
+- **Updated Examples**: All README code examples now use recommended `data_source=` parameter
+- **User Education**: Ensures new users learn modern API patterns from documentation
+- **Migration Guidance**: Clear examples of all supported usage patterns
+
+### Technical Implementation
+- **Function Wrapper**: Created wrapper function with `*args, **kwargs` to properly handle positional arguments
+- **Internal Implementation**: Separated logic into `_visualize_image_classes_impl()` for clean architecture
+- **Comprehensive Testing**: Validated all three usage patterns with proper warning behavior
+
+### Notes
+- **Zero Breaking Changes**: All existing code continues to work unchanged
+- **Performance**: No performance impact - wrapper adds minimal overhead
+- **Future-Proof**: Clean architecture supports future parameter evolution
+
 ## [0.12.2] - 2025-08-06 - Documentation Refresh 📚
 
 ### Improved

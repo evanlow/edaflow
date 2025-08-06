@@ -1237,10 +1237,10 @@ import pandas as pd
 # Method 1: Directory-based Analysis (Most Common)
 # Dataset organized as: dataset/train/cats/, dataset/train/dogs/, etc.
 edaflow.visualize_image_classes(
-    'dataset/train/',           # Directory with class subfolders
-    samples_per_class=8,        # Show 8 random samples per class
-    show_class_counts=True,     # Display distribution analysis
-    figsize=(18, 12)           # Large figure for detailed view
+    data_source='dataset/train/',   # Directory with class subfolders
+    samples_per_class=8,            # Show 8 random samples per class
+    show_class_counts=True,         # Display distribution analysis
+    figsize=(18, 12)               # Large figure for detailed view
 )
 
 # Method 2: DataFrame-based Analysis  
@@ -1252,7 +1252,7 @@ df = pd.DataFrame({
 
 # Comprehensive analysis with statistics
 stats = edaflow.visualize_image_classes(
-    df,
+    data_source=df,
     image_path_column='image_path',
     class_column='class',
     samples_per_class=6,
@@ -1272,7 +1272,7 @@ if stats['balance_ratio'] < 0.5:
 
 # Method 3: Production Dataset Validation
 validation_stats = edaflow.visualize_image_classes(
-    production_df,
+    data_source=production_df,
     image_path_column='file_path',
     class_column='predicted_class',
     samples_per_class=10,
@@ -1320,14 +1320,14 @@ validation_stats = edaflow.visualize_image_classes(
 **🎯 Initial Dataset Exploration:**
 ```python
 # Quick dataset overview
-edaflow.visualize_image_classes('new_dataset/', samples_per_class=5)
+edaflow.visualize_image_classes(data_source='new_dataset/', samples_per_class=5)
 ```
 
 **🧪 Medical/Scientific Imaging:**
 ```python
 # Detailed analysis for medical scans
 edaflow.visualize_image_classes(
-    'medical_scans/',
+    data_source='medical_scans/',
     samples_per_class=4,
     figsize=(20, 15),
     show_image_info=True,
@@ -1339,7 +1339,7 @@ edaflow.visualize_image_classes(
 ```python
 # Validate production datasets
 stats = edaflow.visualize_image_classes(
-    production_data,
+    data_source=production_data,
     image_path_column='path',
     class_column='label', 
     return_stats=True
@@ -1358,7 +1358,7 @@ import edaflow
 
 # 1. Understand your image dataset
 stats = edaflow.visualize_image_classes(
-    'dataset/', 
+    data_source='dataset/', 
     samples_per_class=8,
     return_stats=True
 )
@@ -1633,7 +1633,7 @@ feature_report = edaflow.analyze_image_features(
 
 # Step 3: Visual exploration
 class_stats = edaflow.visualize_image_classes(
-    'dataset/',
+    data_source='dataset/',
     samples_per_class=6
 )
 
