@@ -6,6 +6,8 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
+> **📦 Current Version: v0.12.1** - [Latest Release](https://pypi.org/project/edaflow/0.12.1/) includes backward compatibility fixes and comprehensive ML preprocessing capabilities.
+
 ## Description
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
@@ -27,7 +29,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Statistical Histogram Analysis**: Advanced histogram visualization with skewness detection, normality testing, and distribution analysis
 - **Scatter Matrix Analysis**: Advanced pairwise relationship visualization with customizable matrix layouts, regression lines, and statistical insights
 
-### 🤖 **Machine Learning Preprocessing** ⭐ *NEW in v0.12.0*
+### 🤖 **Machine Learning Preprocessing** ⭐ *Introduced in v0.12.0*
 - **Intelligent Encoding Analysis**: Automatic detection of optimal encoding strategies for categorical variables
 - **Smart Encoding Application**: Automated categorical encoding with support for:
   - One-Hot Encoding for low cardinality categories
@@ -149,7 +151,7 @@ edaflow.visualize_scatter_matrix(df_final, title="Clean Data Relationships")
 edaflow.visualize_numerical_boxplots(df_final, title="Final Clean Distribution")
 ```
 
-### 🤖 **ML Preprocessing with Smart Encoding** ⭐ *NEW in v0.12.0*
+### 🤖 **ML Preprocessing with Smart Encoding** ⭐ *Introduced in v0.12.0*
 ```python
 import edaflow
 import pandas as pd
@@ -1716,6 +1718,33 @@ isort edaflow/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+### v0.12.1 (2025-08-06) - Backward Compatibility Patch 🔧
+- **CRITICAL**: Fixed backward compatibility for `visualize_image_classes()` function
+- **FIXED**: Added support for deprecated `image_paths` parameter that was causing TypeError
+- **ENHANCED**: Function now accepts both `data_source` (recommended) and `image_paths` (deprecated) parameters
+- **IMPROVED**: Added deprecation warning when `image_paths` is used to encourage migration to `data_source`
+- **SECURE**: Prevents using both parameters simultaneously to avoid confusion
+- **RESOLVED**: TypeError for users calling with `image_paths=` parameter from v0.12.0 breaking change
+- **ENHANCED**: Improved error messages for parameter validation in image visualization functions
+- **DOCUMENTATION**: Added comprehensive parameter documentation including deprecation notices
+
+### v0.12.0 (2025-08-06) - Machine Learning Preprocessing Release 🤖
+- **NEW**: `analyze_encoding_needs()` function for intelligent categorical encoding strategy analysis
+- **NEW**: Automatic cardinality analysis for optimal encoding method selection
+- **NEW**: Target correlation analysis for supervised encoding recommendations  
+- **NEW**: Memory impact assessment for high-cardinality features
+- **NEW**: Support for 7 different encoding strategies: One-Hot, Target, Ordinal, Binary, TF-IDF, Text, and Keep Numeric
+- **NEW**: `apply_smart_encoding()` function for automated categorical variable transformation
+- **NEW**: Intelligent preprocessing pipeline with automatic analysis integration
+- **NEW**: Memory-efficient handling of high-cardinality categorical variables
+- **NEW**: Support for scikit-learn encoders: OneHotEncoder, TargetEncoder, OrdinalEncoder
+- **NEW**: TF-IDF vectorization for text features with customizable parameters
+- **NEW**: Binary encoding for medium cardinality features to optimize memory usage
+- **BREAKING**: Changed `visualize_image_classes()` parameter from `image_paths` to `data_source` (fixed in v0.12.1)
+- **ENHANCED**: Beautiful emoji-rich output with detailed recommendations and summaries
+- **ENHANCED**: Complete ML preprocessing workflow from analysis to implementation
+- **ENHANCED**: Expanded edaflow from 17 to 19 comprehensive EDA and preprocessing functions
 
 ### v0.11.0 (2025-01-30) - Image Feature Analysis Release 🎨
 - **NEW**: `analyze_image_features()` function for deep statistical analysis of visual features
