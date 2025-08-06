@@ -6,7 +6,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.1** - [Latest Release](https://pypi.org/project/edaflow/0.12.1/) includes backward compatibility fixes and comprehensive ML preprocessing capabilities.
+> **📦 Current Version: v0.12.1** - [Latest Release](https://pypi.org/project/edaflow/0.12.1/) includes backward compatibility fixes and comprehensive ML preprocessing capabilities. *Updated: August 6, 2025*
 
 ## Description
 
@@ -1722,6 +1722,8 @@ isort edaflow/
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Changelog
+
+> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.1 emergency patch.
 
 ### v0.12.1 (2025-08-06) - Backward Compatibility Patch 🔧
 - **CRITICAL**: Fixed backward compatibility for `visualize_image_classes()` function
