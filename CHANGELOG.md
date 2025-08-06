@@ -19,6 +19,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.12.2] - 2025-08-06 - Documentation Refresh 📚
+
+### Improved
+- **Documentation**: Enhanced README.md with updated timestamps and current version indicators
+- **PyPI Display**: Forced PyPI cache refresh to ensure current changelog information is displayed
+- **Visibility**: Added latest updates indicator to changelog section for better user awareness
+- **Metadata**: Updated version indicators throughout documentation files
+
+### Fixed
+- **PyPI Cache**: Resolved issue where PyPI was displaying outdated changelog (showing v0.11.0 instead of current releases)
+- **Documentation Sync**: Ensured all documentation platforms display consistent current version information
+
+### Notes
+- **No Functional Changes**: All code functionality identical to v0.12.1 - purely documentation improvements
+- **Compatibility**: Maintains full backward compatibility from v0.12.1 patch
+
 ## [0.12.1] - 2025-08-06 - Backward Compatibility Patch 🔧
 
 ### Fixed

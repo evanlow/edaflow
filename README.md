@@ -6,7 +6,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.1** - [Latest Release](https://pypi.org/project/edaflow/0.12.1/) includes backward compatibility fixes and comprehensive ML preprocessing capabilities. *Updated: August 6, 2025*
+> **📦 Current Version: v0.12.2** - [Latest Release](https://pypi.org/project/edaflow/0.12.2/) includes backward compatibility fixes and comprehensive ML preprocessing capabilities. *Updated: August 6, 2025*
 
 ## Description
 
@@ -69,7 +69,7 @@ Complete documentation is available at **[edaflow.readthedocs.io](https://edaflo
 pip install edaflow
 
 # Or install specific version
-pip install edaflow==0.12.1
+pip install edaflow==0.12.2
 ```
 
 ### From Source
@@ -1723,7 +1723,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
-> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.1 emergency patch.
+> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.2 documentation refresh.
+
+### v0.12.2 (2025-08-06) - Documentation Refresh 📚
+- **IMPROVED**: Enhanced README.md with updated timestamps and current version indicators
+- **FIXED**: Ensured PyPI displays the most current changelog information including v0.12.1 fixes
+- **ENHANCED**: Added latest updates indicator to changelog for better visibility
+- **DOCUMENTATION**: Forced PyPI cache refresh to display current version information
+- **MAINTAINED**: All functionality identical to v0.12.1 - purely documentation improvements
 
 ### v0.12.1 (2025-08-06) - Backward Compatibility Patch 🔧
 - **CRITICAL**: Fixed backward compatibility for `visualize_image_classes()` function
