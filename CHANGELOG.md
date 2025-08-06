@@ -19,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.12.1] - 2025-08-06 - Backward Compatibility Patch 🔧
+
+### Fixed
+- **Backward Compatibility**: Added support for deprecated `image_paths` parameter in `visualize_image_classes()`
+  - Function now accepts both `data_source` (recommended) and `image_paths` (deprecated) parameters
+  - Shows deprecation warning when `image_paths` is used to encourage migration to `data_source`
+  - Prevents using both parameters simultaneously to avoid confusion
+  - Resolves TypeError for users calling with `image_paths=` parameter
+
+### Enhanced  
+- Improved error messages for parameter validation in image visualization functions
+- Added comprehensive parameter documentation including deprecation notices
+
 ## [0.12.0] - 2025-08-06 - Machine Learning Preprocessing Release 🤖
 
 ### Added

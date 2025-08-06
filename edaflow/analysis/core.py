@@ -4503,7 +4503,7 @@ def _display_quality_results(results: Dict[str, Any]) -> None:
 
 
 def visualize_image_classes(
-    data_source: Union[str, pd.DataFrame],
+    data_source: Union[str, pd.DataFrame] = None,
     class_column: Optional[str] = None,
     image_path_column: Optional[str] = None, 
     samples_per_class: int = 5,
@@ -4514,7 +4514,9 @@ def visualize_image_classes(
     show_image_info: bool = False,
     title: str = "Class-wise Image Sample Visualization",
     save_path: Optional[str] = None,
-    return_stats: bool = False
+    return_stats: bool = False,
+    # Backward compatibility parameter
+    image_paths: Union[str, pd.DataFrame, List[str]] = None
 ) -> Optional[Dict[str, Any]]:
     """
     📸 Visualize random samples from each class in an image classification dataset.
@@ -4567,6 +4569,10 @@ def visualize_image_classes(
         
     return_stats : bool, default=False
         Whether to return detailed statistics about the dataset.
+        
+    image_paths : str, pd.DataFrame, or list, optional
+        **DEPRECATED**: Use 'data_source' parameter instead.
+        This parameter is maintained for backward compatibility only.
         
     Returns
     -------
@@ -4671,6 +4677,23 @@ def visualize_image_classes(
             "📦 Install with: pip install Pillow"
         )
     
+    # Handle backward compatibility for deprecated 'image_paths' parameter
+    if image_paths is not None:
+        if data_source is not None:
+            raise ValueError(
+                "🚨 Cannot specify both 'data_source' and deprecated 'image_paths' parameter. "
+                "Please use 'data_source' only."
+            )
+        print("⚠️  Warning: 'image_paths' parameter is deprecated. Use 'data_source' instead.")
+        data_source = image_paths
+    
+    if data_source is None:
+        raise ValueError(
+            "🚨 Must specify 'data_source' parameter with either:\n"
+            "   • Directory path containing class subfolders\n" 
+            "   • pandas DataFrame with image paths and class labels"
+        )
+
     print("🖼️  Starting Image Classification EDA...")
     print("=" * 55)
     
