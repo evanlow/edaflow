@@ -15,11 +15,21 @@ First, install and import edaflow:
    # Computer Vision EDA - Explore image datasets
    
    # Method 1: Directory path (most common)
-   edaflow.visualize_image_classes(data_source='ecommerce_images/', samples_per_class=8)
+   edaflow.visualize_image_classes(
+       data_source='ecommerce_images/', 
+       samples_per_class=4,
+       max_classes=8,
+       figsize=(12, 8)
+   )
    
    # Method 2: File list with glob
    product_photos = glob.glob('ecommerce_images/*/*.jpg')
-   edaflow.visualize_image_classes(data_source=product_photos, samples_per_class=8)
+   edaflow.visualize_image_classes(
+       data_source=product_photos, 
+       samples_per_class=4,
+       max_classes=8,
+       figsize=(12, 8)
+   )
 
 🔍 **Function Categories**
 --------------------------
@@ -251,19 +261,21 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    # Load image dataset
    # Method 1: Simple directory path (recommended for organized datasets)
    edaflow.visualize_image_classes(
-       data_source='dataset/train/',    # Directory with class subfolders
-       samples_per_class=6,             # Show 6 examples per class
-       figsize=(15, 10),
-       title="Dataset Overview: Class Distribution & Samples"
+       data_source='path/to/dataset/',  # Directory with class subfolders
+       samples_per_class=4,
+       max_classes=8,                   # Limit displayed classes
+       figsize=(12, 8),
+       title="Training Set Overview"
    )
    
    # Method 2: File list approach (for custom filtering)
    image_paths = glob.glob('dataset/train/*/*.jpg')  # Collect specific files
    edaflow.visualize_image_classes(
        data_source=image_paths,         # List of image paths
-       samples_per_class=6,
-       figsize=(15, 10),
-       title="Dataset Overview: Custom File Selection"
+       samples_per_class=4,
+       max_classes=8,
+       figsize=(12, 8),
+       title="Training Set Overview"
    )
    
    # Step 2: Image Quality Assessment
@@ -271,9 +283,11 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    print("-" * 50)
    quality_report = edaflow.assess_image_quality(
        image_paths,
-       check_resolution=True,      # Resolution analysis
-       check_corruption=True,      # Corruption detection
-       sample_size=100            # Analyze subset for speed
+       check_resolution=True,      # Resolution statistics
+       check_corruption=True,      # Find corrupted files
+       check_format=True,          # Format consistency
+       sample_size=200,            # Balance speed vs completeness
+       verbose=True               # Detailed progress reporting
    )
    
    # Step 3: Advanced Feature Analysis
@@ -281,10 +295,12 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    print("-" * 50)
    feature_analysis = edaflow.analyze_image_features(
        image_paths,
-       analyze_colors=True,        # Color distribution analysis
-       analyze_edges=True,         # Edge detection patterns
-       analyze_texture=True,       # Texture characteristics
-       sample_size=50             # Deep analysis on subset
+       analyze_colors=True,        # RGB histogram analysis
+       analyze_edges=True,         # Edge density patterns
+       analyze_texture=True,       # Texture complexity metrics
+       analyze_gradients=True,     # Gradient magnitude analysis
+       sample_size=100,            # Computational efficiency
+       bins=50                    # Histogram granularity
    )
 
 **Individual Function Examples**
@@ -367,15 +383,30 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
 
    # Medical Imaging Dataset
    medical_scans = glob.glob('medical_data/*/*.dcm')
-   edaflow.assess_image_quality(medical_scans, check_corruption=True)
+   edaflow.assess_image_quality(
+       medical_scans, 
+       check_resolution=True,
+       check_corruption=True,
+       check_format=True
+   )
    
    # Satellite Imagery Analysis  
    satellite_images = glob.glob('satellite_data/**/*.tif', recursive=True)
-   edaflow.analyze_image_features(satellite_images, analyze_texture=True)
+   edaflow.analyze_image_features(
+       satellite_images, 
+       analyze_colors=True,
+       analyze_texture=True,
+       sample_size=100
+   )
    
    # Product Photography Quality Control
-   # Simple directory approach (matches PyPI documentation style)
-   edaflow.visualize_image_classes(data_source='ecommerce_images/', samples_per_class=8)
+   edaflow.visualize_image_classes(
+       data_source='ecommerce_images/', 
+       samples_per_class=4,
+       max_classes=8,
+       figsize=(12, 8),
+       title="Product Catalog Overview"
+   )
 
 �🔍 **Function Categories**
 --------------------------
