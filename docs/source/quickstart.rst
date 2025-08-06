@@ -282,7 +282,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    print("\\n🔍 STEP 2: QUALITY ASSESSMENT")
    print("-" * 50)
    quality_report = edaflow.assess_image_quality(
-       image_paths,
+       data_source='ecommerce_images/',  # Consistent with visualize_image_classes
        check_corruption=True,      # Corruption detection
        analyze_color=True,         # Color property analysis
        detect_blur=True,           # Blur detection
@@ -340,7 +340,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
 
    # Comprehensive image quality analysis
    quality_metrics = edaflow.assess_image_quality(
-       image_paths,
+       data_source='ecommerce_images/',  # Consistent parameter naming
        check_corruption=True,      # Detect corrupted files
        analyze_color=True,         # Color property analysis
        detect_blur=True,           # Blur detection  
@@ -387,7 +387,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    # Medical Imaging Dataset
    medical_scans = glob.glob('medical_data/*/*.dcm')
    edaflow.assess_image_quality(
-       medical_scans, 
+       data_source=medical_scans,  # Consistent parameter naming
        check_corruption=True,
        analyze_color=True,
        detect_blur=True

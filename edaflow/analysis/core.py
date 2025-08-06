@@ -2771,22 +2771,22 @@ def assess_image_quality(
     🚀 **Production Pipeline Integration**:
     
     >>> # Automated quality gates
-    >>> report = edaflow.assess_image_quality(image_paths)
+    >>> report = edaflow.assess_image_quality(data_source='dataset/images/')
     >>> 
     >>> # Quality gates for ML pipeline
     >>> assert report['quality_score'] >= 80, f"Dataset quality too low: {report['quality_score']}"
     >>> assert len(report['corrupted_images']) == 0, "Corrupted images detected!"
     >>> assert report['brightness_analysis']['problematic_count'] < 50, "Too many brightness issues"
     >>> 
-    >>> # Automated data cleaning
-    >>> clean_paths = [path for path in image_paths 
-    ...                if path not in report['corrupted_images']]
+    >>> # Automated data cleaning based on quality report
+    >>> clean_dataset = [path for path in image_data 
+    ...                  if path not in report['corrupted_images']]
     
     🎯 **Medical/Scientific Imaging**:
     
     >>> # Stricter quality requirements for medical data
     >>> report = edaflow.assess_image_quality(
-    ...     medical_scans_df,
+    ...     data_source=medical_scans_df,
     ...     image_path_column='scan_path',
     ...     class_column='diagnosis',
     ...     brightness_threshold=(50, 180),  # Narrow brightness range
