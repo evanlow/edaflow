@@ -13,6 +13,11 @@ First, install and import edaflow:
    print(df_converted.dtypes)  # 'price' now converted to float
 
    # Computer Vision EDA - Explore image datasets
+   
+   # Method 1: Directory path (most common)
+   edaflow.visualize_image_classes(data_source='ecommerce_images/', samples_per_class=8)
+   
+   # Method 2: File list with glob
    product_photos = glob.glob('ecommerce_images/*/*.jpg')
    edaflow.visualize_image_classes(data_source=product_photos, samples_per_class=8)
 
@@ -226,16 +231,21 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    import glob
    
    # Load image dataset
-   image_paths = glob.glob('dataset/train/*/*.jpg')  # Organized by class folders
-   
-   # Step 1: Visual Dataset Overview
-   print("🎯 STEP 1: DATASET VISUALIZATION")
-   print("-" * 50)
+   # Method 1: Simple directory path (recommended for organized datasets)
    edaflow.visualize_image_classes(
-       data_source=image_paths,
-       samples_per_class=6,        # Show 6 examples per class
+       data_source='dataset/train/',    # Directory with class subfolders
+       samples_per_class=6,             # Show 6 examples per class
        figsize=(15, 10),
        title="Dataset Overview: Class Distribution & Samples"
+   )
+   
+   # Method 2: File list approach (for custom filtering)
+   image_paths = glob.glob('dataset/train/*/*.jpg')  # Collect specific files
+   edaflow.visualize_image_classes(
+       data_source=image_paths,         # List of image paths
+       samples_per_class=6,
+       figsize=(15, 10),
+       title="Dataset Overview: Custom File Selection"
    )
    
    # Step 2: Image Quality Assessment
@@ -267,10 +277,21 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
 .. code-block:: python
 
    # Understand your image dataset at a glance
+   
+   # Method 1: Directory path (simplest approach)
+   edaflow.visualize_image_classes(
+       data_source='path/to/dataset/',  # Directory with class subfolders
+       samples_per_class=4,
+       max_classes=8,                   # Limit displayed classes
+       figsize=(12, 8),
+       title="Training Set Overview"
+   )
+   
+   # Method 2: Specific file patterns (for custom control)  
    edaflow.visualize_image_classes(
        data_source=['path/to/class1/*.jpg', 'path/to/class2/*.jpg'],
        samples_per_class=4,
-       max_classes=8,              # Limit displayed classes
+       max_classes=8,
        figsize=(12, 8),
        title="Training Set Overview"
    )
@@ -335,8 +356,8 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    edaflow.analyze_image_features(satellite_images, analyze_texture=True)
    
    # Product Photography Quality Control
-   product_photos = glob.glob('ecommerce_images/*/*.jpg')
-   edaflow.visualize_image_classes(data_source=product_photos, samples_per_class=8)
+   # Simple directory approach (matches PyPI documentation style)
+   edaflow.visualize_image_classes(data_source='ecommerce_images/', samples_per_class=8)
 
 �🔍 **Function Categories**
 --------------------------
