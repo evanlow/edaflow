@@ -6,7 +6,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.2** - [Latest Release](https://pypi.org/project/edaflow/0.12.2/) includes backward compatibility fixes and comprehensive ML preprocessing capabilities. *Updated: August 6, 2025*
+> **📦 Current Version: v0.12.3** - [Latest Release](https://pypi.org/project/edaflow/0.12.3/) includes complete positional argument backward compatibility fixes. *Updated: August 6, 2025*
 
 ## Description
 
@@ -69,7 +69,7 @@ Complete documentation is available at **[edaflow.readthedocs.io](https://edaflo
 pip install edaflow
 
 # Or install specific version
-pip install edaflow==0.12.2
+pip install edaflow==0.12.3
 ```
 
 ### From Source
@@ -1723,7 +1723,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
-> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.2 documentation refresh.
+> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.3 complete backward compatibility fix.
+
+### v0.12.3 (2025-08-06) - Complete Positional Argument Compatibility Fix 🔧
+- **CRITICAL**: Fixed positional argument usage for `visualize_image_classes()` function  
+- **RESOLVED**: TypeError when calling `visualize_image_classes(image_paths, ...)` with positional arguments
+- **ENHANCED**: Comprehensive backward compatibility supporting all three usage patterns:
+  - Positional: `visualize_image_classes(path, ...)` (shows warning)
+  - Deprecated keyword: `visualize_image_classes(image_paths=path, ...)` (shows warning)
+  - Recommended: `visualize_image_classes(data_source=path, ...)` (no warning)
+- **IMPROVED**: Clear deprecation warnings guiding users toward recommended syntax
+- **MAINTAINED**: Full functionality identical to previous versions
+- **TESTED**: Comprehensive test suite validating all compatibility scenarios
 
 ### v0.12.2 (2025-08-06) - Documentation Refresh 📚
 - **IMPROVED**: Enhanced README.md with updated timestamps and current version indicators

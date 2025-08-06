@@ -4502,7 +4502,91 @@ def _display_quality_results(results: Dict[str, Any]) -> None:
     print(f"\n✅ Quality assessment completed!")
 
 
-def visualize_image_classes(
+def visualize_image_classes(*args, **kwargs) -> Optional[Dict[str, Any]]:
+    """
+    📸 Visualize random samples from each class in an image classification dataset.
+    
+    This function provides comprehensive exploratory data analysis for image datasets,
+    helping practitioners understand class distributions, identify data quality issues,
+    and spot potential problems like mislabeled images or class imbalances.
+    
+    Perfect for the initial phase of computer vision projects where understanding
+    your dataset is crucial for model success.
+    
+    Parameters
+    ----------
+    data_source : str or pd.DataFrame
+        Either a directory path containing class-named subfolders of images,
+        or a pandas DataFrame with image paths and class labels.
+        
+    class_column : str, optional
+        Column name containing class labels (required if data_source is DataFrame).
+        
+    image_path_column : str, optional  
+        Column name containing image file paths (required if data_source is DataFrame).
+        
+    samples_per_class : int, default=5
+        Number of random samples to display per class.
+        
+    grid_layout : str or tuple, default='auto'
+        Grid layout for sample display:
+        - 'auto': Automatically determine optimal layout
+        - 'square': Force square grid layout
+        - (rows, cols): Specify exact grid dimensions
+        
+    figsize : tuple, default=(15, 10)
+        Figure size as (width, height) in inches.
+        
+    shuffle_samples : bool, default=True
+        Whether to randomly shuffle samples within each class.
+        
+    show_class_counts : bool, default=True
+        Whether to display class distribution statistics.
+        
+    show_image_info : bool, default=False
+        Whether to display technical image information (dimensions, file size).
+        
+    title : str, default="Class-wise Image Sample Visualization"
+        Title for the visualization.
+        
+    save_path : str, optional
+        Path to save the visualization. If None, plot is only displayed.
+        
+    return_stats : bool, default=False
+        Whether to return detailed statistics about the dataset.
+        
+    image_paths : str, pd.DataFrame, or list, optional
+        **DEPRECATED**: Use 'data_source' parameter instead.
+        This parameter is maintained for backward compatibility only.
+        
+    Returns
+    -------
+    dict or None
+        If return_stats=True, returns dictionary with dataset statistics.
+        
+    Examples
+    --------
+    >>> import edaflow
+    >>> # Directory-based analysis
+    >>> edaflow.visualize_image_classes(data_source='dataset/train/')
+    >>> # Deprecated but supported
+    >>> edaflow.visualize_image_classes(image_paths='dataset/train/')
+    """
+    
+    # Handle backward compatibility for positional arguments and deprecated parameters
+    if args:
+        # Case 1: Old positional usage: visualize_image_classes(image_paths, ...)
+        if len(args) >= 1:
+            print("⚠️  Warning: Positional arguments are deprecated. Use 'data_source=' keyword argument instead.")
+            kwargs['data_source'] = args[0]
+            if len(args) > 1:
+                print(f"⚠️  Warning: Ignoring {len(args) - 1} additional positional arguments. Use keyword arguments.")
+    
+    # Call the actual implementation
+    return _visualize_image_classes_impl(**kwargs)
+
+
+def _visualize_image_classes_impl(
     data_source: Union[str, pd.DataFrame] = None,
     class_column: Optional[str] = None,
     image_path_column: Optional[str] = None, 
@@ -4515,7 +4599,7 @@ def visualize_image_classes(
     title: str = "Class-wise Image Sample Visualization",
     save_path: Optional[str] = None,
     return_stats: bool = False,
-    # Backward compatibility parameter
+    # Backward compatibility parameter (deprecated)
     image_paths: Union[str, pd.DataFrame, List[str]] = None
 ) -> Optional[Dict[str, Any]]:
     """
@@ -4677,7 +4761,19 @@ def visualize_image_classes(
             "📦 Install with: pip install Pillow"
         )
     
+    """
+    Internal implementation of visualize_image_classes with full backward compatibility.
+    """
+    
+    # Check PIL availability
+    if not PIL_AVAILABLE:
+        raise ImportError(
+            "🚨 PIL (Pillow) is required for image visualization.\n"
+            "📦 Install with: pip install Pillow"
+        )
+
     # Handle backward compatibility for deprecated 'image_paths' parameter
+    # Case 1: image_paths passed as keyword parameter
     if image_paths is not None:
         if data_source is not None:
             raise ValueError(
@@ -4691,7 +4787,10 @@ def visualize_image_classes(
         raise ValueError(
             "🚨 Must specify 'data_source' parameter with either:\n"
             "   • Directory path containing class subfolders\n" 
-            "   • pandas DataFrame with image paths and class labels"
+            "   • pandas DataFrame with image paths and class labels\n\n"
+            "📝 For backward compatibility, you can use:\n"
+            "   • data_source=your_path (recommended)\n"
+            "   • image_paths=your_path (deprecated, shows warning)"
         )
 
     print("🖼️  Starting Image Classification EDA...")

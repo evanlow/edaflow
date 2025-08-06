@@ -19,6 +19,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.12.3] - 2025-08-06 - Complete Positional Argument Compatibility Fix 🔧
+
+### Fixed
+- **CRITICAL**: Resolved TypeError when calling `visualize_image_classes(image_paths, ...)` with positional arguments
+- **Positional Arguments**: Function now properly handles legacy positional argument usage from Jupyter notebooks
+- **Backward Compatibility**: Complete support for all three usage patterns:
+  1. `visualize_image_classes(path, ...)` - Positional (deprecated, shows warning)  
+  2. `visualize_image_classes(image_paths=path, ...)` - Keyword deprecated (shows warning)
+  3. `visualize_image_classes(data_source=path, ...)` - Recommended (no warning)
+
+### Improved
+- **User Experience**: Clear deprecation warnings guide users toward recommended `data_source=` syntax
+- **Function Architecture**: Refactored to wrapper function pattern for robust argument handling
+- **Error Messages**: Enhanced error messages provide clear guidance for parameter usage
+- **Documentation**: Updated examples showing all supported usage patterns
+
+### Technical Details
+- **Implementation**: Split function into public wrapper and internal implementation
+- **Argument Handling**: Proper detection and mapping of positional arguments to correct parameters
+- **Warning System**: Contextual warnings for different deprecated usage patterns
+- **Testing**: Comprehensive test suite validates all backward compatibility scenarios
+
+### Notes
+- **Zero Breaking Changes**: All existing code continues to work unchanged
+- **Jupyter Notebook Fix**: Resolves the specific TypeError reported in Jupyter notebook usage
+- **Migration Path**: Users can migrate at their own pace with clear guidance
+
 ## [0.12.2] - 2025-08-06 - Documentation Refresh 📚
 
 ### Improved
