@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+## [0.12.4] - 2025-08-06
+
+### Fixed
+- **CRITICAL**: Fixed `visualize_image_classes()` not supporting list of image paths from `glob.glob()`
+- **BUG FIX**: Resolved TypeError "data_source must be either a directory path (str) or pandas DataFrame" when using `glob.glob()` results
+- **FUNCTIONALITY**: Added proper support for list input type in `visualize_image_classes()` function
+- **IMPLEMENTATION**: Added `_parse_image_path_list()` helper function to handle file path lists
+- **USABILITY**: Function now supports all three input types: directory paths (str), file lists (list), and DataFrames
+- **DOCUMENTATION**: Updated function signature and examples to show list support
+- **CONSISTENCY**: Aligned function behavior with documentation examples that use `glob.glob()`
+
+### Enhanced  
+- **ERROR MESSAGES**: Improved error messages to clearly indicate all supported input types
+- **VALIDATION**: Enhanced input validation with better type checking and error reporting
+- **EXAMPLES**: Added comprehensive list-based analysis example in function docstring
+
+### Technical Details
+- **INPUT TYPES**: Now accepts `Union[str, List[str], pd.DataFrame]` for `data_source` parameter  
+- **CLASS DETECTION**: Automatically extracts class names from parent directory names in file paths
+- **FILE VALIDATION**: Validates file existence and skips non-existent paths with warnings
+- **BACKWARD COMPATIBILITY**: Maintains full compatibility with existing directory and DataFrame workflows
+
+### Added
 - Future features will be documented here
 
 ### Changed

@@ -4587,7 +4587,7 @@ def visualize_image_classes(*args, **kwargs) -> Optional[Dict[str, Any]]:
 
 
 def _visualize_image_classes_impl(
-    data_source: Union[str, pd.DataFrame] = None,
+    data_source: Union[str, List[str], pd.DataFrame] = None,
     class_column: Optional[str] = None,
     image_path_column: Optional[str] = None, 
     samples_per_class: int = 5,
@@ -4614,9 +4614,11 @@ def _visualize_image_classes_impl(
     
     Parameters
     ----------
-    data_source : str or pd.DataFrame
-        Either a directory path containing class-named subfolders of images,
-        or a pandas DataFrame with image paths and class labels.
+    data_source : str, list, or pd.DataFrame
+        One of:
+        - Directory path containing class-named subfolders of images (str)
+        - List of image file paths where parent directory indicates class (list)  
+        - pandas DataFrame with image paths and class labels (pd.DataFrame)
         
     class_column : str, optional
         Column name containing class labels (required if data_source is DataFrame).
@@ -4702,6 +4704,20 @@ def _visualize_image_classes_impl(
     ... )
     >>> print(f"Dataset balance ratio: {stats['balance_ratio']:.2f}")
     
+    📋 **List-based Analysis** (For glob patterns or custom file lists):
+    
+    >>> import glob
+    >>> 
+    >>> # Collect image paths using glob  
+    >>> image_paths = glob.glob('dataset/train/*/*.jpg')
+    >>> 
+    >>> # Analyze the file list (classes determined by parent directory)
+    >>> edaflow.visualize_image_classes(
+    ...     data_source=image_paths,    # List of image file paths
+    ...     samples_per_class=5,        # Show 5 samples per class  
+    ...     title="Dataset from File List"
+    ... )
+    
     🎯 **Medical/Scientific Imaging**:
     
     >>> # Analysis for medical imaging dataset
@@ -4785,8 +4801,9 @@ def _visualize_image_classes_impl(
     
     if data_source is None:
         raise ValueError(
-            "🚨 Must specify 'data_source' parameter with either:\n"
-            "   • Directory path containing class subfolders\n" 
+            "🚨 Must specify 'data_source' parameter with one of:\n"
+            "   • Directory path containing class subfolders (str)\n"
+            "   • List of image file paths (list)\n" 
             "   • pandas DataFrame with image paths and class labels\n\n"
             "📝 For backward compatibility, you can use:\n"
             "   • data_source=your_path (recommended)\n"
@@ -4805,6 +4822,11 @@ def _visualize_image_classes_impl(
         print(f"📁 Analyzing directory: {data_source}")
         image_data = _parse_directory_structure(data_source)
         
+    elif isinstance(data_source, (list, tuple)):
+        # List of image paths (from glob.glob() or manual list)
+        print(f"📋 Analyzing list of {len(data_source)} image paths")
+        image_data = _parse_image_path_list(data_source)
+        
     elif isinstance(data_source, pd.DataFrame):
         # DataFrame-based input
         if class_column is None or image_path_column is None:
@@ -4816,7 +4838,12 @@ def _visualize_image_classes_impl(
         image_data = _parse_dataframe_structure(data_source, class_column, image_path_column)
         
     else:
-        raise TypeError("🚨 data_source must be either a directory path (str) or pandas DataFrame")
+        raise TypeError(
+            "🚨 data_source must be one of:\n"
+            "   • Directory path (str)\n"
+            "   • List of image paths (list)\n" 
+            "   • pandas DataFrame"
+        )
     
     # Generate statistics
     stats = _generate_image_dataset_stats(image_data)
@@ -4888,6 +4915,41 @@ def _parse_dataframe_structure(df: pd.DataFrame, class_col: str, path_col: str) 
     
     if not image_data:
         raise ValueError("🚨 No valid images found in DataFrame")
+    
+    return image_data
+
+
+def _parse_image_path_list(image_paths: List[str]) -> Dict[str, List[str]]:
+    """Parse list of image paths to extract class-organized structure."""
+    from pathlib import Path
+    import os
+    
+    if not image_paths:
+        raise ValueError("🚨 Empty image path list provided")
+    
+    # Group images by their parent directory name (assumed to be class name)
+    image_data = {}
+    
+    for img_path in image_paths:
+        if not os.path.exists(img_path):
+            print(f"   ⚠️  Skipping non-existent file: {img_path}")
+            continue
+            
+        # Extract class name from parent directory
+        path_obj = Path(img_path)
+        class_name = path_obj.parent.name
+        
+        if class_name not in image_data:
+            image_data[class_name] = []
+        
+        image_data[class_name].append(img_path)
+    
+    # Print summary
+    for class_name, paths in image_data.items():
+        print(f"   📋 {class_name}: {len(paths)} images")
+    
+    if not image_data:
+        raise ValueError("🚨 No valid images found in path list")
     
     return image_data
 
