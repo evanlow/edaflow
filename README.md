@@ -65,7 +65,11 @@ Complete documentation is available at **[edaflow.readthedocs.io](https://edaflo
 
 ### From PyPI
 ```bash
+# Install latest version (recommended)
 pip install edaflow
+
+# Or install specific version
+pip install edaflow==0.12.1
 ```
 
 ### From Source
