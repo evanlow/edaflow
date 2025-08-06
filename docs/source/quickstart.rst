@@ -10,13 +10,16 @@ First, install and import edaflow:
 
    # Smart conversion
    df_converted = edaflow.convert_to_numeric(df_original, threshold=35)
-   print(df_converted.dtypes)  # 'pr   product_photos = glob.glob('ecommerce_images/*/*.jpg')
-   edaflow.visualize_image_classes(product_photos, samples_per_class=8)
+   print(df_converted.dtypes)  # 'price' now converted to float
+
+   # Computer Vision EDA - Explore image datasets
+   product_photos = glob.glob('ecommerce_images/*/*.jpg')
+   edaflow.visualize_image_classes(data_source=product_photos, samples_per_class=8)
 
 🔍 **Function Categories**
---------------------------ext' now converted to float
+--------------------------
 
-🖼️ **Computer Vision EDA** ⭐ *New in v0.9.0-v0.11.0*
+🖼️ **Computer Vision EDA** ⭐ *New in v0.9.0-v0.12.3*
 ---------------------------------------------------------e-block:: python
 
    # Install (if not already done)
@@ -209,7 +212,7 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
    df_converted = edaflow.convert_to_numeric(df_original, threshold=35)
    print(df_converted.dtypes)  # 'price_text' now converted to float
 
-�️ **Computer Vision EDA** ⭐ *New in v0.9.0-v0.11.0*
+🖼️ **Computer Vision EDA** ⭐ *New in v0.9.0-v0.12.3*
 ---------------------------------------------------------
 
 Explore image datasets with the same systematic approach as tabular data! edaflow's Computer Vision EDA provides a complete pipeline for understanding image collections.
@@ -229,7 +232,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    print("🎯 STEP 1: DATASET VISUALIZATION")
    print("-" * 50)
    edaflow.visualize_image_classes(
-       image_paths,
+       data_source=image_paths,
        samples_per_class=6,        # Show 6 examples per class
        figsize=(15, 10),
        title="Dataset Overview: Class Distribution & Samples"
@@ -265,7 +268,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
 
    # Understand your image dataset at a glance
    edaflow.visualize_image_classes(
-       image_paths=['path/to/class1/*.jpg', 'path/to/class2/*.jpg'],
+       data_source=['path/to/class1/*.jpg', 'path/to/class2/*.jpg'],
        samples_per_class=4,
        max_classes=8,              # Limit displayed classes
        figsize=(12, 8),
@@ -333,7 +336,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    
    # Product Photography Quality Control
    product_photos = glob.glob('ecommerce_images/*/*.jpg')
-   edaflow.visualize_image_classes(product_photos, samples_per_class=8)
+   edaflow.visualize_image_classes(data_source=product_photos, samples_per_class=8)
 
 �🔍 **Function Categories**
 --------------------------

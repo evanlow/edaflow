@@ -59,8 +59,8 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
    # ... and 9 more powerful functions!
    
    # NEW: Computer Vision EDA & Quality Assessment
-   edaflow.visualize_image_classes('dataset/images/')  # Image classification analysis
-   edaflow.assess_image_quality('dataset/images/')     # Image quality assessment
+   edaflow.visualize_image_classes(data_source='dataset/images/')  # Image classification analysis
+   edaflow.assess_image_quality(data_source='dataset/images/')     # Image quality assessment
 
 📚 **Documentation Contents**
 -----------------------------
@@ -112,11 +112,11 @@ edaflow provides 16 comprehensive EDA functions organized into logical categorie
 * :func:`~edaflow.visualize_histograms` - Statistical distribution analysis
 * :func:`~edaflow.visualize_scatter_matrix` - Advanced pairwise relationship analysis
 
-**Computer Vision EDA** 🖼️ **NEW in v0.9.0!**
+**Computer Vision EDA** 🖼️ **NEW in v0.9.0-v0.12.3!**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * :func:`~edaflow.visualize_image_classes` - Class-wise image sample visualization for image classification datasets
 
-**Image Quality Assessment** 🔍 **NEW in v0.10.0!**
+**Image Quality Assessment** 🔍 **NEW in v0.10.0-v0.12.3!**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * :func:`~edaflow.assess_image_quality` - Comprehensive automated quality assessment and corruption detection for image datasets
 

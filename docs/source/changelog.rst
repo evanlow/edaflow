@@ -6,8 +6,59 @@ All notable changes to edaflow are documented here.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
-Changelog
-=========
+Version 0.12.3 (2025-08-06) - Complete Positional Argument Compatibility Fix 🔧
+--------------------------------------------------------------------------------
+
+**CRITICAL BUG FIX:**
+
+**Fixed:**
+- **CRITICAL**: Resolved TypeError when calling ``visualize_image_classes(image_paths, ...)`` with positional arguments
+- **Positional Arguments**: Function now properly handles legacy positional argument usage from Jupyter notebooks
+- **Backward Compatibility**: Complete support for all three usage patterns:
+  1. ``visualize_image_classes(path, ...)`` - Positional (deprecated, shows warning)  
+  2. ``visualize_image_classes(image_paths=path, ...)`` - Keyword deprecated (shows warning)
+  3. ``visualize_image_classes(data_source=path, ...)`` - Recommended (no warning)
+
+**Improved:**
+- **User Experience**: Clear deprecation warnings guide users toward recommended ``data_source=`` syntax
+- **Function Architecture**: Refactored to wrapper function pattern for robust argument handling
+- **Error Messages**: Enhanced error messages provide clear guidance for parameter usage
+- **Documentation**: Updated all examples to show modern ``data_source=`` syntax
+
+**Technical Details:**
+- **Implementation**: Split function into public wrapper and internal implementation
+- **Argument Handling**: Proper detection and mapping of positional arguments to correct parameters
+- **Warning System**: Contextual warnings for different deprecated usage patterns
+- **Testing**: Comprehensive test suite validates all backward compatibility scenarios
+
+**Notes:**
+- **Zero Breaking Changes**: All existing code continues to work unchanged
+- **Jupyter Notebook Fix**: Resolves the specific TypeError reported in Jupyter notebook usage
+- **Migration Path**: Users can migrate at their own pace with clear guidance
+
+Version 0.12.2 (2025-08-06) - Documentation Refresh Release 📚
+---------------------------------------------------------------
+
+**Documentation:**
+- **PyPI Description**: Refreshed PyPI package description with latest feature updates
+- **Changelog Display**: Fixed PyPI changelog display showing current version information
+- **Version Alignment**: Ensured all documentation reflects current v0.12.2 capabilities
+
+Version 0.12.1 (2025-08-05) - Enhanced Computer Vision EDA 🖼️
+--------------------------------------------------------------
+
+**Enhanced Functions:**
+- **visualize_image_classes()**: Now supports both directory paths and pandas DataFrames as data sources
+  - **DataFrame Support**: Pass image metadata as DataFrame with 'image_path' and 'class' columns
+  - **Directory Support**: Continues to support organized folder structure (folder = class)
+  - **Flexible Input**: Unified interface for different dataset organizations
+  - **Error Handling**: Clear error messages guide proper usage for both input types
+
+**Improvements:**
+- **Data Source Flexibility**: Switch between directory-based and metadata-based workflows
+- **DataFrame Integration**: Perfect for datasets with existing metadata and annotations
+- **Backward Compatibility**: Maintains all existing directory-based functionality
+- **User Experience**: Enhanced error messages and parameter validation
 
 Version 0.10.0 (2025-08-05) - Image Quality Assessment Release 🔍
 ----------------------------------------------------------------
