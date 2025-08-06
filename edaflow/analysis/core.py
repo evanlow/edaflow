@@ -5625,12 +5625,13 @@ def apply_smart_encoding(df: pd.DataFrame,
                     if return_encoders:
                         encoders[column] = {'encoder': encoder, 'method': 'target_encoding'}
                 else:
-                    # Fallback to frequency encoding
+                    # Fallback to frequency encoding when target column is missing or None
+                    print(f"    ⚠️  Target column '{target_column}' not found or not specified - using frequency encoding instead")
                     freq_map = df_work[column].value_counts().to_dict()
                     df_work[column] = df_work[column].map(freq_map)
                     
                     if return_encoders:
-                        encoders[column] = {'encoder': freq_map, 'method': 'frequency_encoding'}
+                        encoders[column] = {'encoder': freq_map, 'method': 'frequency_encoding_fallback'}
                         
             elif method == 'ordinal_encoding':
                 # Ordinal encoding

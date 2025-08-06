@@ -6,7 +6,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.3** - [Latest Release](https://pypi.org/project/edaflow/0.12.3/) includes complete positional argument backward compatibility fixes. *Updated: August 6, 2025*
+> **📦 Current Version: v0.12.8** - [Latest Release](https://pypi.org/project/edaflow/0.12.8/) includes critical bug fix for Smart Encoding KeyError and comprehensive documentation improvements. *Updated: August 6, 2025*
 
 ## Description
 
@@ -51,7 +51,26 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
 - **Easy Integration**: Works seamlessly with pandas, numpy, scikit-learn, and other popular libraries
 
-## 📚 Documentation
+## � Recent Updates
+
+### v0.12.8 (Latest) - Critical Bug Fix
+- **🔧 CRITICAL BUG FIX**: Resolved KeyError: 'target' not found in axis error in `apply_smart_encoding()` function
+- **✅ TARGET VALIDATION**: Added proper validation for target column existence before DataFrame access
+- **🛡️ GRACEFUL FALLBACK**: Function now gracefully handles missing target columns with informative warnings
+- **📈 IMPROVED STABILITY**: Enhanced function robustness to prevent crashes in edge cases
+
+### v0.12.7 - Documentation & Integration
+- **📚 COMPREHENSIVE DOCS**: Complete documentation synchronization across PyPI and ReadTheDocs
+- **🔗 SMART ENCODING INTEGRATION**: Full integration of Smart Encoding in 13-step EDA workflow
+- **🔧 LEGACY COMPATIBILITY**: Added backward compatibility aliases for parameter consistency
+- **📖 ENHANCED EXAMPLES**: Comprehensive Smart Encoding examples with practical parameter values
+
+### v0.12.6 - Smart Visualization
+- **🎨 INTELLIGENT IMAGE HANDLING**: Auto-skip visualization for large datasets (200+ images)
+- **⚙️ DYNAMIC SIZING**: Smart figure and font adjustments based on dataset size
+- **🚫 READABILITY PROTECTION**: Prevents unreadable plots with helpful user guidance
+
+## �📚 Documentation
 
 Complete documentation is available at **[edaflow.readthedocs.io](https://edaflow.readthedocs.io)**
 
@@ -69,7 +88,7 @@ Complete documentation is available at **[edaflow.readthedocs.io](https://edaflo
 pip install edaflow
 
 # Or install specific version
-pip install edaflow==0.12.3
+pip install edaflow==0.12.8
 ```
 
 ### From Source

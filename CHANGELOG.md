@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [0.12.8] - 2025-08-06
+
+### Fixed
+- **CRITICAL BUG FIX**: Fixed KeyError: 'target' not found in axis error in `apply_smart_encoding()` function
+- **TARGET COLUMN VALIDATION**: Added proper validation for target column existence before accessing DataFrame
+- **GRACEFUL FALLBACK**: Function now gracefully falls back to frequency encoding when target column is missing
+- **IMPROVED ERROR HANDLING**: Added informative warning messages for missing target column scenarios
+- **USER EXPERIENCE**: Enhanced function robustness to prevent crashes when target column doesn't exist
+
 ## [0.12.7] - 2025-08-06
 
 ### Added
