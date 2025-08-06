@@ -110,11 +110,29 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
    print("-" * 40)
    df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbose=True)
    
-   # Step 12: Results Verification
-   print("\\n12. RESULTS VERIFICATION")
+   # Step 12: Smart Encoding for ML (⭐ New in v0.12.0)
+   print("\\n12. SMART ENCODING FOR MACHINE LEARNING")
    print("-" * 40)
-   edaflow.visualize_scatter_matrix(df_final, title="Clean Data Relationships")
-   edaflow.visualize_numerical_boxplots(df_final, title="Final Clean Distribution")
+   # Analyze optimal encoding strategies
+   encoding_analysis = edaflow.analyze_encoding_needs(
+       df_final,
+       target_column='target',           # Optional: for supervised encoding
+       max_cardinality_onehot=15,        # Max categories for one-hot encoding  
+       ordinal_columns=['size', 'grade'] # Optional: specify ordinal columns
+   )
+   
+   # Apply intelligent encoding transformations
+   df_encoded = edaflow.apply_smart_encoding(
+       df_final.drop('target', axis=1),  # Features only
+       encoding_analysis=encoding_analysis,
+       return_encoders=True              # Keep encoders for test data
+   )
+   
+   # Step 13: Results Verification
+   print("\\n13. RESULTS VERIFICATION")
+   print("-" * 40)
+   edaflow.visualize_scatter_matrix(df_encoded, title="ML-Ready Encoded Data")
+   edaflow.visualize_numerical_boxplots(df_encoded, title="Final Encoded Distribution")
 
 🎯 **Key Function Examples**
 ----------------------------
@@ -389,6 +407,38 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
 * ``visualize_image_classes()`` - Dataset visualization & class distribution
 * ``assess_image_quality()`` - Quality analysis & corruption detection  
 * ``analyze_image_features()`` - Advanced feature analysis (colors, edges, texture)
+
+**Smart Encoding for ML** ⭐ *New in v0.12.0*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* ``analyze_encoding_needs()`` - Intelligent analysis of optimal encoding strategies
+* ``apply_smart_encoding()`` - Automated categorical encoding with ML best practices
+
+.. code-block:: python
+
+   # Comprehensive encoding analysis and application
+   
+   # Step 1: Analyze optimal encoding strategies
+   encoding_analysis = edaflow.analyze_encoding_needs(
+       df,
+       target_column='target',           # Optional: for supervised methods
+       max_cardinality_onehot=15,        # Threshold for one-hot encoding
+       max_cardinality_target=50,        # Threshold for target encoding
+       ordinal_columns=['size', 'grade'] # Specify ordinal relationships
+   )
+   
+   # Step 2: Apply intelligent transformations  
+   df_encoded, encoders = edaflow.apply_smart_encoding(
+       df.drop('target', axis=1),        # Features only
+       encoding_analysis=encoding_analysis,
+       return_encoders=True              # Keep for test data
+   )
+   
+   # The pipeline automatically selects:
+   # • One-hot encoding for low cardinality
+   # • Target encoding for high cardinality (supervised)
+   # • Ordinal encoding for ordered categories
+   # • Binary encoding for medium cardinality
+   # • Frequency encoding as fallback
 
 💡 **Pro Tips**
 ---------------

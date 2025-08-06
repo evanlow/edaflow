@@ -9,6 +9,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [0.12.7] - 2025-08-06
+
+### Added
+- **COMPREHENSIVE DOCUMENTATION**: Complete documentation synchronization across PyPI and ReadTheDocs platforms
+- **SMART ENCODING INTEGRATION**: Added Smart Encoding functions to complete EDA workflow documentation
+- **RTD ENHANCEMENT**: Enhanced ReadTheDocs quickstart guide with Smart Encoding section and examples
+- **WORKFLOW INTEGRATION**: Smart Encoding now properly integrated as Step 12 in complete 13-step EDA workflow
+- **PARAMETER CONSISTENCY**: Standardized parameter examples across all documentation platforms
+
+### Improved
+- **DOCUMENTATION ACCURACY**: Corrected parameter names (max_cardinality_onehot, max_cardinality_target) across all docs
+- **USER EXPERIENCE**: Consistent examples and function signatures between README and RTD documentation
+- **FUNCTION COUNT**: Updated from 16 to 18 functions in all documentation to reflect Smart Encoding additions
+- **CODE EXAMPLES**: Comprehensive Smart Encoding examples with practical parameter values
+- **PLATFORM CONSISTENCY**: Synchronized information across PyPI README, RTD quickstart, and main index pages
+
+### Fixed
+- **LEGACY COMPATIBILITY**: Added `max_cardinality` parameter alias in `analyze_encoding_needs()` for backward compatibility
+- **PARAMETER CONFUSION**: Resolved TypeError issues caused by parameter naming inconsistencies
+- **DOCUMENTATION GAPS**: Filled missing Smart Encoding information in complete workflow documentation
+
+## [0.12.6] - 2025-08-06
+
+### Added
+- **SMART VISUALIZATION**: Intelligent handling of large image datasets in `visualize_image_classes()`
+- **AUTO-SKIP THRESHOLD**: Automatically skip visualization for datasets with 200+ images to prevent unreadable plots
+- **IMAGE LIMIT CONTROL**: New `max_images_display` parameter to limit total images shown for readability
+- **FORCE DISPLAY OPTION**: New `force_display` parameter to override auto-skip behavior when needed
+- **DYNAMIC SIZING**: Smart figure and font size adjustments based on dataset size
+- **HELPFUL WARNINGS**: Clear guidance when visualizations might be hard to read due to size
+
+### Improved
+- **GRID LAYOUTS**: Better automatic grid layout calculations for large datasets
+- **FONT SCALING**: Dynamic font sizes that scale appropriately with image count
+- **USER GUIDANCE**: Comprehensive suggestions for handling large datasets effectively
+- **DOCUMENTATION**: Added examples for large dataset scenarios and parameter usage
+
+### Technical Details
+- Images are limited to 50 total by default for optimal readability
+- Datasets with 200+ images auto-skip visualization (customizable via `auto_skip_threshold`)
+- Smart warnings at 50+ images with optimization suggestions
+- Improved grid layouts prevent overlapping and unreadable content
+
 ## [0.12.5] - 2025-08-06
 
 ### Fixed

@@ -13,9 +13,9 @@ edaflow Documentation
    :target: https://github.com/evanlow/edaflow/blob/main/LICENSE
    :alt: License
 
-edaflow is a Python package designed to streamline exploratory data analysis (EDA) workflows. It provides 16 comprehensive functions that cover the essential steps of data exploration, from missing data analysis to advanced visualizations and computer vision dataset assessment.
+edaflow is a Python package designed to streamline exploratory data analysis (EDA) workflows. It provides 18 comprehensive functions that cover the essential steps of data exploration, from missing data analysis to advanced visualizations, computer vision dataset assessment, and smart categorical encoding.
 
-**edaflow** simplifies and accelerates the EDA process by providing a collection of 16 powerful functions for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing - now including computer vision datasets and quality assessment.
+**edaflow** simplifies and accelerates the EDA process by providing a collection of 18 powerful functions for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, preprocessing, and intelligent categorical encoding - now including computer vision datasets and quality assessment.
 
 🎯 **Key Features**
 -------------------
@@ -27,6 +27,8 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
 * **Advanced Visualizations**: Interactive boxplots, comprehensive heatmaps, statistical histograms
 * **Scatter Matrix Analysis**: Advanced pairwise relationship visualization with regression lines
 * **Computer Vision EDA**: Class-wise image sample visualization for image classification datasets
+* **Image Quality Assessment**: Automated detection of corrupted, blurry, or low-quality images
+* **Smart Categorical Encoding**: Intelligent analysis and automated application of optimal encoding strategies
 * **Outlier Handling**: Automated outlier detection and replacement using multiple statistical methods
 * **Professional Output**: Beautiful, color-coded results optimized for Jupyter notebooks
 
@@ -48,7 +50,7 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
    # Load your data
    df = pd.read_csv('your_data.csv')
 
-   # Complete EDA workflow with 16 functions
+   # Complete EDA workflow with 18 functions
    edaflow.check_null_columns(df)                    # 1. Missing data analysis
    edaflow.analyze_categorical_columns(df)           # 2. Categorical insights
    df_clean = edaflow.convert_to_numeric(df)         # 3. Smart type conversion
@@ -56,7 +58,7 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
    edaflow.visualize_scatter_matrix(df_clean)        # 5. Relationship analysis
    edaflow.visualize_heatmap(df_clean)              # 6. Correlation heatmaps
    edaflow.visualize_histograms(df_clean)           # 7. Distribution analysis
-   # ... and 9 more powerful functions!
+   # ... and 11 more powerful functions!
    
    # NEW: Computer Vision EDA & Quality Assessment
    edaflow.visualize_image_classes(data_source='dataset/images/')  # Simple directory path
@@ -88,7 +90,7 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
 📊 **Function Overview**
 ------------------------
 
-edaflow provides 16 comprehensive EDA functions organized into logical categories:
+edaflow provides 18 comprehensive EDA functions organized into logical categories:
 
 **Data Quality & Analysis**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,6 +121,11 @@ edaflow provides 16 comprehensive EDA functions organized into logical categorie
 **Image Quality Assessment** 🔍 **NEW in v0.10.0-v0.12.3!**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * :func:`~edaflow.assess_image_quality` - Comprehensive automated quality assessment and corruption detection for image datasets
+
+**Smart Encoding** 🧠 **NEW in v0.12.4-v0.12.7!**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* :func:`~edaflow.analyze_encoding_needs` - Intelligent categorical encoding analysis and recommendations
+* :func:`~edaflow.apply_smart_encoding` - Automated encoding application with optimal strategy selection
 
 **Helper Functions**
 ~~~~~~~~~~~~~~~~~~~~

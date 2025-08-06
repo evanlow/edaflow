@@ -166,8 +166,10 @@ df = pd.read_csv('your_data.csv')
 # Step 1: Analyze encoding needs (with or without target)
 encoding_analysis = edaflow.analyze_encoding_needs(
     df, 
-    target_column='target',  # Optional: specify target for supervised encoding
-    max_cardinality=50       # Optional: customize cardinality threshold
+    target_column='target',        # Optional: specify target for supervised encoding
+    max_cardinality_onehot=15,     # Optional: max categories for one-hot encoding
+    max_cardinality_target=50,     # Optional: max categories for target encoding
+    ordinal_columns=['size', 'grade']  # Optional: specify ordinal columns
 )
 
 # Step 2: Apply intelligent encoding transformations

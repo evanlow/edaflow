@@ -4599,6 +4599,10 @@ def _visualize_image_classes_impl(
     title: str = "Class-wise Image Sample Visualization",
     save_path: Optional[str] = None,
     return_stats: bool = False,
+    # New parameters for handling large datasets
+    max_images_display: Optional[int] = None,
+    auto_skip_threshold: int = 200,
+    force_display: bool = False,
     # Backward compatibility parameter (deprecated)
     image_paths: Union[str, pd.DataFrame, List[str]] = None
 ) -> Optional[Dict[str, Any]]:
@@ -4746,6 +4750,28 @@ def _visualize_image_classes_impl(
     >>> if stats['corrupted_images']:
     ...     print(f"🚨 {len(stats['corrupted_images'])} corrupted images found")
     
+    📦 **Large Dataset Handling**:
+    
+    >>> # For large datasets (200+ images), visualization is auto-skipped
+    >>> edaflow.visualize_image_classes(
+    ...     'huge_dataset/',
+    ...     samples_per_class=3,        # Statistics shown, no visualization
+    ... )
+    
+    >>> # Limit total images displayed for readability  
+    >>> edaflow.visualize_image_classes(
+    ...     'big_dataset/', 
+    ...     samples_per_class=10,
+    ...     max_images_display=50,      # Limit to 50 total images
+    ... )
+    
+    >>> # Force display even for very large datasets (not recommended)
+    >>> edaflow.visualize_image_classes(
+    ...     'massive_dataset/',
+    ...     samples_per_class=20,
+    ...     force_display=True          # Override auto-skip behavior
+    ... )
+    
     Notes
     -----
     📋 **Requirements**:
@@ -4852,16 +4878,50 @@ def _visualize_image_classes_impl(
     if show_class_counts:
         _display_class_distribution(stats)
     
-    # Create visualization
-    _create_image_class_visualization(
-        image_data, stats, samples_per_class, grid_layout, 
-        figsize, shuffle_samples, show_image_info, title, save_path
-    )
+    # Smart visualization handling for large datasets
+    total_images_to_display = len(image_data) * samples_per_class
+    should_display_visualization = True
     
-    print(f"\n✅ Image classification EDA completed!")
-    print("🎨 Visualization displayed above")
-    if save_path:
-        print(f"💾 Saved to: {save_path}")
+    # Apply max_images_display limit if specified
+    if max_images_display is not None and total_images_to_display > max_images_display:
+        print(f"\n⚠️  Large dataset detected: {total_images_to_display} images to display")
+        print(f"   📉 Limiting to {max_images_display} images for readability")
+        # Reduce samples per class proportionally
+        adjusted_samples = max(1, max_images_display // len(image_data))
+        samples_per_class = min(samples_per_class, adjusted_samples)
+        total_images_to_display = len(image_data) * samples_per_class
+    
+    # Check if dataset is too large for readable visualization
+    if total_images_to_display >= auto_skip_threshold and not force_display:
+        should_display_visualization = False
+        print(f"\n🚫 Visualization skipped: Dataset too large ({total_images_to_display} images)")
+        print(f"   🎯 Reason: With {len(image_data)} classes × {samples_per_class} samples, images would be too small to read")
+        print(f"   💡 Solutions:")
+        print(f"      • Reduce samples_per_class (currently {samples_per_class})")
+        print(f"      • Set max_images_display parameter (e.g., max_images_display=50)")
+        print(f"      • Use force_display=True to display anyway (not recommended)")
+        print(f"   📊 Class distribution and statistics are shown above")
+        
+    elif total_images_to_display >= 50:
+        print(f"\n⚠️  Large visualization warning: {total_images_to_display} images")
+        print(f"   📐 This may result in small, hard-to-see images")
+        print(f"   💡 Consider reducing samples_per_class or setting max_images_display")
+    
+    # Create visualization (if not skipped)
+    if should_display_visualization:
+        _create_image_class_visualization(
+            image_data, stats, samples_per_class, grid_layout, 
+            figsize, shuffle_samples, show_image_info, title, save_path
+        )
+        
+        print(f"\n✅ Image classification EDA completed!")
+        print("🎨 Visualization displayed above")
+        if save_path:
+            print(f"💾 Saved to: {save_path}")
+    else:
+        print(f"\n✅ Image classification EDA completed!")
+        print("📊 Statistics and class distribution shown above")
+        print("🚫 Visualization skipped due to dataset size")
     
     if return_stats:
         return stats
@@ -5034,20 +5094,37 @@ def _create_image_class_visualization(
     title: str,
     save_path: Optional[str]
 ) -> None:
-    """Create the main image class visualization."""
+    """Create the main image class visualization with smart layout."""
     
     num_classes = len(image_data)
+    total_images = num_classes * samples_per_class
     
-    # Determine grid layout
+    # Determine grid layout with improved readability for large datasets
     if grid_layout == 'auto':
-        cols = min(samples_per_class, 5)  # Max 5 columns for readability
-        rows = num_classes
+        # Smart auto-layout based on total images
+        if total_images <= 20:
+            cols = min(samples_per_class, 5)  # Standard layout
+            rows = num_classes
+        elif total_images <= 50:
+            cols = min(samples_per_class, 6)  # Slightly more compact  
+            rows = num_classes
+        else:
+            # For large datasets, use more compact square-ish layout
+            cols = min(samples_per_class, 8)
+            rows = num_classes
     elif grid_layout == 'square':
-        side_length = math.ceil(math.sqrt(num_classes * samples_per_class))
-        rows = math.ceil(num_classes * samples_per_class / side_length)
+        side_length = math.ceil(math.sqrt(total_images))
+        rows = math.ceil(total_images / side_length)
         cols = side_length
     else:
         rows, cols = grid_layout
+    
+    # Adjust figure size based on number of images
+    if total_images > 50:
+        # Increase figure size for readability with many images
+        width_mult = min(1.5, total_images / 50)  # Scale up to 1.5x
+        height_mult = min(1.3, total_images / 50)  # Scale up to 1.3x
+        figsize = (int(figsize[0] * width_mult), int(figsize[1] * height_mult))
     
     # Create figure with subplots
     fig, axes = plt.subplots(
@@ -5064,10 +5141,22 @@ def _create_image_class_visualization(
     elif rows == 1 and cols == 1:
         axes = np.array([[axes]])
     
-    # Set main title
-    fig.suptitle(title, fontsize=16, fontweight='bold', y=0.95)
+    # Set main title with dynamic font size
+    title_fontsize = max(12, 16 - (total_images // 25))  # Smaller title for large datasets
+    fig.suptitle(title, fontsize=title_fontsize, fontweight='bold', y=0.95)
     
     current_row = 0
+    
+    # Dynamic font sizes based on total number of images
+    if total_images <= 20:
+        title_fontsize_img = 10
+        info_fontsize = 8
+    elif total_images <= 50:
+        title_fontsize_img = 9  
+        info_fontsize = 7
+    else:
+        title_fontsize_img = 8  # Smaller fonts for dense layouts
+        info_fontsize = 6
     
     # Plot samples for each class
     for class_name, image_paths in image_data.items():
@@ -5093,15 +5182,15 @@ def _create_image_class_visualization(
                     img_array = np.array(img)
                     
                     ax.imshow(img_array)
-                    ax.set_title(f"{class_name}", fontsize=10, fontweight='bold')
+                    ax.set_title(f"{class_name}", fontsize=title_fontsize_img, fontweight='bold')
                     ax.axis('off')
                     
-                    # Add image info if requested
+                    # Add image info if requested (with smaller font for large datasets)
                     if show_image_info:
                         img_size = img.size
                         file_size = os.path.getsize(img_path) / 1024  # KB
                         ax.text(0.02, 0.02, f"{img_size[0]}×{img_size[1]}\n{file_size:.1f}KB", 
-                               transform=ax.transAxes, fontsize=8, 
+                               transform=ax.transAxes, fontsize=info_fontsize, 
                                bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
                         
             except Exception as e:
@@ -5140,7 +5229,9 @@ def analyze_encoding_needs(df: pd.DataFrame,
                           ordinal_columns: Optional[List[str]] = None,
                           binary_columns: Optional[List[str]] = None,
                           datetime_columns: Optional[List[str]] = None,
-                          text_columns: Optional[List[str]] = None) -> Dict:
+                          text_columns: Optional[List[str]] = None,
+                          # Legacy alias for backward compatibility
+                          max_cardinality: Optional[int] = None) -> Dict:
     """
     Analyze DataFrame columns and recommend appropriate encoding methods.
     
@@ -5166,6 +5257,10 @@ def analyze_encoding_needs(df: pd.DataFrame,
         Datetime columns for feature extraction
     text_columns : List[str], optional
         Text columns for NLP-based encoding
+        
+    max_cardinality : int, optional
+        **DEPRECATED**: Legacy alias for 'max_cardinality_onehot'. 
+        Use 'max_cardinality_onehot' parameter instead for clarity.
         
     Returns
     -------
@@ -5212,6 +5307,13 @@ def analyze_encoding_needs(df: pd.DataFrame,
     """
     if not SKLEARN_AVAILABLE:
         print("Warning: Limited encoding analysis without scikit-learn. Install with: pip install scikit-learn")
+    
+    # Handle legacy parameter for backward compatibility
+    if max_cardinality is not None:
+        if max_cardinality != max_cardinality_onehot:
+            print("⚠️  Warning: Using 'max_cardinality' parameter as alias for 'max_cardinality_onehot'")
+            print("    Please use 'max_cardinality_onehot' parameter in future versions")
+            max_cardinality_onehot = max_cardinality
     
     # Initialize analysis results
     analysis = {
