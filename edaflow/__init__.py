@@ -18,10 +18,12 @@ from .analysis import (
     visualize_scatter_matrix,
     visualize_image_classes,
     assess_image_quality,
-    analyze_image_features
+    analyze_image_features,
+    analyze_encoding_needs,
+    apply_smart_encoding
 )
 
-__version__ = "0.11.0"
+__version__ = "0.12.0"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 
@@ -58,5 +60,7 @@ __all__ = [
     'visualize_scatter_matrix',
     'visualize_image_classes',
     'assess_image_quality',
-    'analyze_image_features'
+    'analyze_image_features',
+    'analyze_encoding_needs',
+    'apply_smart_encoding'
 ]

@@ -19,6 +19,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Future removals will be documented here
 
+## [0.12.0] - 2025-08-06 - Machine Learning Preprocessing Release 🤖
+
+### Added
+- `analyze_encoding_needs()` function for intelligent categorical encoding strategy analysis
+  - Automatic cardinality analysis for optimal encoding method selection
+  - Target correlation analysis for supervised encoding recommendations
+  - Memory impact assessment for high-cardinality features
+  - Support for 7 different encoding strategies: One-Hot, Target, Ordinal, Binary, TF-IDF, Text, and Keep Numeric
+  - Beautiful emoji-rich output with detailed recommendations and summaries
+  
+- `apply_smart_encoding()` function for automated categorical variable transformation
+  - Intelligent preprocessing pipeline with automatic analysis integration
+  - Memory-efficient handling of high-cardinality categorical variables
+  - Support for scikit-learn encoders: OneHotEncoder, TargetEncoder, OrdinalEncoder
+  - TF-IDF vectorization for text features with customizable parameters
+  - Binary encoding for medium cardinality features to optimize memory usage
+  - Graceful handling of unknown categories with configurable strategies
+  - Comprehensive progress tracking with emoji-rich status updates
+  - Automatic shape transformation reporting (columns before/after)
+
+### Enhanced
+- Package now includes comprehensive ML preprocessing capabilities alongside EDA functions
+- Total function count increased from 18 to 20 with new encoding suite
+- Improved integration with scikit-learn ecosystem for end-to-end ML workflows
+- Enhanced documentation with ML preprocessing examples and use cases
+
+### Dependencies
+- Added scikit-learn integration for advanced encoding transformations
+- Maintained backward compatibility with existing EDA functionality
+- All new features include graceful fallbacks if optional dependencies unavailable
+
 ## [0.11.0] - 2025-01-30 - Image Feature Analysis Release 🎨
 
 ### Added

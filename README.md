@@ -12,23 +12,42 @@ A Python package for streamlined exploratory data analysis workflows.
 
 ## Features
 
+### 🔍 **Exploratory Data Analysis**
 - **Missing Data Analysis**: Color-coded analysis of null values with customizable thresholds
 - **Categorical Data Insights**: Identify object columns that might be numeric, detect data type issues
 - **Automatic Data Type Conversion**: Smart conversion of object columns to numeric when appropriate
 - **Categorical Values Visualization**: Detailed exploration of categorical column values with insights
 - **Column Type Classification**: Simple categorization of DataFrame columns into categorical and numerical types
-- **Data Imputation**: Smart missing value imputation using median for numerical and mode for categorical columns
+- **Data Type Detection**: Smart analysis to flag potential data conversion needs
+
+### 📊 **Advanced Visualizations**
 - **Numerical Distribution Visualization**: Advanced boxplot analysis with outlier detection and statistical summaries
 - **Interactive Boxplot Visualization**: Interactive Plotly Express boxplots with zoom, hover, and statistical tooltips
 - **Comprehensive Heatmap Visualizations**: Correlation matrices, missing data patterns, values heatmaps, and cross-tabulations
 - **Statistical Histogram Analysis**: Advanced histogram visualization with skewness detection, normality testing, and distribution analysis
 - **Scatter Matrix Analysis**: Advanced pairwise relationship visualization with customizable matrix layouts, regression lines, and statistical insights
+
+### 🤖 **Machine Learning Preprocessing** ⭐ *NEW in v0.12.0*
+- **Intelligent Encoding Analysis**: Automatic detection of optimal encoding strategies for categorical variables
+- **Smart Encoding Application**: Automated categorical encoding with support for:
+  - One-Hot Encoding for low cardinality categories
+  - Target Encoding for high cardinality with target correlation
+  - Ordinal Encoding for ordinal relationships
+  - Binary Encoding for medium cardinality
+  - Text Vectorization (TF-IDF) for text features
+  - Leave Unchanged for numeric columns
+- **Memory-Efficient Processing**: Intelligent handling of high-cardinality features to prevent memory issues
+- **Comprehensive Encoding Pipeline**: End-to-end preprocessing solution for ML model preparation
+
+### 🖼️ **Computer Vision Support**
 - **Computer Vision EDA**: Class-wise image sample visualization and comprehensive quality assessment for image classification datasets
 - **Image Quality Assessment**: Automated detection of corrupted images, quality issues, blur, artifacts, and dataset health metrics
+
+### 🛠️ **Data Preprocessing**
+- **Data Imputation**: Smart missing value imputation using median for numerical and mode for categorical columns
 - **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
-- **Data Type Detection**: Smart analysis to flag potential data conversion needs
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
-- **Easy Integration**: Works seamlessly with pandas, numpy, and other popular libraries
+- **Easy Integration**: Works seamlessly with pandas, numpy, scikit-learn, and other popular libraries
 
 ## 📚 Documentation
 
@@ -76,16 +95,18 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
+### 🔍 **Complete EDA Workflow**
 ```python
 import edaflow
+import pandas as pd
 
 # Test the installation
 print(edaflow.hello())
 
-# Complete EDA workflow with all 14 functions:
-import pandas as pd
+# Load your data
 df = pd.read_csv('your_data.csv')
 
+# Complete EDA workflow with all core functions:
 # 1. Analyze missing data with styled output
 null_analysis = edaflow.check_null_columns(df, threshold=10)
 
@@ -110,7 +131,7 @@ edaflow.visualize_histograms(df_fully_imputed, kde=True, show_normal_curve=True)
 
 # 8. Comprehensive relationship analysis
 edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='correlation')
-edaflow.visualize_scatter_matrix(df_fully_imputed, show_regression=True)  # NEW!
+edaflow.visualize_scatter_matrix(df_fully_imputed, show_regression=True)
 
 # 9. Outlier detection and visualization
 edaflow.visualize_numerical_boxplots(df_fully_imputed, show_skewness=True)
@@ -123,9 +144,43 @@ edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='values')
 # 11. Final data cleaning with outlier handling
 df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbose=True)
 
-# 12. Results verification with comprehensive relationship validation
-edaflow.visualize_scatter_matrix(df_final, title="Clean Data Relationships")  # NEW!
+# 12. Results verification
+edaflow.visualize_scatter_matrix(df_final, title="Clean Data Relationships")
 edaflow.visualize_numerical_boxplots(df_final, title="Final Clean Distribution")
+```
+
+### 🤖 **ML Preprocessing with Smart Encoding** ⭐ *NEW in v0.12.0*
+```python
+import edaflow
+import pandas as pd
+
+# Load your data
+df = pd.read_csv('your_data.csv')
+
+# Step 1: Analyze encoding needs (with or without target)
+encoding_analysis = edaflow.analyze_encoding_needs(
+    df, 
+    target_column='target',  # Optional: specify target for supervised encoding
+    max_cardinality=50       # Optional: customize cardinality threshold
+)
+
+# Step 2: Apply intelligent encoding transformations
+df_encoded = edaflow.apply_smart_encoding(
+    df.drop('target', axis=1),  # Features only
+    encoding_analysis=encoding_analysis,  # Optional: use previous analysis
+    handle_unknown='ignore'    # Optional: how to handle unknown categories
+)
+
+# The encoding pipeline automatically:
+# ✅ One-hot encodes low cardinality categoricals
+# ✅ Target encodes high cardinality with target correlation  
+# ✅ Binary encodes medium cardinality features
+# ✅ TF-IDF vectorizes text columns
+# ✅ Preserves numeric columns unchanged
+# ✅ Handles memory efficiently for large datasets
+
+print(f"Shape transformation: {df.shape} → {df_encoded.shape}")
+print(f"Encoding methods applied: {len(encoding_analysis['encoding_methods'])} different strategies")
 ```
 
 ## Usage Examples

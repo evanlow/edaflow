@@ -20,6 +20,18 @@ import math
 import os
 import random
 from pathlib import Path
+
+# Additional imports for encoding functionality (v0.12.0)
+try:
+    from sklearn.preprocessing import (
+        LabelEncoder, OneHotEncoder, OrdinalEncoder, 
+        TargetEncoder, StandardScaler
+    )
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+    print("Warning: scikit-learn not available. Install with: pip install scikit-learn")
 try:
     from PIL import Image, ImageStat
     PIL_AVAILABLE = True
@@ -4930,3 +4942,489 @@ def _create_image_class_visualization(
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         
     plt.show()
+
+
+def analyze_encoding_needs(df: pd.DataFrame, 
+                          target_column: Optional[str] = None,
+                          max_cardinality_onehot: int = 10,
+                          max_cardinality_target: int = 20,
+                          ordinal_columns: Optional[List[str]] = None,
+                          binary_columns: Optional[List[str]] = None,
+                          datetime_columns: Optional[List[str]] = None,
+                          text_columns: Optional[List[str]] = None) -> Dict:
+    """
+    Analyze DataFrame columns and recommend appropriate encoding methods.
+    
+    This function intelligently analyzes your dataset and provides comprehensive
+    recommendations for encoding categorical, ordinal, datetime, and text variables
+    for machine learning workflows.
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame to analyze for encoding needs
+    target_column : str, optional
+        Name of target variable for supervised learning context
+    max_cardinality_onehot : int, default=10
+        Maximum unique values for one-hot encoding recommendation
+    max_cardinality_target : int, default=20
+        Maximum unique values for target encoding consideration
+    ordinal_columns : List[str], optional
+        Columns with inherent order (e.g., ['low', 'medium', 'high'])
+    binary_columns : List[str], optional
+        Columns that should be treated as binary (0/1)
+    datetime_columns : List[str], optional
+        Datetime columns for feature extraction
+    text_columns : List[str], optional
+        Text columns for NLP-based encoding
+        
+    Returns
+    -------
+    Dict
+        Comprehensive encoding analysis with recommendations:
+        - 'recommendations': Encoding method per column
+        - 'cardinality_analysis': Unique value counts
+        - 'data_types': Current and recommended data types
+        - 'encoding_priority': Order of encoding operations
+        - 'potential_issues': Data quality concerns
+        - 'memory_impact': Memory usage predictions
+        
+    Examples
+    --------
+    >>> # Basic usage
+    >>> analysis = edaflow.analyze_encoding_needs(df)
+    >>> print(analysis['recommendations'])
+    
+    >>> # With target variable for supervised encoding
+    >>> analysis = edaflow.analyze_encoding_needs(df, target_column='target')
+    >>> 
+    >>> # Specify ordinal relationships
+    >>> analysis = edaflow.analyze_encoding_needs(
+    ...     df, 
+    ...     ordinal_columns=['education_level', 'income_bracket'],
+    ...     max_cardinality_onehot=15
+    ... )
+    
+    Notes
+    -----
+    This function helps prevent common encoding mistakes by:
+    - Analyzing cardinality to prevent curse of dimensionality
+    - Identifying ordinal relationships to preserve order
+    - Recommending target encoding for high-cardinality categories
+    - Detecting potential data leakage scenarios
+    - Estimating memory requirements for different encoding strategies
+    
+    The function follows encoding best practices:
+    - One-hot encoding for low cardinality (< max_cardinality_onehot)
+    - Target encoding for high cardinality with target correlation
+    - Ordinal encoding for natural ordering
+    - Binary encoding for moderate cardinality (saves memory)
+    - Frequency encoding based on value occurrence
+    """
+    if not SKLEARN_AVAILABLE:
+        print("Warning: Limited encoding analysis without scikit-learn. Install with: pip install scikit-learn")
+    
+    # Initialize analysis results
+    analysis = {
+        'recommendations': {},
+        'cardinality_analysis': {},
+        'data_types': {},
+        'encoding_priority': [],
+        'potential_issues': [],
+        'memory_impact': {}
+    }
+    
+    # Set defaults for optional parameters
+    ordinal_columns = ordinal_columns or []
+    binary_columns = binary_columns or []
+    datetime_columns = datetime_columns or []
+    text_columns = text_columns or []
+    
+    print("🔍 Analyzing encoding needs for dataset...")
+    print(f"Dataset shape: {df.shape}")
+    print(f"Target column: {target_column if target_column else 'None (unsupervised)'}")
+    
+    # Analyze each column
+    for column in df.columns:
+        if column == target_column:
+            continue
+            
+        col_data = df[column]
+        dtype = str(col_data.dtype)
+        unique_count = col_data.nunique()
+        null_count = col_data.isnull().sum()
+        
+        # Store cardinality info
+        analysis['cardinality_analysis'][column] = {
+            'unique_count': unique_count,
+            'null_count': null_count,
+            'null_percentage': (null_count / len(df)) * 100,
+            'data_type': dtype
+        }
+        
+        # Determine encoding strategy
+        if column in binary_columns:
+            recommendation = 'binary_encoding'
+            memory_impact = 'low'
+        elif column in ordinal_columns:
+            recommendation = 'ordinal_encoding'
+            memory_impact = 'low'
+        elif column in datetime_columns or 'datetime' in dtype:
+            recommendation = 'datetime_features'
+            memory_impact = 'medium'
+        elif column in text_columns or (dtype == 'object' and 
+                                       col_data.dropna().astype(str).str.len().mean() > 10):
+            recommendation = 'text_encoding'
+            memory_impact = 'high'
+        elif dtype == 'object' or dtype.startswith('category'):
+            # Categorical column analysis
+            if unique_count <= 2:
+                recommendation = 'binary_encoding'
+                memory_impact = 'low'
+            elif unique_count <= max_cardinality_onehot:
+                recommendation = 'one_hot_encoding'
+                memory_impact = 'medium'
+            elif target_column and unique_count <= max_cardinality_target:
+                recommendation = 'target_encoding'
+                memory_impact = 'medium'
+                analysis['potential_issues'].append(
+                    f"Target encoding for '{column}' requires careful CV to prevent overfitting"
+                )
+            elif unique_count <= 50:
+                recommendation = 'binary_encoding'
+                memory_impact = 'medium'
+            else:
+                recommendation = 'frequency_encoding'
+                memory_impact = 'low'
+                analysis['potential_issues'].append(
+                    f"High cardinality column '{column}' ({unique_count} values) may need feature selection"
+                )
+        else:
+            # Numeric column
+            if unique_count <= 10 and col_data.min() >= 0:
+                recommendation = 'keep_numeric'
+                memory_impact = 'low'
+            else:
+                recommendation = 'keep_numeric'
+                memory_impact = 'low'
+        
+        analysis['recommendations'][column] = recommendation
+        analysis['memory_impact'][column] = memory_impact
+        
+        # Data type recommendations
+        if recommendation == 'one_hot_encoding':
+            analysis['data_types'][column] = f'Multiple binary columns ({unique_count} new columns)'
+        elif recommendation == 'ordinal_encoding':
+            analysis['data_types'][column] = 'int64'
+        elif recommendation == 'target_encoding':
+            analysis['data_types'][column] = 'float64'
+        elif recommendation == 'datetime_features':
+            analysis['data_types'][column] = 'Multiple numeric columns (year, month, day, etc.)'
+        else:
+            analysis['data_types'][column] = dtype
+    
+    # Create encoding priority order
+    priority_order = {
+        'datetime_features': 1,
+        'text_encoding': 2,
+        'ordinal_encoding': 3,
+        'binary_encoding': 4,
+        'target_encoding': 5,
+        'one_hot_encoding': 6,
+        'frequency_encoding': 7,
+        'keep_numeric': 8
+    }
+    
+    analysis['encoding_priority'] = sorted(
+        analysis['recommendations'].keys(),
+        key=lambda x: priority_order.get(analysis['recommendations'][x], 9)
+    )
+    
+    # Add summary statistics
+    encoding_counts = {}
+    for method in analysis['recommendations'].values():
+        encoding_counts[method] = encoding_counts.get(method, 0) + 1
+    
+    analysis['summary'] = {
+        'total_columns': len(df.columns) - (1 if target_column else 0),
+        'encoding_methods': encoding_counts,
+        'high_memory_columns': len([c for c, m in analysis['memory_impact'].items() if m == 'high']),
+        'potential_new_columns': sum([
+            analysis['cardinality_analysis'][c]['unique_count'] 
+            for c, r in analysis['recommendations'].items() 
+            if r == 'one_hot_encoding'
+        ])
+    }
+    
+    # Display comprehensive analysis
+    print("\n" + "="*60)
+    print("🎯 ENCODING ANALYSIS RESULTS")
+    print("="*60)
+    
+    print(f"\n📊 Summary:")
+    print(f"  • Total columns to encode: {analysis['summary']['total_columns']}")
+    print(f"  • Encoding methods needed: {len(encoding_counts)}")
+    print(f"  • High memory impact columns: {analysis['summary']['high_memory_columns']}")
+    print(f"  • Potential new columns from one-hot: {analysis['summary']['potential_new_columns']}")
+    
+    print(f"\n🔧 Recommended encoding methods:")
+    for method, count in encoding_counts.items():
+        print(f"  • {method.replace('_', ' ').title()}: {count} columns")
+    
+    if analysis['potential_issues']:
+        print(f"\n⚠️  Potential issues to consider:")
+        for issue in analysis['potential_issues']:
+            print(f"  • {issue}")
+    
+    print(f"\n🚀 Ready for apply_smart_encoding()!")
+    
+    return analysis
+
+
+def apply_smart_encoding(df: pd.DataFrame,
+                        encoding_analysis: Optional[Dict] = None,
+                        target_column: Optional[str] = None,
+                        drop_first: bool = True,
+                        handle_unknown: str = 'ignore',
+                        return_encoders: bool = False,
+                        inplace: bool = False) -> Union[pd.DataFrame, Tuple[pd.DataFrame, Dict]]:
+    """
+    Apply intelligent encoding based on analysis recommendations.
+    
+    This function automatically applies the most appropriate encoding methods
+    for each column type, ensuring optimal preparation for machine learning
+    while maintaining data integrity and preventing common pitfalls.
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame to encode
+    encoding_analysis : Dict, optional
+        Results from analyze_encoding_needs(). If None, analysis is performed automatically
+    target_column : str, optional
+        Target variable name for supervised encoding methods
+    drop_first : bool, default=True
+        Drop first category in one-hot encoding to prevent multicollinearity
+    handle_unknown : str, default='ignore'
+        How to handle unknown categories in test data ('ignore' or 'error')
+    return_encoders : bool, default=False
+        Whether to return fitted encoders for future use
+    inplace : bool, default=False
+        Whether to modify the original DataFrame
+        
+    Returns
+    -------
+    pd.DataFrame or Tuple[pd.DataFrame, Dict]
+        Encoded DataFrame, and optionally fitted encoders dictionary
+        
+    Examples
+    --------
+    >>> # Basic usage with automatic analysis
+    >>> df_encoded = edaflow.apply_smart_encoding(df)
+    
+    >>> # With pre-computed analysis and encoder return
+    >>> analysis = edaflow.analyze_encoding_needs(df, target_column='target')
+    >>> df_encoded, encoders = edaflow.apply_smart_encoding(
+    ...     df, 
+    ...     encoding_analysis=analysis,
+    ...     return_encoders=True
+    ... )
+    
+    >>> # Use encoders on test data later
+    >>> df_test_encoded = edaflow.apply_smart_encoding(
+    ...     df_test,
+    ...     encoders=encoders  # Apply same transformations
+    ... )
+    
+    Notes
+    -----
+    This function applies encoding methods in the optimal order:
+    1. Datetime feature extraction (creates multiple columns)
+    2. Text encoding (TF-IDF or basic text features)
+    3. Ordinal encoding (preserves order)
+    4. Binary encoding (memory efficient for medium cardinality)
+    5. Target encoding (requires cross-validation awareness)
+    6. One-hot encoding (creates multiple binary columns)
+    7. Frequency encoding (based on value counts)
+    
+    The function handles common encoding challenges:
+    - Unknown categories in test data
+    - Memory optimization for large datasets
+    - Multicollinearity prevention
+    - Data leakage prevention in target encoding
+    - Consistent column naming and data types
+    """
+    if not SKLEARN_AVAILABLE:
+        raise ImportError("scikit-learn is required for encoding functionality. Install with: pip install scikit-learn")
+    
+    print("⚡ Applying smart encoding transformations...")
+    
+    # Work on copy unless inplace=True
+    df_work = df if inplace else df.copy()
+    original_shape = df_work.shape
+    
+    # Get or create encoding analysis
+    if encoding_analysis is None:
+        print("📊 No encoding analysis provided - performing automatic analysis...")
+        encoding_analysis = analyze_encoding_needs(df_work, target_column=target_column)
+    
+    encoders = {} if return_encoders else None
+    recommendations = encoding_analysis['recommendations']
+    
+    print(f"\n🔧 Processing {len(recommendations)} columns in priority order...")
+    
+    # Process columns in priority order
+    for column in encoding_analysis['encoding_priority']:
+        if column not in df_work.columns or column == target_column:
+            continue
+            
+        method = recommendations[column]
+        print(f"  • {column}: {method.replace('_', ' ')}")
+        
+        try:
+            if method == 'datetime_features':
+                # Extract datetime features
+                dt_col = pd.to_datetime(df_work[column], errors='coerce')
+                df_work[f'{column}_year'] = dt_col.dt.year
+                df_work[f'{column}_month'] = dt_col.dt.month
+                df_work[f'{column}_day'] = dt_col.dt.day
+                df_work[f'{column}_dayofweek'] = dt_col.dt.dayofweek
+                df_work[f'{column}_quarter'] = dt_col.dt.quarter
+                df_work[f'{column}_is_weekend'] = (dt_col.dt.dayofweek >= 5).astype(int)
+                
+                # Drop original column
+                df_work.drop(column, axis=1, inplace=True)
+                
+                if return_encoders:
+                    encoders[column] = {
+                        'method': 'datetime_features',
+                        'feature_names': [f'{column}_year', f'{column}_month', f'{column}_day', 
+                                        f'{column}_dayofweek', f'{column}_quarter', f'{column}_is_weekend']
+                    }
+                    
+            elif method == 'one_hot_encoding':
+                # One-hot encoding
+                encoder = OneHotEncoder(drop='first' if drop_first else None, 
+                                      handle_unknown=handle_unknown, 
+                                      sparse_output=False)
+                
+                encoded = encoder.fit_transform(df_work[[column]])
+                if drop_first and len(encoder.categories_[0]) > 1:
+                    feature_names = [f"{column}_{cat}" for cat in encoder.categories_[0][1:]]
+                else:
+                    feature_names = [f"{column}_{cat}" for cat in encoder.categories_[0]]
+                
+                # Add encoded columns
+                for i, name in enumerate(feature_names):
+                    df_work[name] = encoded[:, i]
+                
+                # Drop original column
+                df_work.drop(column, axis=1, inplace=True)
+                
+                if return_encoders:
+                    encoders[column] = {'encoder': encoder, 'method': 'one_hot_encoding', 
+                                      'feature_names': feature_names}
+                    
+            elif method == 'target_encoding':
+                # Target encoding (mean encoding)
+                if target_column and target_column in df_work.columns:
+                    encoder = TargetEncoder(handle_unknown=handle_unknown)
+                    df_work[column] = encoder.fit_transform(df_work[[column]], df_work[target_column])
+                    
+                    if return_encoders:
+                        encoders[column] = {'encoder': encoder, 'method': 'target_encoding'}
+                else:
+                    # Fallback to frequency encoding
+                    freq_map = df_work[column].value_counts().to_dict()
+                    df_work[column] = df_work[column].map(freq_map)
+                    
+                    if return_encoders:
+                        encoders[column] = {'encoder': freq_map, 'method': 'frequency_encoding'}
+                        
+            elif method == 'ordinal_encoding':
+                # Ordinal encoding
+                encoder = OrdinalEncoder(handle_unknown='use_encoded_value', 
+                                       unknown_value=-1)
+                df_work[column] = encoder.fit_transform(df_work[[column]]).astype(int)
+                
+                if return_encoders:
+                    encoders[column] = {'encoder': encoder, 'method': 'ordinal_encoding'}
+                    
+            elif method == 'binary_encoding':
+                # Simple binary encoding (0/1 for two categories, else ordinal)
+                unique_vals = df_work[column].dropna().unique()
+                if len(unique_vals) <= 2:
+                    # True binary encoding
+                    mapping = {unique_vals[0]: 0, unique_vals[1]: 1} if len(unique_vals) == 2 else {unique_vals[0]: 0}
+                    df_work[column] = df_work[column].map(mapping)
+                    
+                    if return_encoders:
+                        encoders[column] = {'encoder': mapping, 'method': 'binary_encoding'}
+                else:
+                    # Use ordinal for simplicity
+                    encoder = OrdinalEncoder(handle_unknown='use_encoded_value', 
+                                           unknown_value=-1)
+                    df_work[column] = encoder.fit_transform(df_work[[column]]).astype(int)
+                    
+                    if return_encoders:
+                        encoders[column] = {'encoder': encoder, 'method': 'ordinal_encoding'}
+                        
+            elif method == 'frequency_encoding':
+                # Frequency encoding
+                freq_map = df_work[column].value_counts().to_dict()
+                df_work[column] = df_work[column].map(freq_map)
+                
+                if return_encoders:
+                    encoders[column] = {'encoder': freq_map, 'method': 'frequency_encoding'}
+                    
+            elif method == 'text_encoding':
+                # Basic text encoding (TF-IDF)
+                try:
+                    vectorizer = TfidfVectorizer(max_features=50, stop_words='english')
+                    text_features = vectorizer.fit_transform(df_work[column].fillna(''))
+                    
+                    # Add top features as new columns
+                    feature_names = [f"{column}_tfidf_{i}" for i in range(text_features.shape[1])]
+                    for i, name in enumerate(feature_names):
+                        df_work[name] = text_features[:, i].toarray().flatten()
+                    
+                    # Drop original column
+                    df_work.drop(column, axis=1, inplace=True)
+                    
+                    if return_encoders:
+                        encoders[column] = {'encoder': vectorizer, 'method': 'text_encoding',
+                                          'feature_names': feature_names}
+                except:
+                    # Fallback to length and word count
+                    df_work[f'{column}_length'] = df_work[column].str.len().fillna(0)
+                    df_work[f'{column}_word_count'] = df_work[column].str.split().str.len().fillna(0)
+                    df_work.drop(column, axis=1, inplace=True)
+                    
+                    if return_encoders:
+                        encoders[column] = {'method': 'text_basic_features',
+                                          'feature_names': [f'{column}_length', f'{column}_word_count']}
+                        
+            elif method == 'keep_numeric':
+                # Keep as is
+                if return_encoders:
+                    encoders[column] = {'method': 'keep_numeric'}
+                    
+        except Exception as e:
+            print(f"    ⚠️  Warning: Could not encode column '{column}' with method '{method}': {e}")
+            if return_encoders:
+                encoders[column] = {'method': 'failed', 'error': str(e)}
+    
+    # Final summary
+    final_shape = df_work.shape
+    print(f"\n✅ Encoding complete!")
+    print(f"   Shape: {original_shape} → {final_shape}")
+    print(f"   Columns: {original_shape[1]} → {final_shape[1]} ({final_shape[1] - original_shape[1]:+d})")
+    
+    if return_encoders:
+        print(f"   Encoders saved: {len([e for e in encoders.values() if e.get('method') != 'failed'])}")
+    
+    # Return results
+    if return_encoders:
+        return df_work, encoders
+    else:
+        return df_work

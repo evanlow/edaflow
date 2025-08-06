@@ -20,7 +20,9 @@ from .core import (
     visualize_scatter_matrix,
     visualize_image_classes,
     assess_image_quality,
-    analyze_image_features
+    analyze_image_features,
+    analyze_encoding_needs,
+    apply_smart_encoding
 )
 
 __all__ = [
@@ -39,5 +41,7 @@ __all__ = [
     'visualize_scatter_matrix',
     'visualize_image_classes',
     'assess_image_quality',
-    'analyze_image_features'
+    'analyze_image_features',
+    'analyze_encoding_needs',
+    'apply_smart_encoding'
 ]
