@@ -6,7 +6,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.11** - [Latest Release](https://pypi.org/project/edaflow/0.12.11/) includes complete fix for visualization skipping issues in computer vision functions, ensuring all image datasets are properly visualized with smart downsampling. *Updated: August 7, 2025*
+> **📦 Current Version: v0.12.14** - [Latest Release](https://pypi.org/project/edaflow/0.12.14/) includes improved visualization title spacing with generous margins, eliminating title overlap issues and providing professional publication-ready layouts for all figure sizes. *Updated: August 7, 2025*
 
 ## Description
 
