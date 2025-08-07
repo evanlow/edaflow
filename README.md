@@ -6,7 +6,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.8** - [Latest Release](https://pypi.org/project/edaflow/0.12.8/) includes critical bug fix for Smart Encoding KeyError and comprehensive documentation improvements. *Updated: August 6, 2025*
+> **📦 Current Version: v0.12.11** - [Latest Release](https://pypi.org/project/edaflow/0.12.11/) includes complete fix for visualization skipping issues in computer vision functions, ensuring all image datasets are properly visualized with smart downsampling. *Updated: August 7, 2025*
 
 ## Description
 

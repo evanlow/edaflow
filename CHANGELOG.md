@@ -9,6 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [0.12.11] - 2025-08-07
+
+### Fixed
+- **COMPLETE VISUALIZATION FIX**: Fully resolved "visualization skipped due to dataset size" issue in `visualize_image_classes`
+- **SMART DOWNSAMPLING**: Implemented complete smart downsampling that always shows images instead of skipping
+- **ALWAYS DISPLAY**: Function now never skips visualization - always shows something meaningful
+- **ENHANCED UX**: Eliminated all frustrating "visualization skipped" messages for better user experience
+
+## [0.12.10] - 2025-08-07
+
+### Fixed
+- **IMPROVED DEFAULTS**: Updated default parameters for better user experience (auto_skip_threshold and max_images_display now 80)
+- **PARTIAL VISUALIZATION FIX**: Reduced skipping behavior through better parameter defaults
+- **PREPARATION**: Set foundation for complete smart downsampling implementation
+
+## [0.12.9] - 2025-08-07
+
+### Changed
+- **UX IMPROVEMENT**: Major enhancement attempt for `visualize_image_classes` with smart downsampling
+- **PARAMETER CONSISTENCY**: Both CV functions now use consistent parameter names and defaults
+- **BETTER FEEDBACK**: Clear user messages about adjustments made to visualization
+
+## [Unreleased]
+
+### Added
+
 ## [0.12.8] - 2025-08-06
 
 ### Fixed
