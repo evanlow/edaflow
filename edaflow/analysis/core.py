@@ -4878,36 +4878,42 @@ def _visualize_image_classes_impl(
     if show_class_counts:
         _display_class_distribution(stats)
     
-    # Smart visualization handling for large datasets
+    # Smart visualization handling for large datasets with downsampling
     total_images_to_display = len(image_data) * samples_per_class
     should_display_visualization = True
+    original_samples_per_class = samples_per_class
     
-    # Apply max_images_display limit if specified
+    # Apply smart downsampling if dataset would be too large
     if max_images_display is not None and total_images_to_display > max_images_display:
         print(f"\n⚠️  Large dataset detected: {total_images_to_display} images to display")
-        print(f"   📉 Limiting to {max_images_display} images for readability")
+        print(f"   🎯 Smart downsampling: Reducing to {max_images_display} images for optimal readability")
         # Reduce samples per class proportionally
         adjusted_samples = max(1, max_images_display // len(image_data))
         samples_per_class = min(samples_per_class, adjusted_samples)
         total_images_to_display = len(image_data) * samples_per_class
+        print(f"   📉 Adjusted samples per class: {original_samples_per_class} → {samples_per_class}")
+        print(f"   🖼️  Total images to display: {total_images_to_display}")
     
-    # Check if dataset is too large for readable visualization
-    if total_images_to_display >= auto_skip_threshold and not force_display:
-        should_display_visualization = False
-        print(f"\n🚫 Visualization skipped: Dataset too large ({total_images_to_display} images)")
-        print(f"   🎯 Reason: With {len(image_data)} classes × {samples_per_class} samples, images would be too small to read")
-        print(f"   💡 Solutions:")
-        print(f"      • Reduce samples_per_class (currently {samples_per_class})")
-        print(f"      • Set max_images_display parameter (e.g., max_images_display=50)")
-        print(f"      • Use force_display=True to display anyway (not recommended)")
-        print(f"   📊 Class distribution and statistics are shown above")
+    # Additional smart downsampling for very large datasets
+    if total_images_to_display > auto_skip_threshold:
+        if not force_display:
+            print(f"\n🎯 Auto-downsampling activated: {total_images_to_display} → {auto_skip_threshold} images")
+            print(f"   📊 Optimizing for readability while showing all classes")
+            # Further reduce samples per class to stay under threshold
+            final_samples = max(1, auto_skip_threshold // len(image_data))
+            samples_per_class = min(samples_per_class, final_samples)
+            total_images_to_display = len(image_data) * samples_per_class
+            print(f"   📉 Final samples per class: {samples_per_class}")
+            print(f"   ✅ All {len(image_data)} classes will be visualized!")
+        else:
+            print(f"\n🚨 Force display enabled: Showing all {total_images_to_display} images")
+            print(f"   ⚠️  Images may be very small - consider reducing samples_per_class")
         
     elif total_images_to_display >= 50:
-        print(f"\n⚠️  Large visualization warning: {total_images_to_display} images")
-        print(f"   📐 This may result in small, hard-to-see images")
-        print(f"   💡 Consider reducing samples_per_class or setting max_images_display")
+        print(f"\n📊 Large visualization: {total_images_to_display} images")
+        print(f"   � Images will be sized appropriately for display")
     
-    # Create visualization (if not skipped)
+    # Create visualization (smart downsampling ensures it's always shown)
     if should_display_visualization:
         _create_image_class_visualization(
             image_data, stats, samples_per_class, grid_layout, 
@@ -4915,13 +4921,12 @@ def _visualize_image_classes_impl(
         )
         
         print(f"\n✅ Image classification EDA completed!")
-        print("🎨 Visualization displayed above")
+        if samples_per_class != original_samples_per_class:
+            print(f"🎯 Visualization optimized: {len(image_data)} classes × {samples_per_class} samples = {total_images_to_display} images")
+        else:
+            print(f"🎨 Visualization displayed: {len(image_data)} classes × {samples_per_class} samples = {total_images_to_display} images")
         if save_path:
             print(f"💾 Saved to: {save_path}")
-    else:
-        print(f"\n✅ Image classification EDA completed!")
-        print("📊 Statistics and class distribution shown above")
-        print("🚫 Visualization skipped due to dataset size")
     
     if return_stats:
         return stats
