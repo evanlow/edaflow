@@ -4896,7 +4896,11 @@ def _visualize_image_classes_impl(
     stats = _generate_image_dataset_stats(image_data)
     
     # Apply class limiting for readability if specified
+    original_num_classes = len(image_data)
+    class_limiting_applied = False
+    
     if max_classes_display is not None and len(image_data) > max_classes_display:
+        class_limiting_applied = True
         print(f"\n🎯 Class limiting activated: {len(image_data)} → {max_classes_display} classes")
         print(f"   📊 Showing most frequent classes for optimal readability")
         
@@ -5003,7 +5007,8 @@ def _visualize_image_classes_impl(
     if should_display_visualization:
         _create_image_class_visualization(
             image_data, stats, samples_per_class, grid_layout, 
-            figsize, shuffle_samples, show_image_info, title, save_path
+            figsize, shuffle_samples, show_image_info, title, save_path,
+            class_limiting_applied, original_num_classes
         )
         
         print(f"\n✅ Image classification EDA completed!")
@@ -5183,7 +5188,9 @@ def _create_image_class_visualization(
     shuffle_samples: bool,
     show_image_info: bool,
     title: str,
-    save_path: Optional[str]
+    save_path: Optional[str],
+    class_limiting_applied: bool = False,
+    original_num_classes: int = 0
 ) -> None:
     """Create the main image class visualization with optimal layout and spacing."""
     
@@ -5381,6 +5388,34 @@ def _create_image_class_visualization(
     
     # BEST PRACTICE: Final layout adjustments
     # Don't use tight_layout as we've already set optimal spacing
+    
+    # BEST PRACTICE: Add informative remark when class limiting is applied
+    if class_limiting_applied and original_num_classes > 0:
+        # Calculate appropriate font size for the remark
+        remark_fontsize = max(8, min(12, main_title_size - 2))
+        
+        # Create informative remark about class limiting
+        displayed_classes = len(image_data)
+        hidden_classes = original_num_classes - displayed_classes
+        
+        if hidden_classes > 0:
+            remark_text = (
+                f"� Showing {displayed_classes} of {original_num_classes} total classes "
+                f"({hidden_classes} classes not displayed for optimal readability). "
+                f"Use max_classes_display=None to show all classes."
+            )
+            
+            # Position the remark below the visualization
+            fig.text(0.5, 0.02, remark_text, 
+                    ha='center', va='bottom', 
+                    fontsize=remark_fontsize, 
+                    style='italic',
+                    color='#666666',  # Subtle gray color
+                    bbox=dict(boxstyle='round,pad=0.5', 
+                             facecolor='#f8f9fa', 
+                             edgecolor='#dee2e6',
+                             alpha=0.8),
+                    wrap=True)
     
     # Save if requested
     if save_path:
