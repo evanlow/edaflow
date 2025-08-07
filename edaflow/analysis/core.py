@@ -5251,12 +5251,13 @@ def _create_image_class_visualization(
     
     # BEST PRACTICE: Set optimal spacing between subplots
     # Calculate spacing based on number of subplots for optimal readability
+    # Increased spacing to prevent row overlaps
     if total_images <= 12:
-        hspace, wspace = 0.4, 0.3  # Generous spacing for few images
+        hspace, wspace = 0.6, 0.3  # Very generous spacing for few images
     elif total_images <= 30:
-        hspace, wspace = 0.35, 0.25  # Moderate spacing
+        hspace, wspace = 0.5, 0.25  # Generous spacing to prevent overlap
     else:
-        hspace, wspace = 0.3, 0.2  # Compact but readable spacing
+        hspace, wspace = 0.45, 0.2  # Still generous but efficient for many images
     
     # BEST PRACTICE: Calculate optimal top margin for title based on figure height
     # Taller figures need relatively less top margin, shorter figures need more
@@ -5275,7 +5276,7 @@ def _create_image_class_visualization(
         hspace=hspace,       # Height spacing between rows
         wspace=wspace,       # Width spacing between columns  
         top=top_margin,      # Dynamic top margin for title space
-        bottom=0.08,         # Bottom margin
+        bottom=0.12,         # More bottom margin for class limiting remark
         left=0.05,           # Left margin  
         right=0.95           # Right margin
     )
@@ -5290,23 +5291,24 @@ def _create_image_class_visualization(
     
     # BEST PRACTICE: Optimal font sizing based on layout density
     # Calculate font sizes based on available space per subplot
+    # Adjusted for better row spacing with long scientific names
     subplot_area = (actual_width / cols) * (actual_height / rows)
     
     if subplot_area >= 4:  # Large subplots
         main_title_size = 16
-        subplot_title_size = 11
+        subplot_title_size = 10  # Slightly smaller to prevent overlap
         info_fontsize = 9
     elif subplot_area >= 2.5:  # Medium subplots
         main_title_size = 14
-        subplot_title_size = 10
+        subplot_title_size = 9   # Smaller for better spacing
         info_fontsize = 8
     elif subplot_area >= 1.5:  # Small subplots
         main_title_size = 12
-        subplot_title_size = 9
+        subplot_title_size = 8   # Smaller for tight layouts
         info_fontsize = 7
     else:  # Very small subplots
         main_title_size = 10
-        subplot_title_size = 8
+        subplot_title_size = 7   # Smallest readable size
         info_fontsize = 6
     
     # Set main title with optimal positioning
@@ -5354,7 +5356,7 @@ def _create_image_class_visualization(
                         title_text = f"{class_name} ({sample_num})"
                     
                     ax.set_title(title_text, fontsize=subplot_title_size, 
-                               fontweight='bold', pad=8)
+                               fontweight='bold', pad=6)  # Reduced padding for tighter spacing
                     ax.axis('off')
                     
                     # BEST PRACTICE: Optional image info with proper positioning
