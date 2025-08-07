@@ -4600,8 +4600,8 @@ def _visualize_image_classes_impl(
     save_path: Optional[str] = None,
     return_stats: bool = False,
     # New parameters for handling large datasets
-    max_images_display: Optional[int] = None,
-    auto_skip_threshold: int = 200,
+    max_images_display: Optional[int] = 80,
+    auto_skip_threshold: int = 80,
     force_display: bool = False,
     # Backward compatibility parameter (deprecated)
     image_paths: Union[str, pd.DataFrame, List[str]] = None
@@ -5720,3 +5720,4 @@ def apply_smart_encoding(df: pd.DataFrame,
         return df_work, encoders
     else:
         return df_work
+
