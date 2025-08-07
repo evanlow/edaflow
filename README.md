@@ -6,7 +6,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.15** - [Latest Release](https://pypi.org/project/edaflow/0.12.15/) includes class limiting transparency with informative remarks that tell users when only a subset of classes are displayed, plus improved title spacing for professional publication-ready visualizations. *Updated: August 7, 2025*
+> **📦 Current Version: v0.12.16** - [Latest Release](https://pypi.org/project/edaflow/0.12.16/) includes improved visualization layout spacing that prevents row overlaps in multi-row displays, ensuring clean separation between class names and images for professional scientific visualizations. *Updated: August 7, 2025*
 
 ## Description
 
@@ -51,24 +51,23 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
 - **Easy Integration**: Works seamlessly with pandas, numpy, scikit-learn, and other popular libraries
 
-## � Recent Updates
+## 🆕 Recent Updates
 
-### v0.12.8 (Latest) - Critical Bug Fix
-- **🔧 CRITICAL BUG FIX**: Resolved KeyError: 'target' not found in axis error in `apply_smart_encoding()` function
-- **✅ TARGET VALIDATION**: Added proper validation for target column existence before DataFrame access
-- **🛡️ GRACEFUL FALLBACK**: Function now gracefully handles missing target columns with informative warnings
-- **📈 IMPROVED STABILITY**: Enhanced function robustness to prevent crashes in edge cases
+### v0.12.16 (Latest) - Layout Spacing Improvements
+- **🎨 ROW OVERLAP FIX**: Eliminated overlapping rows in visualization layouts for cleaner displays
+- **🔬 SCIENTIFIC NAME OPTIMIZATION**: Enhanced spacing specifically for long taxonomic/scientific class names
+- **� PROFESSIONAL SPACING**: Improved hspace values and font sizing for publication-ready visualizations
+- **✅ SCALABLE DESIGN**: Better layouts from small (5 classes) to large datasets (100+ classes)
 
-### v0.12.7 - Documentation & Integration
-- **📚 COMPREHENSIVE DOCS**: Complete documentation synchronization across PyPI and ReadTheDocs
-- **🔗 SMART ENCODING INTEGRATION**: Full integration of Smart Encoding in 13-step EDA workflow
-- **🔧 LEGACY COMPATIBILITY**: Added backward compatibility aliases for parameter consistency
-- **📖 ENHANCED EXAMPLES**: Comprehensive Smart Encoding examples with practical parameter values
+### v0.12.15 - Transparency & Context
+- **� CLASS LIMITING TRANSPARENCY**: Informative remarks when displaying subset of classes
+- **🎯 SMART USER GUIDANCE**: Clear context about total dataset scope with actionable instructions
+- **� ENHANCED UX**: Users always understand when seeing curated vs complete class sets
 
-### v0.12.6 - Smart Visualization
-- **🎨 INTELLIGENT IMAGE HANDLING**: Auto-skip visualization for large datasets (200+ images)
-- **⚙️ DYNAMIC SIZING**: Smart figure and font adjustments based on dataset size
-- **🚫 READABILITY PROTECTION**: Prevents unreadable plots with helpful user guidance
+### v0.12.14 - Title Spacing Excellence  
+- **🎨 TITLE SPACING IMPROVEMENTS**: Generous margins eliminate title overlap across all figure sizes
+- **📐 PROFESSIONAL LAYOUTS**: Publication-ready spacing with height-based positioning
+- **✨ VISUAL EXCELLENCE**: Dynamic title positioning for optimal appearance
 
 ## �📚 Documentation
 

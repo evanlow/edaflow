@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "edaflow"
-version = "0.12.14"
+version = "0.12.16"
 description = "A Python package for exploratory data analysis workflows"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "MIT"

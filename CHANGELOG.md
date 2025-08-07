@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [0.12.16] - 2025-08-07
+
+### Fixed
+- **ROW OVERLAP RESOLUTION**: Eliminated overlapping rows in `visualize_image_classes` multi-row layouts
+- **IMPROVED SPACING**: Increased hspace values (0.45-0.6 from 0.3-0.4) for better row separation
+- **SCIENTIFIC NAME SUPPORT**: Enhanced layout specifically optimized for long taxonomic/scientific class names
+- **PROFESSIONAL LAYOUTS**: Clean separation between class titles and images in dense visualizations
+
+### Improved
+- Font sizing optimization: slightly smaller subplot titles for tighter vertical spacing
+- Reduced title padding (6px from 8px) to minimize title height interference
+- Enhanced bottom margin (0.12 from 0.08) for better class limiting remark positioning
+- Better scalability from small datasets (5 classes) to large datasets (100+ classes)
+
 ## [0.12.15] - 2025-08-07
 
 ### Added
