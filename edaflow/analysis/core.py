@@ -4599,8 +4599,9 @@ def _visualize_image_classes_impl(
     title: str = "Class-wise Image Sample Visualization",
     save_path: Optional[str] = None,
     return_stats: bool = False,
-    # New parameters for handling large datasets
+    # Parameters for handling large datasets and readability
     max_images_display: Optional[int] = 80,
+    max_classes_display: Optional[int] = None,
     auto_skip_threshold: int = 80,
     force_display: bool = False,
     # Backward compatibility parameter (deprecated)
@@ -4874,6 +4875,25 @@ def _visualize_image_classes_impl(
     # Generate statistics
     stats = _generate_image_dataset_stats(image_data)
     
+    # Apply class limiting for readability if specified
+    if max_classes_display is not None and len(image_data) > max_classes_display:
+        print(f"\n🎯 Class limiting activated: {len(image_data)} → {max_classes_display} classes")
+        print(f"   📊 Showing most frequent classes for optimal readability")
+        
+        # Sort classes by frequency and take the top N
+        class_sizes = {class_name: len(paths) for class_name, paths in image_data.items()}
+        top_classes = sorted(class_sizes.items(), key=lambda x: x[1], reverse=True)[:max_classes_display]
+        
+        # Filter image_data to only include top classes
+        filtered_image_data = {class_name: image_data[class_name] for class_name, _ in top_classes}
+        
+        print(f"   ✅ Selected classes: {', '.join(list(filtered_image_data.keys())[:5])}{'...' if len(filtered_image_data) > 5 else ''}")
+        print(f"   💡 Tip: This will show much larger, more readable images!")
+        
+        # Update image_data and regenerate stats
+        image_data = filtered_image_data
+        stats = _generate_image_dataset_stats(image_data)
+    
     # Display class distribution
     if show_class_counts:
         _display_class_distribution(stats)
@@ -4883,31 +4903,86 @@ def _visualize_image_classes_impl(
     should_display_visualization = True
     original_samples_per_class = samples_per_class
     
-    # Apply smart downsampling if dataset would be too large
-    if max_images_display is not None and total_images_to_display > max_images_display:
-        print(f"\n⚠️  Large dataset detected: {total_images_to_display} images to display")
-        print(f"   🎯 Smart downsampling: Reducing to {max_images_display} images for optimal readability")
-        # Reduce samples per class proportionally
-        adjusted_samples = max(1, max_images_display // len(image_data))
-        samples_per_class = min(samples_per_class, adjusted_samples)
-        total_images_to_display = len(image_data) * samples_per_class
-        print(f"   📉 Adjusted samples per class: {original_samples_per_class} → {samples_per_class}")
-        print(f"   🖼️  Total images to display: {total_images_to_display}")
+    # Smart visualization handling with readability-first approach  
+    total_images_to_display = len(image_data) * samples_per_class
+    should_display_visualization = True
+    original_samples_per_class = samples_per_class
+    num_classes = len(image_data)
     
-    # Additional smart downsampling for very large datasets
-    if total_images_to_display > auto_skip_threshold:
+    # Define readability thresholds based on human visual perception
+    MAX_READABLE_IMAGES = 50      # Sweet spot for clear image viewing
+    MAX_READABLE_CLASSES = 20     # Classes that can be comfortably compared
+    CRITICAL_CLASS_THRESHOLD = 40 # When images become too small to be useful
+    
+    # Strategy 1: Critical case - too many classes (like your 108 classes)
+    if num_classes > CRITICAL_CLASS_THRESHOLD:
+        print(f"\n🚨 Critical: {num_classes} classes detected")
+        print(f"   📐 Reality check: Images will be extremely small and hard to see")
+        print(f"   💡 STRONG RECOMMENDATIONS:")
+        print(f"      🎯 Visualize top 15-20 most frequent classes only")
+        print(f"      📊 Use batch processing (20 classes per plot)")  
+        print(f"      🔍 Focus on classes relevant to your analysis")
+        print(f"")
+        print(f"   ⚙️  Proceeding with ultra-conservative sampling...")
+        
+        # Ultra-aggressive downsampling to maintain some readability
+        ultra_conservative_samples = max(1, 25 // num_classes)
+        samples_per_class = min(samples_per_class, ultra_conservative_samples)
+        total_images_to_display = num_classes * samples_per_class
+        
+    # Strategy 2: Many classes but manageable
+    elif num_classes > MAX_READABLE_CLASSES:
+        print(f"\n📊 Many classes detected: {num_classes} classes")
+        print(f"   🎯 Optimizing for best possible readability...")
+        
+        if total_images_to_display > MAX_READABLE_IMAGES:
+            readable_samples = max(1, MAX_READABLE_IMAGES // num_classes)
+            samples_per_class = min(samples_per_class, readable_samples)
+            total_images_to_display = num_classes * samples_per_class
+            print(f"   📉 Readability adjustment: {original_samples_per_class} → {samples_per_class} samples per class")
+            
+        print(f"   💡 Note: {num_classes} classes will result in smaller images")
+        print(f"   🔍 Consider focusing on fewer classes for detailed analysis")
+        
+    # Strategy 3: User-specified limits
+    elif max_images_display is not None and total_images_to_display > max_images_display:
+        print(f"\n⚠️  Dataset size: {total_images_to_display} images requested")
+        print(f"   🎯 Applying limit: Reducing to {max_images_display} images for readability")
+        adjusted_samples = max(1, max_images_display // num_classes)
+        samples_per_class = min(samples_per_class, adjusted_samples)
+        total_images_to_display = num_classes * samples_per_class
+        print(f"   📉 Samples per class: {original_samples_per_class} → {samples_per_class}")
+        
+    # Strategy 4: Auto-threshold management  
+    elif total_images_to_display > auto_skip_threshold:
         if not force_display:
-            print(f"\n🎯 Auto-downsampling activated: {total_images_to_display} → {auto_skip_threshold} images")
-            print(f"   📊 Optimizing for readability while showing all classes")
-            # Further reduce samples per class to stay under threshold
-            final_samples = max(1, auto_skip_threshold // len(image_data))
-            samples_per_class = min(samples_per_class, final_samples)
-            total_images_to_display = len(image_data) * samples_per_class
-            print(f"   📉 Final samples per class: {samples_per_class}")
-            print(f"   ✅ All {len(image_data)} classes will be visualized!")
+            print(f"\n🎯 Smart downsampling: {total_images_to_display} → {auto_skip_threshold} images")
+            print(f"   📊 Balancing completeness with visibility")
+            threshold_samples = max(1, auto_skip_threshold // num_classes)
+            samples_per_class = min(samples_per_class, threshold_samples) 
+            total_images_to_display = num_classes * samples_per_class
+            print(f"   📉 Adjusted samples per class: {samples_per_class}")
+            
+            if num_classes <= MAX_READABLE_CLASSES:
+                print(f"   ✅ All {num_classes} classes will be clearly visible!")
+            else:
+                print(f"   ⚠️  {num_classes} classes - images will be smaller but viewable")
         else:
-            print(f"\n🚨 Force display enabled: Showing all {total_images_to_display} images")
-            print(f"   ⚠️  Images may be very small - consider reducing samples_per_class")
+            print(f"\n🚨 Force display: Showing all {total_images_to_display} images")
+            print(f"   ⚠️  Warning: May result in very small images with {num_classes} classes")
+            
+    # Strategy 5: Moderate datasets
+    elif total_images_to_display >= 30:
+        print(f"\n📊 Visualization: {total_images_to_display} images, {num_classes} classes")
+        if num_classes > 15:
+            print(f"   💡 Images will be moderately sized - consider fewer classes for larger view")
+        else:
+            print(f"   ✅ Good balance - images should be clearly visible")
+            
+    # Strategy 6: Optimal datasets  
+    else:
+        print(f"\n✅ Optimal setup: {total_images_to_display} images, {num_classes} classes")
+        print(f"   🎯 Images will be large and clearly visible")
         
     elif total_images_to_display >= 50:
         print(f"\n📊 Large visualization: {total_images_to_display} images")
