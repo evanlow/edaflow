@@ -6,7 +6,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.14** - [Latest Release](https://pypi.org/project/edaflow/0.12.14/) includes improved visualization title spacing with generous margins, eliminating title overlap issues and providing professional publication-ready layouts for all figure sizes. *Updated: August 7, 2025*
+> **📦 Current Version: v0.12.15** - [Latest Release](https://pypi.org/project/edaflow/0.12.15/) includes class limiting transparency with informative remarks that tell users when only a subset of classes are displayed, plus improved title spacing for professional publication-ready visualizations. *Updated: August 7, 2025*
 
 ## Description
 

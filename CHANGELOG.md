@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [0.12.15] - 2025-08-07
+
+### Added
+- **CLASS LIMITING TRANSPARENCY**: Added informative remark beneath visualizations when class limiting is applied
+- **SMART USER GUIDANCE**: Shows "X of Y total classes (Z not displayed for optimal readability)" with actionable instructions
+- **CONTEXT AWARENESS**: Users always understand they're seeing a curated subset of their dataset
+- **PROFESSIONAL STYLING**: Subtle gray styling with rounded box that doesn't compete with main visualization
+
+### Improved
+- Enhanced transparency in `visualize_image_classes` when `max_classes_display` parameter limits displayed classes
+- Better user experience with clear guidance on how to show all classes if desired
+
+## [0.12.14] - 2025-08-07
+
+### Fixed
+- **TITLE SPACING IMPROVEMENTS**: Generous margins eliminate title overlap issues across all figure sizes
+- **PROFESSIONAL LAYOUTS**: Publication-ready spacing with 15-18% buffer between titles and subplots  
+- **DYNAMIC POSITIONING**: Height-based title positioning (0.96-0.98 y-position) for optimal appearance
+- **VISUAL EXCELLENCE**: Enhanced `visualize_image_classes` with professional spacing standards
+
+### Changed
+- More conservative top margins: 0.82-0.88 (vs previous 0.88-0.92) for better title clearance
+- Improved title positioning algorithm based on figure height for consistent professional appearance
+
 ## [0.12.11] - 2025-08-07
 
 ### Fixed
