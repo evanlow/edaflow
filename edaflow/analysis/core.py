@@ -4502,7 +4502,21 @@ def _display_quality_results(results: Dict[str, Any]) -> None:
     print(f"\n✅ Quality assessment completed!")
 
 
-def visualize_image_classes(*args, **kwargs) -> Optional[Dict[str, Any]]:
+def visualize_image_classes(
+    data_source: Union[str, pd.DataFrame], 
+    image_column: Optional[str] = None,
+    label_column: Optional[str] = None,
+    samples_per_class: int = 4,
+    max_classes_display: Optional[int] = 20,  # Default to 20 for readability
+    auto_skip_threshold: int = 80,
+    max_images_display: int = 80,
+    figsize: Optional[Tuple[int, int]] = None,
+    shuffle_samples: bool = True,
+    show_image_info: bool = True,
+    title: Optional[str] = None,
+    save_path: Optional[str] = None,
+    return_stats: bool = False
+) -> Optional[Dict[str, Any]]:
     """
     📸 Visualize random samples from each class in an image classification dataset.
     
@@ -4574,16 +4588,22 @@ def visualize_image_classes(*args, **kwargs) -> Optional[Dict[str, Any]]:
     """
     
     # Handle backward compatibility for positional arguments and deprecated parameters
-    if args:
-        # Case 1: Old positional usage: visualize_image_classes(image_paths, ...)
-        if len(args) >= 1:
-            print("⚠️  Warning: Positional arguments are deprecated. Use 'data_source=' keyword argument instead.")
-            kwargs['data_source'] = args[0]
-            if len(args) > 1:
-                print(f"⚠️  Warning: Ignoring {len(args) - 1} additional positional arguments. Use keyword arguments.")
-    
     # Call the actual implementation
-    return _visualize_image_classes_impl(**kwargs)
+    return _visualize_image_classes_impl(
+        data_source=data_source,
+        class_column=label_column,  # Map label_column to class_column
+        image_path_column=image_column,  # Map image_column to image_path_column
+        samples_per_class=samples_per_class,
+        max_classes_display=max_classes_display,
+        auto_skip_threshold=auto_skip_threshold,
+        max_images_display=max_images_display,
+        figsize=figsize,
+        shuffle_samples=shuffle_samples,
+        show_image_info=show_image_info,
+        title=title,
+        save_path=save_path,
+        return_stats=return_stats
+    )
 
 
 def _visualize_image_classes_impl(
@@ -4601,7 +4621,7 @@ def _visualize_image_classes_impl(
     return_stats: bool = False,
     # Parameters for handling large datasets and readability
     max_images_display: Optional[int] = 80,
-    max_classes_display: Optional[int] = None,
+    max_classes_display: Optional[int] = 20,  # Default to 20 for readability
     auto_skip_threshold: int = 80,
     force_display: bool = False,
     # Backward compatibility parameter (deprecated)
@@ -4898,11 +4918,6 @@ def _visualize_image_classes_impl(
     if show_class_counts:
         _display_class_distribution(stats)
     
-    # Smart visualization handling for large datasets with downsampling
-    total_images_to_display = len(image_data) * samples_per_class
-    should_display_visualization = True
-    original_samples_per_class = samples_per_class
-    
     # Smart visualization handling with readability-first approach  
     total_images_to_display = len(image_data) * samples_per_class
     should_display_visualization = True
@@ -4983,10 +4998,6 @@ def _visualize_image_classes_impl(
     else:
         print(f"\n✅ Optimal setup: {total_images_to_display} images, {num_classes} classes")
         print(f"   🎯 Images will be large and clearly visible")
-        
-    elif total_images_to_display >= 50:
-        print(f"\n📊 Large visualization: {total_images_to_display} images")
-        print(f"   � Images will be sized appropriately for display")
     
     # Create visualization (smart downsampling ensures it's always shown)
     if should_display_visualization:
@@ -5174,69 +5185,130 @@ def _create_image_class_visualization(
     title: str,
     save_path: Optional[str]
 ) -> None:
-    """Create the main image class visualization with smart layout."""
+    """Create the main image class visualization with optimal layout and spacing."""
     
     num_classes = len(image_data)
     total_images = num_classes * samples_per_class
     
-    # Determine grid layout with improved readability for large datasets
+    # BEST PRACTICE: Calculate optimal grid layout
     if grid_layout == 'auto':
-        # Smart auto-layout based on total images
-        if total_images <= 20:
-            cols = min(samples_per_class, 5)  # Standard layout
-            rows = num_classes
-        elif total_images <= 50:
-            cols = min(samples_per_class, 6)  # Slightly more compact  
-            rows = num_classes
+        # Smart grid calculation based on visualization best practices
+        if samples_per_class == 1:
+            # For single samples per class, use optimal rectangular grid
+            cols = min(6, num_classes)  # Max 6 columns for readability
+            rows = math.ceil(num_classes / cols)
         else:
-            # For large datasets, use more compact square-ish layout
-            cols = min(samples_per_class, 8)
-            rows = num_classes
+            # For multiple samples, use class-row layout but with column limits
+            if samples_per_class <= 4:
+                cols = samples_per_class
+                rows = num_classes
+            else:
+                # Too many samples per class - use grid layout
+                cols = 4  # Max 4 samples per row for readability
+                rows = math.ceil(total_images / cols)
     elif grid_layout == 'square':
-        side_length = math.ceil(math.sqrt(total_images))
-        rows = math.ceil(total_images / side_length)
-        cols = side_length
+        # Optimal square-ish grid
+        cols = math.ceil(math.sqrt(total_images))
+        rows = math.ceil(total_images / cols)
     else:
         rows, cols = grid_layout
     
-    # Adjust figure size based on number of images
-    if total_images > 50:
-        # Increase figure size for readability with many images
-        width_mult = min(1.5, total_images / 50)  # Scale up to 1.5x
-        height_mult = min(1.3, total_images / 50)  # Scale up to 1.3x
-        figsize = (int(figsize[0] * width_mult), int(figsize[1] * height_mult))
+    # BEST PRACTICE: Calculate optimal figure size based on content
+    # Base size per subplot should be at least 2x2 inches for readability
+    min_subplot_size = 2.0
+    max_fig_width = 20  # Maximum figure width (practical limit)
+    max_fig_height = 16  # Maximum figure height (practical limit)
     
-    # Create figure with subplots
+    # Calculate ideal figure size
+    ideal_width = cols * min_subplot_size * 1.2  # 20% padding
+    ideal_height = rows * min_subplot_size * 1.2  # 20% padding
+    
+    # Apply practical limits
+    actual_width = min(ideal_width, max_fig_width)
+    actual_height = min(ideal_height, max_fig_height)
+    
+    # Ensure minimum readable size
+    actual_width = max(actual_width, 8)
+    actual_height = max(actual_height, 6)
+    
+    figsize = (actual_width, actual_height)
+    
+    print(f"🎨 Layout: {rows}×{cols} grid, Figure size: {actual_width:.1f}×{actual_height:.1f} inches")
+    
+    # BEST PRACTICE: Create figure with optimal spacing
     fig, axes = plt.subplots(
         rows, cols, 
         figsize=figsize,
         facecolor='white'
     )
     
+    # BEST PRACTICE: Set optimal spacing between subplots
+    # Calculate spacing based on number of subplots for optimal readability
+    if total_images <= 12:
+        hspace, wspace = 0.4, 0.3  # Generous spacing for few images
+    elif total_images <= 30:
+        hspace, wspace = 0.35, 0.25  # Moderate spacing
+    else:
+        hspace, wspace = 0.3, 0.2  # Compact but readable spacing
+    
+    # BEST PRACTICE: Calculate optimal top margin for title based on figure height
+    # Taller figures need relatively less top margin, shorter figures need more
+    # More generous spacing to prevent title overlap
+    if actual_height <= 8:
+        top_margin = 0.82  # Much more generous space for shorter figures
+        title_y = 0.96     # Position title much higher
+    elif actual_height <= 12:
+        top_margin = 0.85  # More generous space for medium figures  
+        title_y = 0.97
+    else:
+        top_margin = 0.88  # More generous space for tall figures
+        title_y = 0.98
+    
+    plt.subplots_adjust(
+        hspace=hspace,       # Height spacing between rows
+        wspace=wspace,       # Width spacing between columns  
+        top=top_margin,      # Dynamic top margin for title space
+        bottom=0.08,         # Bottom margin
+        left=0.05,           # Left margin  
+        right=0.95           # Right margin
+    )
+    
     # Handle single row/column cases
-    if rows == 1:
+    if rows == 1 and cols == 1:
+        axes = np.array([[axes]])
+    elif rows == 1:
         axes = axes.reshape(1, -1)
     elif cols == 1:
         axes = axes.reshape(-1, 1)
-    elif rows == 1 and cols == 1:
-        axes = np.array([[axes]])
     
-    # Set main title with dynamic font size
-    title_fontsize = max(12, 16 - (total_images // 25))  # Smaller title for large datasets
-    fig.suptitle(title, fontsize=title_fontsize, fontweight='bold', y=0.95)
+    # BEST PRACTICE: Optimal font sizing based on layout density
+    # Calculate font sizes based on available space per subplot
+    subplot_area = (actual_width / cols) * (actual_height / rows)
     
-    current_row = 0
-    
-    # Dynamic font sizes based on total number of images
-    if total_images <= 20:
-        title_fontsize_img = 10
+    if subplot_area >= 4:  # Large subplots
+        main_title_size = 16
+        subplot_title_size = 11
+        info_fontsize = 9
+    elif subplot_area >= 2.5:  # Medium subplots
+        main_title_size = 14
+        subplot_title_size = 10
         info_fontsize = 8
-    elif total_images <= 50:
-        title_fontsize_img = 9  
+    elif subplot_area >= 1.5:  # Small subplots
+        main_title_size = 12
+        subplot_title_size = 9
         info_fontsize = 7
-    else:
-        title_fontsize_img = 8  # Smaller fonts for dense layouts
+    else:  # Very small subplots
+        main_title_size = 10
+        subplot_title_size = 8
         info_fontsize = 6
+    
+    # Set main title with optimal positioning
+    fig.suptitle(title, fontsize=main_title_size, fontweight='bold', y=title_y)
+    
+    print(f"🎨 Title positioning: y={title_y}, top_margin={top_margin}, font_size={main_title_size}pt")
+    
+    # BEST PRACTICE: Plot images in optimal grid order (left-to-right, top-to-bottom)
+    plot_idx = 0
     
     # Plot samples for each class
     for class_name, image_paths in image_data.items():
@@ -5246,58 +5318,75 @@ def _create_image_class_visualization(
         else:
             selected_paths = image_paths[:samples_per_class]
         
-        # Plot each sample
-        for col_idx, img_path in enumerate(selected_paths):
-            if col_idx >= cols:  # Skip if too many samples for grid
+        # Plot each sample in grid order
+        for img_path in selected_paths:
+            if plot_idx >= rows * cols:  # Don't exceed grid capacity
                 break
-                
-            ax = axes[current_row, col_idx]
+            
+            # Calculate row and column from plot index
+            row = plot_idx // cols
+            col = plot_idx % cols
+            ax = axes[row, col]
             
             try:
-                # Load and display image
+                # BEST PRACTICE: Load and display image with proper aspect ratio
                 with Image.open(img_path) as img:
-                    # Convert PIL Image to RGB numpy array for matplotlib
+                    # Convert to RGB for consistent display
                     if img.mode != 'RGB':
                         img = img.convert('RGB')
                     img_array = np.array(img)
                     
-                    ax.imshow(img_array)
-                    ax.set_title(f"{class_name}", fontsize=title_fontsize_img, fontweight='bold')
+                    # Display image with proper aspect ratio
+                    ax.imshow(img_array, aspect='equal')
+                    
+                    # BEST PRACTICE: Clear, readable titles
+                    if samples_per_class == 1:
+                        title_text = f"{class_name}"
+                    else:
+                        sample_num = (plot_idx % samples_per_class) + 1
+                        title_text = f"{class_name} ({sample_num})"
+                    
+                    ax.set_title(title_text, fontsize=subplot_title_size, 
+                               fontweight='bold', pad=8)
                     ax.axis('off')
                     
-                    # Add image info if requested (with smaller font for large datasets)
+                    # BEST PRACTICE: Optional image info with proper positioning
                     if show_image_info:
                         img_size = img.size
                         file_size = os.path.getsize(img_path) / 1024  # KB
-                        ax.text(0.02, 0.02, f"{img_size[0]}×{img_size[1]}\n{file_size:.1f}KB", 
-                               transform=ax.transAxes, fontsize=info_fontsize, 
-                               bbox=dict(boxstyle="round,pad=0.3", facecolor="white", alpha=0.8))
-                        
+                        info_text = f"{img_size[0]}×{img_size[1]}\n{file_size:.1f}KB"
+                        ax.text(0.02, 0.02, info_text, transform=ax.transAxes, 
+                               fontsize=info_fontsize, color='white', 
+                               bbox=dict(boxstyle='round,pad=0.2', facecolor='black', alpha=0.7))
+                    
             except Exception as e:
-                # Handle corrupted images
-                ax.text(0.5, 0.5, f"❌\nCorrupted\nImage", 
+                # BEST PRACTICE: Graceful error handling with informative display
+                ax.text(0.5, 0.5, f"Error loading\n{os.path.basename(img_path)}\n{str(e)[:50]}", 
                        ha='center', va='center', transform=ax.transAxes,
-                       fontsize=10, color='red')
-                ax.set_title(f"{class_name} (Error)", fontsize=10, color='red')
+                       fontsize=info_fontsize, color='red', fontweight='bold')
+                ax.set_facecolor('lightgray')
                 ax.axis('off')
-                print(f"   ⚠️  Corrupted image: {img_path}")
+            
+            plot_idx += 1
         
-        # Clear unused axes in this row
-        for col_idx in range(len(selected_paths), cols):
-            axes[current_row, col_idx].axis('off')
-        
-        current_row += 1
+        if plot_idx >= rows * cols:  # Don't exceed grid capacity
+            break
     
-    # Clear any remaining unused axes
-    for row_idx in range(current_row, rows):
-        for col_idx in range(cols):
-            axes[row_idx, col_idx].axis('off')
+    # BEST PRACTICE: Hide unused subplots for cleaner appearance
+    for idx in range(plot_idx, rows * cols):
+        row = idx // cols
+        col = idx % cols
+        axes[row, col].axis('off')
+        axes[row, col].set_visible(False)
     
-    plt.tight_layout()
+    # BEST PRACTICE: Final layout adjustments
+    # Don't use tight_layout as we've already set optimal spacing
     
     # Save if requested
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.savefig(save_path, dpi=300, bbox_inches='tight', 
+                   facecolor='white', edgecolor='none')
+        print(f"💾 Visualization saved: {save_path}")
         
     plt.show()
 
