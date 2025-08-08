@@ -1190,30 +1190,30 @@ edaflow.visualize_scatter_matrix(df, columns=numeric_cols)
 edaflow.visualize_scatter_matrix(
     df, 
     columns=['feature1', 'feature2', 'feature3'],
-    color_column='category',  # Color points by category
-    diagonal_type='kde',      # Use KDE plots on diagonal
-    upper_triangle='corr',    # Show correlations in upper triangle
-    lower_triangle='scatter', # Scatter plots in lower triangle
+    color_by='category',         # Color points by category
+    diagonal='kde',              # Use KDE plots on diagonal
+    upper='corr',                # Show correlations in upper triangle
+    lower='scatter',             # Scatter plots in lower triangle
     figsize=(12, 12)
 )
 
 # Matrix with regression lines
 edaflow.visualize_scatter_matrix(
     df,
-    regression_line='linear',     # Add linear regression lines
+    regression_type='linear',    # Add linear regression lines
     alpha=0.7,                   # Semi-transparent points
-    diagonal_type='hist',        # Histograms on diagonal
-    bins=30                      # Custom bin count for histograms
+    diagonal='hist',             # Histograms on diagonal
+    figsize=(12, 12)            # Custom figure size
 )
 
 # Advanced statistical analysis
 edaflow.visualize_scatter_matrix(
     df,
     columns=['x1', 'x2', 'x3', 'x4'],
-    regression_line='lowess',    # LOWESS smoothing curves
-    upper_triangle='blank',      # Clean upper triangle
-    lower_triangle='scatter',    # Focus on lower scatter plots
-    color_column='group',        # Color by categorical variable
+    regression_type='linear',    # Linear regression lines  
+    upper='blank',               # Clean upper triangle
+    lower='scatter',             # Focus on lower scatter plots
+    color_by='group',            # Color by categorical variable
     figsize=(15, 15)
 )
 ```

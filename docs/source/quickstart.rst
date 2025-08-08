@@ -101,7 +101,7 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
    print("\\n8. RELATIONSHIP ANALYSIS")
    print("-" * 40)
    edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='correlation')
-   edaflow.visualize_scatter_matrix(df_fully_imputed, regression_line='linear')
+   edaflow.visualize_scatter_matrix(df_fully_imputed, regression_type='linear')
    
    # Step 9: Outlier Detection and Visualization
    print("\\n9. OUTLIER DETECTION")
@@ -175,11 +175,11 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
    edaflow.visualize_scatter_matrix(
        df,
        columns=['feature1', 'feature2', 'feature3'],
-       color_column='category',      # Color by category
-       diagonal_type='kde',          # KDE plots on diagonal
-       upper_triangle='corr',        # Correlations in upper triangle
-       lower_triangle='scatter',     # Scatter plots in lower triangle
-       regression_line='linear',     # Add regression lines
+       color_by='category',         # Color by category
+       diagonal='kde',              # KDE plots on diagonal
+       upper='corr',                # Correlations in upper triangle
+       lower='scatter',             # Scatter plots in lower triangle
+       regression_type='linear',    # Add regression lines
        figsize=(12, 12)
    )
 
