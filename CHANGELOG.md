@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.21] - 2025-08-08
+
+### Fixed
+- **🔧 DOCUMENTATION PARAMETER FIXES**: Corrected parameter name mismatches in `visualize_scatter_matrix` documentation
+- **FIXED**: Changed `regression_line` → `regression_type` in README.md and quickstart.rst examples
+- **FIXED**: Changed `diagonal_type` → `diagonal` in documentation examples
+- **FIXED**: Changed `upper_triangle`/`lower_triangle` → `upper`/`lower` parameter names
+- **FIXED**: Changed `color_column` → `color_by` in documentation examples
+- **RESOLVED**: TypeError when using sample code from documentation
+- **ENHANCED**: All documentation examples now match actual function signature
+
 ## [0.12.20] - 2025-08-08
 
 ### Enhanced 

@@ -702,42 +702,28 @@ print(f"Dataset shape: {df.shape}")
 print(f"Columns: {list(df.columns)}")
 
 # Step 1: Check for missing data
-print("\n1. MISSING DATA ANALYSIS")
-print("-" * 40)
 null_analysis = edaflow.check_null_columns(df, threshold=15)
 null_analysis  # Shows color-coded missing data summary
 
 # Step 2: Analyze categorical columns for data type issues
-print("\n2. CATEGORICAL DATA ANALYSIS")  
-print("-" * 40)
 edaflow.analyze_categorical_columns(df, threshold=30)
 
 # Step 3: Convert appropriate columns to numeric automatically
-print("\n3. AUTOMATIC DATA TYPE CONVERSION")
-print("-" * 40)
 df_cleaned = edaflow.convert_to_numeric(df, threshold=30)
 
 # Step 4: Visualize categorical column values in detail
-print("\n4. CATEGORICAL VALUES EXPLORATION")
-print("-" * 40)
 edaflow.visualize_categorical_values(df_cleaned, max_unique_values=10)
 
 # Step 5: Display column type classification
-print("\n5. COLUMN TYPE CLASSIFICATION")
-print("-" * 40)
 column_types = edaflow.display_column_types(df_cleaned)
 
 # Step 6: Handle missing values with imputation
-print("\n6. MISSING VALUE IMPUTATION") 
-print("-" * 40)
 # Impute numerical columns with median
 df_numeric_imputed = edaflow.impute_numerical_median(df_cleaned)
 # Impute categorical columns with mode
 df_fully_imputed = edaflow.impute_categorical_mode(df_numeric_imputed)
 
 # Step 7: Visualize numerical distributions and outliers
-print("\n7. NUMERICAL DISTRIBUTION & OUTLIER ANALYSIS")
-print("-" * 40)
 edaflow.visualize_numerical_boxplots(
     df_fully_imputed,
     title="Distribution Analysis - Outlier Detection",
@@ -745,9 +731,7 @@ edaflow.visualize_numerical_boxplots(
     orientation='horizontal'
 )
 
-# Step 8: Handle outliers with median replacement (NEW!)
-print("\n8. OUTLIER HANDLING")
-print("-" * 40)
+# Step 8: Handle outliers with median replacement
 df_outliers_handled = edaflow.handle_outliers_median(
     df_fully_imputed,
     method='iqr',
@@ -755,9 +739,7 @@ df_outliers_handled = edaflow.handle_outliers_median(
     verbose=True
 )
 
-# Optional: Visualize after outlier handling to verify
-print("\n8b. POST-OUTLIER HANDLING VERIFICATION")
-print("-" * 40)
+# Step 9: Post-outlier handling verification
 edaflow.visualize_numerical_boxplots(
     df_outliers_handled,
     title="After Outlier Handling - Clean Distribution",
@@ -765,9 +747,7 @@ edaflow.visualize_numerical_boxplots(
     orientation='horizontal'
 )
 
-# Step 9: Final data review
-print("\n9. DATA CLEANING SUMMARY")
-print("-" * 40)
+# Final data review (using rich styled functions or simple prints as needed)
 print("Original data types:")
 print(df.dtypes)
 print("\nCleaned data types:")
@@ -783,9 +763,7 @@ for col in df_fully_imputed.select_dtypes(include=['number']).columns:
     cleaned_range = f"{df_outliers_handled[col].min():.2f} to {df_outliers_handled[col].max():.2f}"
     print(f"  {col}: {original_range} → {cleaned_range}")
 
-# Step 10: Interactive visualization for final data exploration (NEW!)
-print("\n10. INTERACTIVE DATA VISUALIZATION")
-print("-" * 40)
+# Step 10: Interactive visualization for final data exploration
 edaflow.visualize_interactive_boxplots(
     df_outliers_handled,
     title="Final Interactive Data Exploration",
@@ -793,9 +771,7 @@ edaflow.visualize_interactive_boxplots(
     show_points='outliers'  # Show any remaining outliers as interactive points
 )
 
-# Step 11: Comprehensive heatmap analysis for relationships (NEW!)
-print("\n11. HEATMAP ANALYSIS")
-print("-" * 40)
+# Step 11: Comprehensive heatmap analysis for relationships
 # Correlation heatmap to understand variable relationships
 edaflow.visualize_heatmap(
     df_outliers_handled,

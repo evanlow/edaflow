@@ -61,68 +61,44 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
    print(f"Dataset shape: {df.shape}")
    
    # Step 1: Missing Data Analysis
-   print("\\n1. MISSING DATA ANALYSIS")
-   print("-" * 40)
    null_analysis = edaflow.check_null_columns(df, threshold=10)
    null_analysis  # Beautiful color-coded output in Jupyter
    
    # Step 2: Categorical Data Insights
-   print("\\n2. CATEGORICAL DATA ANALYSIS")
-   print("-" * 40)
    edaflow.analyze_categorical_columns(df, threshold=35)
    
    # Step 3: Smart Data Type Conversion
-   print("\\n3. AUTOMATIC DATA TYPE CONVERSION")
-   print("-" * 40)
    df_cleaned = edaflow.convert_to_numeric(df, threshold=35)
    
    # Step 4: Explore Categorical Values
-   print("\\n4. CATEGORICAL VALUES EXPLORATION")
-   print("-" * 40)
    edaflow.visualize_categorical_values(df_cleaned)
    
    # Step 5: Column Type Classification
-   print("\\n5. COLUMN TYPE CLASSIFICATION")
-   print("-" * 40)
    column_types = edaflow.display_column_types(df_cleaned)
    
    # Step 6: Data Imputation
-   print("\\n6. MISSING VALUE IMPUTATION")
-   print("-" * 40)
    df_numeric_imputed = edaflow.impute_numerical_median(df_cleaned)
    df_fully_imputed = edaflow.impute_categorical_mode(df_numeric_imputed)
    
    # Step 7: Statistical Distribution Analysis
-   print("\\n7. STATISTICAL DISTRIBUTION ANALYSIS")
-   print("-" * 40)
    edaflow.visualize_histograms(df_fully_imputed, kde=True, show_normal_curve=True)
    
    # Step 8: Comprehensive Relationship Analysis
-   print("\\n8. RELATIONSHIP ANALYSIS")
-   print("-" * 40)
    edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='correlation')
    edaflow.visualize_scatter_matrix(df_fully_imputed, regression_type='linear')
    
    # Step 9: Outlier Detection and Visualization
-   print("\\n9. OUTLIER DETECTION")
-   print("-" * 40)
    edaflow.visualize_numerical_boxplots(df_fully_imputed, show_skewness=True)
    edaflow.visualize_interactive_boxplots(df_fully_imputed)
    
    # Step 10: Advanced Heatmap Analysis
-   print("\\n10. ADVANCED HEATMAP ANALYSIS")
-   print("-" * 40)
    edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='missing')
    edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='values')
    
    # Step 11: Outlier Handling
-   print("\\n11. OUTLIER HANDLING")
-   print("-" * 40)
    df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbose=True)
    
    # Step 12: Smart Encoding for ML (⭐ New in v0.12.0)
-   print("\\n12. SMART ENCODING FOR MACHINE LEARNING")
-   print("-" * 40)
    # Analyze optimal encoding strategies
    encoding_analysis = edaflow.analyze_encoding_needs(
        df_final,
@@ -139,8 +115,6 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
    )
    
    # Step 13: Results Verification
-   print("\\n13. RESULTS VERIFICATION")
-   print("-" * 40)
    edaflow.visualize_scatter_matrix(df_encoded, title="ML-Ready Encoded Data")
    edaflow.visualize_numerical_boxplots(df_encoded, title="Final Encoded Distribution")
 
