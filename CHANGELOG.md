@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.20] - 2025-08-08
+
+### Enhanced 
+- **🌈 COMPREHENSIVE RICH STYLING**: Enhanced ALL major EDA functions with vibrant, professional output
+- **ENHANCED MISSING DATA ANALYSIS**: `check_null_columns` now features:
+  - Rich tables with color-coded severity levels (✅ CLEAN, ⚠️ MINOR, 🚨 WARNING, 💀 CRITICAL)
+  - Data integrity indicators with health assessment panels
+  - Smart recommendations based on missing data patterns
+  - Professional summary with overall dataset health scoring
+- **ADVANCED COLUMN CLASSIFICATION**: `display_column_types` now includes:
+  - Side-by-side rich tables for categorical vs numerical columns
+  - Memory usage analysis with optimization recommendations
+  - Data type insights and composition analysis
+  - Range information and advanced metrics for better understanding
+- **PROFESSIONAL IMPUTATION REPORTING**: `impute_numerical_median` enhanced with:
+  - Detailed imputation tables showing before/after status
+  - Smart value formatting (K/M notation for large numbers)
+  - Color-coded success indicators and completion rates
+  - Rich summary panels with actionable insights
+
+### Previous Enhancements (v0.12.19)
+- **VIBRANT CATEGORICAL ANALYSIS**: `analyze_categorical_columns` rich styling
+- **COLORFUL DATA TYPE CONVERSION**: `convert_to_numeric` professional output
+
+### Dependencies
+- **MAINTAINED**: `rich>=13.0.0` for enhanced terminal output formatting
+
+## [Unreleased]
+
+### Added
+
 ## [0.12.19] - 2025-08-08
 
 ### Enhanced

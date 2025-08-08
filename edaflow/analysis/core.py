@@ -55,7 +55,7 @@ except ImportError:
 def check_null_columns(df: pd.DataFrame,
                        threshold: Optional[float] = 10) -> pd.DataFrame:
     """
-    Check null values in DataFrame columns with styled output.
+    Check null values in DataFrame columns with rich styled output.
 
     Calculates the percentage of null values per column and applies color styling
     based on the percentage of nulls relative to the threshold.
@@ -84,6 +84,19 @@ def check_null_columns(df: pd.DataFrame,
         >>> from edaflow.analysis import check_null_columns
         >>> styled_result = check_null_columns(df, threshold=20)
     """
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+        from rich import box
+        
+        console = Console()
+        use_rich = True
+    except ImportError:
+        console = None
+        use_rich = False
+    
     # Calculate null percentages
     null_counts = df.isnull().sum()
     total_rows = len(df)
@@ -95,6 +108,118 @@ def check_null_columns(df: pd.DataFrame,
         'Null_Count': null_counts.values,
         'Null_Percentage': null_percentages.values
     })
+    
+    if use_rich:
+        # Rich formatted output
+        console.print("\n" + "="*60, style="bold cyan")
+        console.print("🔍 MISSING DATA ANALYSIS", style="bold white on blue", justify="center")
+        console.print("="*60, style="bold cyan")
+        console.print(f"📊 Analyzing {len(df.columns)} columns with threshold: {threshold}%", style="bold yellow")
+        
+        # Create rich table for null analysis
+        null_table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+        null_table.add_column("Column", style="bold white", no_wrap=True)
+        null_table.add_column("Null Count", justify="right", style="cyan")
+        null_table.add_column("Null %", justify="right", style="yellow")
+        null_table.add_column("Status", justify="center")
+        null_table.add_column("Data Integrity", justify="center")
+        
+        # Categorize columns by null severity
+        critical_nulls = []
+        warning_nulls = []
+        minor_nulls = []
+        clean_columns = []
+        
+        for _, row in result_df.iterrows():
+            col_name = row['Column']
+            null_count = row['Null_Count'] 
+            null_pct = row['Null_Percentage']
+            
+            # Determine status and styling
+            if null_pct == 0:
+                status = Text("✅ CLEAN", style="bold green")
+                integrity = Text("🟢 PERFECT", style="bold green")
+                clean_columns.append(row)
+            elif null_pct <= threshold:
+                status = Text("⚠️ MINOR", style="bold blue")
+                integrity = Text("🟡 GOOD", style="bold blue")
+                minor_nulls.append(row)
+            elif null_pct <= threshold * 2:
+                status = Text("🚨 WARNING", style="bold yellow")
+                integrity = Text("🟠 CAUTION", style="bold yellow")
+                warning_nulls.append(row)
+            else:
+                status = Text("💀 CRITICAL", style="bold red")
+                integrity = Text("🔴 SEVERE", style="bold red")
+                critical_nulls.append(row)
+            
+            null_table.add_row(
+                col_name,
+                f"{null_count:,}",
+                f"{null_pct:.1f}%",
+                status,
+                integrity
+            )
+        
+        console.print(null_table)
+        
+        # Summary statistics with color-coded panels
+        if critical_nulls:
+            console.print(Panel(
+                f"🚨 {len(critical_nulls)} columns have CRITICAL null levels (>{threshold*2}%)\n"
+                f"Columns: {', '.join([row['Column'] for row in critical_nulls])}\n"
+                "💡 Recommendation: Investigate data collection process or consider imputation",
+                title="💀 CRITICAL ISSUES",
+                style="bold red",
+                box=box.HEAVY
+            ))
+        
+        if warning_nulls:
+            console.print(Panel(
+                f"⚠️ {len(warning_nulls)} columns have WARNING null levels ({threshold}%-{threshold*2}%)\n"
+                f"Columns: {', '.join([row['Column'] for row in warning_nulls])}\n"
+                "💡 Recommendation: Consider imputation strategies",
+                title="🚨 WARNING LEVELS",
+                style="bold yellow",
+                box=box.DOUBLE_EDGE
+            ))
+        
+        # Overall summary
+        summary_text = f"""
+📈 Dataset Overview:
+• Total Rows: {total_rows:,}
+• Total Columns: {len(df.columns)}
+• Clean Columns: {len(clean_columns)} ✅
+• Minor Issues: {len(minor_nulls)} ⚠️
+• Warning Level: {len(warning_nulls)} 🚨
+• Critical Issues: {len(critical_nulls)} 💀
+
+🎯 Null Threshold: {threshold}%
+        """
+        
+        # Determine overall health color
+        if critical_nulls:
+            health_style = "bold red"
+            health_title = "💀 DATA HEALTH: CRITICAL"
+        elif warning_nulls:
+            health_style = "bold yellow" 
+            health_title = "🚨 DATA HEALTH: WARNING"
+        elif minor_nulls:
+            health_style = "bold blue"
+            health_title = "⚠️ DATA HEALTH: GOOD"
+        else:
+            health_style = "bold green"
+            health_title = "✅ DATA HEALTH: EXCELLENT"
+        
+        console.print(Panel(
+            summary_text.strip(),
+            title=health_title,
+            style=health_style,
+            box=box.DOUBLE_EDGE
+        ))
+        
+        console.print("✨ Missing data analysis complete!", style="bold green")
+        console.print("="*60, style="bold cyan")
 
     def style_nulls(val):
         """Apply color styling based on null percentage."""
@@ -712,7 +837,7 @@ def visualize_categorical_values(df: pd.DataFrame,
 
 def display_column_types(df):
     """
-    Display categorical and numerical columns in a DataFrame.
+    Display categorical and numerical columns in a DataFrame with rich formatting.
     
     This function separates DataFrame columns into categorical (object dtype) 
     and numerical (non-object dtypes) columns and displays them in a clear format.
@@ -749,46 +874,239 @@ def display_column_types(df):
     """
     import pandas as pd
     
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+        from rich import box
+        from rich.columns import Columns
+        
+        console = Console()
+        use_rich = True
+    except ImportError:
+        console = None
+        use_rich = False
+    
     if not isinstance(df, pd.DataFrame):
         raise TypeError("Input must be a pandas DataFrame")
     
     if df.empty:
-        print("⚠️  DataFrame is empty!")
+        if use_rich:
+            console.print(Panel("⚠️ DataFrame is empty!", 
+                              title="Empty DataFrame", 
+                              style="bold yellow", 
+                              box=box.ROUNDED))
+        else:
+            print("⚠️  DataFrame is empty!")
         return {'categorical': [], 'numerical': []}
     
     # Separate columns by type
     cat_cols = [col for col in df.columns if df[col].dtype == 'object']
     num_cols = [col for col in df.columns if df[col].dtype != 'object']
     
-    # Display results
-    print("📊 Column Type Analysis")
-    print("=" * 50)
-    
-    print(f"\n📝 Categorical Columns ({len(cat_cols)} total):")
-    if cat_cols:
-        for i, col in enumerate(cat_cols, 1):
-            unique_count = df[col].nunique()
-            print(f"   {i:2d}. {col:<20} (unique values: {unique_count})")
+    if use_rich:
+        # Rich formatted output
+        console.print("\n" + "="*60, style="bold cyan")
+        console.print("📊 COLUMN TYPE CLASSIFICATION", style="bold white on blue", justify="center")
+        console.print("="*60, style="bold cyan")
+        
+        # Create side-by-side tables
+        cat_table = Table(show_header=True, header_style="bold green", 
+                         title="📝 CATEGORICAL COLUMNS", box=box.ROUNDED,
+                         border_style="green")
+        cat_table.add_column("#", style="dim", width=3)
+        cat_table.add_column("Column Name", style="bold green")
+        cat_table.add_column("Data Type", style="cyan", justify="center")
+        cat_table.add_column("Unique Values", style="yellow", justify="right")
+        cat_table.add_column("Memory Usage", style="magenta", justify="right")
+        
+        num_table = Table(show_header=True, header_style="bold blue",
+                         title="🔢 NUMERICAL COLUMNS", box=box.ROUNDED,
+                         border_style="blue")
+        num_table.add_column("#", style="dim", width=3)
+        num_table.add_column("Column Name", style="bold blue")
+        num_table.add_column("Data Type", style="cyan", justify="center")
+        num_table.add_column("Range Info", style="yellow")
+        num_table.add_column("Memory Usage", style="magenta", justify="right")
+        
+        # Populate categorical table
+        if cat_cols:
+            for i, col in enumerate(cat_cols, 1):
+                unique_count = df[col].nunique()
+                null_count = df[col].isnull().sum()
+                memory_usage = df[col].memory_usage(deep=True)
+                
+                # Format memory usage
+                if memory_usage > 1024**2:  # MB
+                    mem_str = f"{memory_usage / (1024**2):.1f}MB"
+                elif memory_usage > 1024:  # KB
+                    mem_str = f"{memory_usage / 1024:.1f}KB"
+                else:
+                    mem_str = f"{memory_usage}B"
+                
+                cat_table.add_row(
+                    str(i),
+                    col,
+                    "object",
+                    f"{unique_count:,}" + (f" (+{null_count} null)" if null_count > 0 else ""),
+                    mem_str
+                )
+        else:
+            cat_table.add_row("—", "No categorical columns", "—", "—", "—")
+        
+        # Populate numerical table
+        if num_cols:
+            for i, col in enumerate(num_cols, 1):
+                dtype = str(df[col].dtype)
+                memory_usage = df[col].memory_usage(deep=True)
+                
+                # Format memory usage
+                if memory_usage > 1024**2:  # MB
+                    mem_str = f"{memory_usage / (1024**2):.1f}MB"
+                elif memory_usage > 1024:  # KB
+                    mem_str = f"{memory_usage / 1024:.1f}KB"
+                else:
+                    mem_str = f"{memory_usage}B"
+                
+                # Get range info for numeric columns
+                try:
+                    col_min = df[col].min()
+                    col_max = df[col].max()
+                    null_count = df[col].isnull().sum()
+                    
+                    if pd.api.types.is_numeric_dtype(df[col]):
+                        range_info = f"[{col_min:.2f}, {col_max:.2f}]"
+                        if null_count > 0:
+                            range_info += f" +{null_count} null"
+                    else:
+                        range_info = f"{df[col].nunique():,} unique"
+                        if null_count > 0:
+                            range_info += f" +{null_count} null"
+                except:
+                    range_info = "N/A"
+                
+                num_table.add_row(
+                    str(i),
+                    col,
+                    dtype,
+                    range_info,
+                    mem_str
+                )
+        else:
+            num_table.add_row("—", "No numerical columns", "—", "—", "—")
+        
+        # Display tables side by side
+        console.print(Columns([cat_table, num_table], equal=True))
+        
+        # Advanced analysis
+        console.print("\n🔍 ADVANCED ANALYSIS", style="bold magenta")
+        
+        analysis_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
+        analysis_table.add_column("Metric", style="bold white")
+        analysis_table.add_column("Value", style="cyan", justify="right")
+        analysis_table.add_column("Insight", style="dim white")
+        
+        total_cols = len(df.columns)
+        cat_percentage = (len(cat_cols) / total_cols * 100) if total_cols > 0 else 0
+        num_percentage = (len(num_cols) / total_cols * 100) if total_cols > 0 else 0
+        
+        # Add analysis rows
+        analysis_table.add_row(
+            "Total Columns",
+            f"{total_cols}",
+            f"Dataset has {total_cols} features"
+        )
+        analysis_table.add_row(
+            "Categorical Ratio",
+            f"{cat_percentage:.1f}%",
+            "High ratio suggests text-heavy data" if cat_percentage > 60 else 
+            "Balanced data types" if cat_percentage > 20 else "Numeric-heavy data"
+        )
+        analysis_table.add_row(
+            "Numerical Ratio", 
+            f"{num_percentage:.1f}%",
+            "Good for statistical analysis" if num_percentage > 50 else
+            "Limited numerical features"
+        )
+        
+        # Memory analysis
+        total_memory = df.memory_usage(deep=True).sum()
+        if total_memory > 1024**3:  # GB
+            mem_str = f"{total_memory / (1024**3):.2f}GB"
+        elif total_memory > 1024**2:  # MB
+            mem_str = f"{total_memory / (1024**2):.1f}MB"
+        elif total_memory > 1024:  # KB
+            mem_str = f"{total_memory / 1024:.1f}KB"
+        else:
+            mem_str = f"{total_memory}B"
+        
+        analysis_table.add_row(
+            "Memory Usage",
+            mem_str,
+            "Consider optimization" if total_memory > 100*1024**2 else "Efficient memory usage"
+        )
+        
+        console.print(analysis_table)
+        
+        # Summary panel with recommendations
+        if cat_percentage > 70:
+            data_type_insight = "📝 Text-Heavy Dataset: Consider NLP techniques, encoding strategies"
+        elif num_percentage > 70:
+            data_type_insight = "🔢 Numeric-Heavy Dataset: Great for statistical analysis, ML models"
+        else:
+            data_type_insight = "⚖️ Balanced Dataset: Good mix of categorical and numerical features"
+        
+        summary_content = f"""
+[bold cyan]📈 Dataset Composition:[/bold cyan]
+• {len(cat_cols)} Categorical columns ({cat_percentage:.1f}%)
+• {len(num_cols)} Numerical columns ({num_percentage:.1f}%)
+• Total memory usage: {mem_str}
+
+[bold yellow]💡 Insights:[/bold yellow]
+{data_type_insight}
+        """
+        
+        console.print(Panel(
+            summary_content.strip(),
+            title="📊 Column Analysis Summary",
+            style="bold green",
+            box=box.DOUBLE_EDGE
+        ))
+        
+        console.print("✨ Column type analysis complete!", style="bold green")
+        console.print("="*60, style="bold cyan")
+        
     else:
-        print("   No categorical columns found")
-    
-    print(f"\n🔢 Numerical Columns ({len(num_cols)} total):")
-    if num_cols:
-        for i, col in enumerate(num_cols, 1):
-            dtype = str(df[col].dtype)
-            print(f"   {i:2d}. {col:<20} (dtype: {dtype})")
-    else:
-        print("   No numerical columns found")
-    
-    # Summary
-    total_cols = len(df.columns)
-    cat_percentage = (len(cat_cols) / total_cols * 100) if total_cols > 0 else 0
-    num_percentage = (len(num_cols) / total_cols * 100) if total_cols > 0 else 0
-    
-    print(f"\n📈 Summary:")
-    print(f"   Total columns: {total_cols}")
-    print(f"   Categorical: {len(cat_cols)} ({cat_percentage:.1f}%)")
-    print(f"   Numerical: {len(num_cols)} ({num_percentage:.1f}%)")
+        # Fallback to basic output
+        print("📊 Column Type Analysis")
+        print("=" * 50)
+        
+        print(f"\n📝 Categorical Columns ({len(cat_cols)} total):")
+        if cat_cols:
+            for i, col in enumerate(cat_cols, 1):
+                unique_count = df[col].nunique()
+                print(f"   {i:2d}. {col:<20} (unique values: {unique_count})")
+        else:
+            print("   No categorical columns found")
+        
+        print(f"\n🔢 Numerical Columns ({len(num_cols)} total):")
+        if num_cols:
+            for i, col in enumerate(num_cols, 1):
+                dtype = str(df[col].dtype)
+                print(f"   {i:2d}. {col:<20} (dtype: {dtype})")
+        else:
+            print("   No numerical columns found")
+        
+        # Summary
+        total_cols = len(df.columns)
+        cat_percentage = (len(cat_cols) / total_cols * 100) if total_cols > 0 else 0
+        num_percentage = (len(num_cols) / total_cols * 100) if total_cols > 0 else 0
+        
+        print(f"\n📈 Summary:")
+        print(f"   Total columns: {total_cols}")
+        print(f"   Categorical: {len(cat_cols)} ({cat_percentage:.1f}%)")
+        print(f"   Numerical: {len(num_cols)} ({num_percentage:.1f}%)")
     
     return {
         'categorical': cat_cols,
@@ -798,7 +1116,7 @@ def display_column_types(df):
 
 def impute_numerical_median(df, columns=None, inplace=False):
     """
-    Impute missing values in numerical columns using median values.
+    Impute missing values in numerical columns using median values with rich formatting.
     
     This function identifies numerical columns and fills missing values (NaN) 
     with the median value of each column. It provides detailed reporting of 
@@ -840,12 +1158,31 @@ def impute_numerical_median(df, columns=None, inplace=False):
     >>> # Impute in place
     >>> edaflow.impute_numerical_median(df, inplace=True)
     """
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+        from rich import box
+        
+        console = Console()
+        use_rich = True
+    except ImportError:
+        console = None
+        use_rich = False
+    
     # Input validation
     if not isinstance(df, pd.DataFrame):
         raise ValueError("Input must be a pandas DataFrame")
     
     if df.empty:
-        print("⚠️  DataFrame is empty. Nothing to impute.")
+        if use_rich:
+            console.print(Panel("⚠️ DataFrame is empty. Nothing to impute.", 
+                              title="Empty DataFrame", 
+                              style="bold yellow", 
+                              box=box.ROUNDED))
+        else:
+            print("⚠️  DataFrame is empty. Nothing to impute.")
         return df.copy() if not inplace else None
     
     # Work with copy unless inplace=True
@@ -856,7 +1193,13 @@ def impute_numerical_median(df, columns=None, inplace=False):
         # Get all numerical columns
         numerical_cols = result_df.select_dtypes(include=[np.number]).columns.tolist()
         if not numerical_cols:
-            print("⚠️  No numerical columns found in DataFrame.")
+            if use_rich:
+                console.print(Panel("⚠️ No numerical columns found in DataFrame.", 
+                                  title="No Numeric Columns", 
+                                  style="bold yellow",
+                                  box=box.ROUNDED))
+            else:
+                print("⚠️  No numerical columns found in DataFrame.")
             return result_df if not inplace else None
     else:
         # Validate specified columns
@@ -875,43 +1218,138 @@ def impute_numerical_median(df, columns=None, inplace=False):
         
         numerical_cols = columns
     
-    print("🔢 Numerical Missing Value Imputation (Median)")
-    print("=" * 55)
-    
-    imputed_columns = []
-    total_imputed = 0
-    
-    for col in numerical_cols:
-        missing_count = result_df[col].isnull().sum()
+    if use_rich:
+        # Rich formatted output
+        console.print("\n" + "="*60, style="bold cyan")
+        console.print("🔢 NUMERICAL IMPUTATION (MEDIAN)", style="bold white on blue", justify="center")
+        console.print("="*60, style="bold cyan")
+        console.print(f"📊 Processing {len(numerical_cols)} numerical columns", style="bold yellow")
         
-        if missing_count == 0:
-            print(f"✅ {col:<20} - No missing values")
-            continue
+        # Create imputation table
+        imputation_table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+        imputation_table.add_column("Column", style="bold white", no_wrap=True)
+        imputation_table.add_column("Missing Count", justify="right", style="red")
+        imputation_table.add_column("Median Value", justify="right", style="cyan")
+        imputation_table.add_column("Action", justify="center")
+        imputation_table.add_column("Status", justify="center")
         
-        # Calculate median (ignoring NaN values)
-        median_value = result_df[col].median()
+        imputed_columns = []
+        total_imputed = 0
+        total_missing_before = 0
         
-        if pd.isna(median_value):
-            print(f"⚠️  {col:<20} - All values are missing, skipping")
-            continue
+        for col in numerical_cols:
+            missing_count = result_df[col].isnull().sum()
+            total_missing_before += missing_count
+            
+            if missing_count == 0:
+                status = Text("✅ CLEAN", style="bold green")
+                action = Text("🚫 No Action", style="dim green")
+                median_display = "N/A"
+                imputation_table.add_row(col, "0", median_display, action, status)
+                continue
+            
+            # Calculate median (ignoring NaN values)
+            median_value = result_df[col].median()
+            
+            if pd.isna(median_value):
+                status = Text("❌ FAILED", style="bold red")
+                action = Text("🚫 All Missing", style="dim red")
+                median_display = "N/A"
+                imputation_table.add_row(col, f"{missing_count:,}", median_display, action, status)
+                continue
+            
+            # Perform imputation
+            result_df[col] = result_df[col].fillna(median_value)
+            
+            # Track results
+            imputed_columns.append(col)
+            total_imputed += missing_count
+            
+            status = Text("✅ IMPUTED", style="bold green")
+            action = Text("🔄 Fill with Median", style="bold cyan")
+            
+            # Format median value based on data type
+            if abs(median_value) > 1000000:
+                median_display = f"{median_value/1000000:.2f}M"
+            elif abs(median_value) > 1000:
+                median_display = f"{median_value/1000:.1f}K"
+            elif median_value == int(median_value):
+                median_display = f"{int(median_value):,}"
+            else:
+                median_display = f"{median_value:.3f}"
+            
+            imputation_table.add_row(col, f"{missing_count:,}", median_display, action, status)
         
-        # Perform imputation
-        result_df[col] = result_df[col].fillna(median_value)
+        console.print(imputation_table)
         
-        # Track results
-        imputed_columns.append(col)
-        total_imputed += missing_count
+        # Results summary with color-coded panels
+        if total_imputed > 0:
+            success_text = f"""
+🎉 Imputation completed successfully!
+• Columns processed: {len(numerical_cols)}
+• Columns imputed: {len(imputed_columns)}
+• Values filled: {total_imputed:,} out of {total_missing_before:,}
+• Completion rate: {(total_imputed/total_missing_before*100):.1f}%
+
+✅ Imputed columns: {', '.join(imputed_columns)}
+            """
+            
+            console.print(Panel(
+                success_text.strip(),
+                title="🎉 Imputation Success",
+                style="bold green",
+                box=box.DOUBLE_EDGE
+            ))
+        else:
+            console.print(Panel(
+                "ℹ️ No imputation was necessary\nAll numerical columns are already complete!",
+                title="ℹ️ No Action Required",
+                style="bold blue",
+                box=box.ROUNDED
+            ))
         
-        print(f"🔄 {col:<20} - Imputed {missing_count:,} values with median: {median_value}")
-    
-    # Summary
-    print(f"\n📊 Imputation Summary:")
-    print(f"   Columns processed: {len(numerical_cols)}")
-    print(f"   Columns imputed: {len(imputed_columns)}")
-    print(f"   Total values imputed: {total_imputed:,}")
-    
-    if imputed_columns:
-        print(f"   Imputed columns: {', '.join(imputed_columns)}")
+        console.print("✨ Numerical imputation complete!", style="bold green")
+        console.print("="*60, style="bold cyan")
+        
+    else:
+        # Fallback to basic output
+        print("🔢 Numerical Missing Value Imputation (Median)")
+        print("=" * 55)
+        
+        imputed_columns = []
+        total_imputed = 0
+        
+        for col in numerical_cols:
+            missing_count = result_df[col].isnull().sum()
+            
+            if missing_count == 0:
+                print(f"✅ {col:<20} - No missing values")
+                continue
+            
+            # Calculate median (ignoring NaN values)
+            median_value = result_df[col].median()
+            
+            if pd.isna(median_value):
+                print(f"⚠️  {col:<20} - All values are missing, skipping")
+                continue
+            
+            # Perform imputation
+            result_df[col] = result_df[col].fillna(median_value)
+            
+            # Track results
+            imputed_columns.append(col)
+            total_imputed += missing_count
+            
+            print(f"🔄 {col:<20} - Imputed {missing_count:,} values with median: {median_value}")
+        
+        # Summary
+        print(f"\n📊 Imputation Summary:")
+        print(f"   Columns processed: {len(numerical_cols)}")
+        print(f"   Columns imputed: {len(imputed_columns)}")
+        print(f"   Total values imputed: {total_imputed:,}")
+        
+        if imputed_columns:
+            print(f"   Imputed columns: {', '.join(imputed_columns)}")
     
     return result_df if not inplace else None
 
