@@ -6,6 +6,59 @@ All notable changes to edaflow are documented here.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Version 0.12.24 (2025-08-08) - Texture Analysis Warning Fix 🔧
+---------------------------------------------------------------
+
+**Fixed:**
+- **🔧 TEXTURE ANALYSIS WARNING FIX**: Resolved scikit-image UserWarning in ``analyze_image_features`` function
+- **FIXED**: Local Binary Pattern (LBP) analysis now properly converts images to uint8 format
+- **RESOLVED**: "floating-point images may give unexpected results" warning from texture analysis
+- **ENHANCED**: Improved image preprocessing to handle both normalized [0,1] and [0,255] input images
+- **OPTIMIZED**: More robust texture feature extraction with proper data type handling
+
+**Technical Details:**
+- **Smart Data Type Detection**: Automatically detects normalized vs standard image formats
+- **Optimal Performance**: LBP analysis now uses recommended integer format for better results
+- **Professional Output**: Clean execution without warnings in production environments
+- **Backward Compatible**: All existing code continues to work unchanged
+
+Version 0.12.23 (2025-08-08) - Critical RTD Documentation Parameter Fix 🚨
+---------------------------------------------------------------------------
+
+**Fixed:**
+- **🚨 CRITICAL RTD DOCUMENTATION FIX**: Corrected parameter name mismatches in ``analyze_image_features`` function
+- **FIXED**: Changed ``analyze_colors`` → ``analyze_color`` in quickstart.rst documentation (3 instances)
+- **FIXED**: Changed ``bins`` → ``bins_per_channel`` in RTD documentation examples
+- **RESOLVED**: TypeError when users followed RTD documentation examples exactly
+- **ENHANCED**: Documentation now matches actual function signature perfectly
+- **TESTED**: Created comprehensive test suite to prevent future parameter mismatches
+
+**Impact:**
+- **User Experience**: Eliminated TypeError when following documentation examples
+- **Documentation Quality**: RTD examples now work correctly out-of-the-box
+- **Professional Standards**: Maintained edaflow's reputation for accurate documentation
+
+Version 0.12.22 (2025-08-08) - Google Colab Compatibility & Clean Workflow 🌟
+------------------------------------------------------------------------------
+
+**Fixed:**
+- **🔧 GOOGLE COLAB COMPATIBILITY**: Fixed KeyError in ``apply_smart_encoding`` documentation examples
+- **FIXED**: Removed hardcoded 'target' column assumption in documentation examples
+- **FIXED**: Updated quickstart.rst and README.md with flexible column handling
+- **RESOLVED**: Documentation examples now work in Google Colab, Jupyter, and all environments
+- **ENHANCED**: More robust ML encoding workflow that adapts to user datasets
+
+**Enhanced:**
+- **📚 CLEAN WORKFLOW**: Removed redundant print statements from documentation examples
+- **IMPROVED**: Professional rich-styled output eliminates need for manual formatting
+- **MODERNIZED**: Documentation examples now showcase rich styling capabilities
+- **CREATED**: Google Colab compatibility test suite for validation
+
+**Impact:**
+- **Universal Compatibility**: Documentation works across all Python environments
+- **Modern Presentation**: Clean, professional output using rich styling
+- **Educational Value**: Enhanced learning experience for users across platforms
+
 Version 0.12.3 (2025-08-06) - Complete Positional Argument Compatibility Fix 🔧
 --------------------------------------------------------------------------------
 
