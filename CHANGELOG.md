@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.23] - 2025-08-08
+
+### Fixed
+- **🚨 CRITICAL RTD DOCUMENTATION FIX**: Corrected parameter name mismatches in `analyze_image_features` function
+- **FIXED**: Changed `analyze_colors` → `analyze_color` in quickstart.rst documentation (3 instances)
+- **FIXED**: Changed `bins` → `bins_per_channel` in RTD documentation examples
+- **RESOLVED**: TypeError when users followed RTD documentation examples exactly
+- **ENHANCED**: Documentation now matches actual function signature perfectly
+- **TESTED**: Created comprehensive test suite to prevent future parameter mismatches
+
 ## [0.12.22] - 2025-08-08
 
 ### Fixed

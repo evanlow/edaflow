@@ -270,12 +270,12 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    print("-" * 50)
    feature_analysis = edaflow.analyze_image_features(
        image_paths,
-       analyze_colors=True,        # RGB histogram analysis
+       analyze_color=True,         # RGB histogram analysis
        analyze_edges=True,         # Edge density patterns
        analyze_texture=True,       # Texture complexity metrics
        analyze_gradients=True,     # Gradient magnitude analysis
        sample_size=100,            # Computational efficiency
-       bins=50                    # Histogram granularity
+       bins_per_channel=50        # Histogram granularity
    )
 
 **Individual Function Examples**
@@ -338,12 +338,12 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    # Deep feature analysis for dataset understanding
    features = edaflow.analyze_image_features(
        image_paths,
-       analyze_colors=True,        # RGB histogram analysis
+       analyze_color=True,         # RGB histogram analysis
        analyze_edges=True,         # Edge density patterns
        analyze_texture=True,       # Texture complexity metrics
        analyze_gradients=True,     # Gradient magnitude analysis
        sample_size=100,            # Computational efficiency
-       bins=50                    # Histogram granularity
+       bins_per_channel=50        # Histogram granularity
    )
    
    # Comprehensive visualizations:
@@ -371,7 +371,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    satellite_images = glob.glob('satellite_data/**/*.tif', recursive=True)
    edaflow.analyze_image_features(
        satellite_images, 
-       analyze_colors=True,
+       analyze_color=True,
        analyze_texture=True,
        sample_size=100
    )
