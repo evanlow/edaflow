@@ -102,14 +102,14 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
    # Analyze optimal encoding strategies
    encoding_analysis = edaflow.analyze_encoding_needs(
        df_final,
-       target_column='target',           # Optional: for supervised encoding
+       target_column=None,               # Optional: specify target if available
        max_cardinality_onehot=15,        # Max categories for one-hot encoding  
-       ordinal_columns=['size', 'grade'] # Optional: specify ordinal columns
+       ordinal_columns=None              # Optional: specify ordinal columns if known
    )
    
    # Apply intelligent encoding transformations
    df_encoded = edaflow.apply_smart_encoding(
-       df_final.drop('target', axis=1),  # Features only
+       df_final,                         # Use the full dataset
        encoding_analysis=encoding_analysis,
        return_encoders=True              # Keep encoders for test data
    )
@@ -428,15 +428,15 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    # Step 1: Analyze optimal encoding strategies
    encoding_analysis = edaflow.analyze_encoding_needs(
        df,
-       target_column='target',           # Optional: for supervised methods
+       target_column=None,               # Optional: specify if you have a target
        max_cardinality_onehot=15,        # Threshold for one-hot encoding
        max_cardinality_target=50,        # Threshold for target encoding
-       ordinal_columns=['size', 'grade'] # Specify ordinal relationships
+       ordinal_columns=None              # Specify ordinal relationships if known
    )
    
    # Step 2: Apply intelligent transformations  
    df_encoded, encoders = edaflow.apply_smart_encoding(
-       df.drop('target', axis=1),        # Features only
+       df,                               # Use your full dataset
        encoding_analysis=encoding_analysis,
        return_encoders=True              # Keep for test data
    )

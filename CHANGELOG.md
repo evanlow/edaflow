@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.22] - 2025-08-08
+
+### Fixed
+- **🔧 GOOGLE COLAB COMPATIBILITY**: Fixed KeyError in `apply_smart_encoding` documentation examples
+- **FIXED**: Removed hardcoded 'target' column assumption in documentation examples
+- **FIXED**: Updated quickstart.rst and README.md with flexible column handling
+- **RESOLVED**: Documentation examples now work in Google Colab, Jupyter, and all environments
+- **ENHANCED**: More robust ML encoding workflow that adapts to user datasets
+
+### Enhanced
+- **📚 CLEAN WORKFLOW**: Removed redundant print statements from documentation examples
+- **IMPROVED**: Professional rich-styled output eliminates need for manual formatting
+- **MODERNIZED**: Documentation examples now showcase rich styling capabilities
+- **CREATED**: Google Colab compatibility test suite for validation
+
 ## [0.12.21] - 2025-08-08
 
 ### Fixed

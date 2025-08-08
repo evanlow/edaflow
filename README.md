@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.21** - [Latest Release](https://pypi.org/project/edaflow/0.12.21/) includes comprehensive rich styling enhancements with vibrant, professional output for all major EDA functions, plus critical documentation fixes for parameter name mismatches. *Updated: August 8, 2025*
+> **📦 Current Version: v0.12.22** - [Latest Release](https://pypi.org/project/edaflow/0.12.22/) includes critical Google Colab compatibility fixes for ML encoding functions, plus clean workflow documentation with rich styling enhancements. *Updated: August 8, 2025*
 
 ## 📖 Table of Contents
 
@@ -34,14 +34,19 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.12.21
+## ✨ What's New in v0.12.22
 
-### 🔧 Critical Documentation Fixes
-- **Fixed Parameter Names**: Resolved all parameter name mismatches in documentation examples
-- **TypeError Resolution**: Sample code from documentation now works correctly
-- **API Consistency**: All examples match actual function signatures
+### 🔧 Google Colab Compatibility
+- **Fixed KeyError**: Resolved issues with `apply_smart_encoding` in Google Colab environments
+- **Flexible Column Handling**: Documentation examples now adapt to any dataset structure
+- **Universal Compatibility**: Works seamlessly across Jupyter, Colab, and all Python environments
 
-### 🌈 Rich Styling (v0.12.20)
+### 📚 Clean Workflow Enhancement
+- **Modern Documentation**: Removed redundant print statements from examples
+- **Rich Styling Focus**: Examples showcase professional, color-coded output capabilities
+- **Professional Appearance**: Clean code that users actually want to copy and use
+
+### 🌈 Rich Styling (v0.12.20-0.12.21)
 - **Vibrant Output**: ALL major EDA functions now feature professional, color-coded styling
 - **Smart Indicators**: Color-coded severity levels (✅ CLEAN, ⚠️ WARNING, 🚨 CRITICAL)
 - **Professional Tables**: Beautiful formatted output with rich library integration
@@ -88,7 +93,14 @@ A Python package for streamlined exploratory data analysis workflows.
 
 ## 🆕 Recent Updates
 
-### v0.12.21 (Latest) - Documentation Parameter Fixes
+### v0.12.22 (Latest) - Google Colab Compatibility
+- **🔧 CRITICAL FIX**: Resolved KeyError in `apply_smart_encoding` for Google Colab environments
+- **FIXED**: Removed hardcoded 'target' column assumptions in documentation examples
+- **ENHANCED**: Documentation examples now work universally across all Python environments
+- **IMPROVED**: More robust ML encoding workflow that adapts to user datasets
+- **MODERNIZED**: Clean workflow documentation without redundant print statements
+
+### v0.12.21 - Documentation Parameter Fixes
 - **🔧 CRITICAL FIXES**: Resolved parameter name mismatches in `visualize_scatter_matrix` documentation
 - **FIXED**: `regression_line` → `regression_type` parameter name in all examples
 - **FIXED**: `diagonal_type` → `diagonal` parameter name corrections
@@ -102,12 +114,6 @@ A Python package for streamlined exploratory data analysis workflows.
 - **ENHANCED**: `display_column_types` with side-by-side rich tables and memory usage analysis
 - **ENHANCED**: `impute_numerical_median` with professional imputation reporting and smart value formatting
 - **COMPREHENSIVE**: Professional tables, color-coded indicators, and actionable insights across all functions
-
-### v0.12.16 - Layout Spacing Improvements
-- **🎨 ROW OVERLAP FIX**: Eliminated overlapping rows in visualization layouts for cleaner displays
-- **🔬 SCIENTIFIC NAME OPTIMIZATION**: Enhanced spacing specifically for long taxonomic/scientific class names
-- **📐 PROFESSIONAL SPACING**: Improved hspace values and font sizing for publication-ready visualizations
-- **✅ SCALABLE DESIGN**: Better layouts from small (5 classes) to large datasets (100+ classes)
 - **🎨 ROW OVERLAP FIX**: Eliminated overlapping rows in visualization layouts for cleaner displays
 - **🔬 SCIENTIFIC NAME OPTIMIZATION**: Enhanced spacing specifically for long taxonomic/scientific class names
 - **� PROFESSIONAL SPACING**: Improved hspace values and font sizing for publication-ready visualizations
@@ -238,17 +244,17 @@ df = pd.read_csv('your_data.csv')
 # Step 1: Analyze encoding needs (with or without target)
 encoding_analysis = edaflow.analyze_encoding_needs(
     df, 
-    target_column='target',        # Optional: specify target for supervised encoding
+    target_column=None,            # Optional: specify target if you have one
     max_cardinality_onehot=15,     # Optional: max categories for one-hot encoding
     max_cardinality_target=50,     # Optional: max categories for target encoding
-    ordinal_columns=['size', 'grade']  # Optional: specify ordinal columns
+    ordinal_columns=None           # Optional: specify ordinal columns if known
 )
 
-# Step 2: Apply intelligent encoding transformations
+# Step 2: Apply intelligent encoding transformations  
 df_encoded = edaflow.apply_smart_encoding(
-    df.drop('target', axis=1),  # Features only
+    df,                            # Use your full dataset (or df.drop('target_col', axis=1) if needed)
     encoding_analysis=encoding_analysis,  # Optional: use previous analysis
-    handle_unknown='ignore'    # Optional: how to handle unknown categories
+    handle_unknown='ignore'        # Optional: how to handle unknown categories
 )
 
 # The encoding pipeline automatically:
@@ -1971,7 +1977,17 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📋 Changelog
 
-### [0.12.21] - 2025-08-08 (Current)
+### [0.12.22] - 2025-08-08 (Current)
+#### Fixed
+- **🔧 GOOGLE COLAB COMPATIBILITY**: Fixed KeyError in `apply_smart_encoding` documentation examples
+- **FIXED**: Removed hardcoded 'target' column assumption in documentation examples
+- **RESOLVED**: Documentation examples now work in Google Colab, Jupyter, and all environments
+- **ENHANCED**: More robust ML encoding workflow that adapts to user datasets
+#### Enhanced
+- **📚 CLEAN WORKFLOW**: Removed redundant print statements from documentation examples
+- **MODERNIZED**: Documentation showcases rich styling without primitive print statements
+
+### [0.12.21] - 2025-08-08
 #### Fixed
 - **🔧 DOCUMENTATION PARAMETER FIXES**: Corrected parameter name mismatches in `visualize_scatter_matrix` documentation
 - **FIXED**: Changed `regression_line` → `regression_type` in README.md and quickstart.rst examples
