@@ -4113,10 +4113,20 @@ def _calculate_texture_features(img_array: np.ndarray, method: str, radius: int,
     else:
         gray = img_array
     
+    # Ensure grayscale image is in uint8 format for LBP analysis
+    # This prevents the floating-point warning from scikit-image
+    if gray.dtype != np.uint8:
+        if gray.max() <= 1.0:
+            # Image is normalized [0,1], scale to [0,255]
+            gray = (gray * 255).astype(np.uint8)
+        else:
+            # Image is already in [0,255] range but wrong dtype
+            gray = gray.astype(np.uint8)
+    
     features = {}
     
     if method == "lbp" and SKIMAGE_AVAILABLE:
-        # Local Binary Patterns
+        # Local Binary Patterns (now using uint8 image to avoid warnings)
         lbp = local_binary_pattern(gray, n_points, radius, method='uniform')
         
         # Calculate LBP histogram

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.24] - 2025-08-08
+
+### Fixed
+- **🔧 TEXTURE ANALYSIS WARNING FIX**: Resolved scikit-image UserWarning in `analyze_image_features` function
+- **FIXED**: Local Binary Pattern (LBP) analysis now properly converts images to uint8 format
+- **RESOLVED**: "floating-point images may give unexpected results" warning from texture analysis
+- **ENHANCED**: Improved image preprocessing to handle both normalized [0,1] and [0,255] input images
+- **OPTIMIZED**: More robust texture feature extraction with proper data type handling
+
 ## [0.12.23] - 2025-08-08
 
 ### Fixed
