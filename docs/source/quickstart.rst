@@ -18,7 +18,7 @@ First, install and import edaflow:
    edaflow.visualize_image_classes(
        data_source='ecommerce_images/', 
        samples_per_class=4,
-       max_classes=8,
+       max_classes_display=8,
        figsize=(12, 8)
    )
    
@@ -27,7 +27,7 @@ First, install and import edaflow:
    edaflow.visualize_image_classes(
        data_source=product_photos, 
        samples_per_class=4,
-       max_classes=8,
+       max_classes_display=8,
        figsize=(12, 8)
    )
 
@@ -263,7 +263,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    edaflow.visualize_image_classes(
        data_source='path/to/dataset/',  # Directory with class subfolders
        samples_per_class=4,
-       max_classes=8,                   # Limit displayed classes
+       max_classes_display=8,           # Limit displayed classes
        figsize=(12, 8),
        title="Training Set Overview"
    )
@@ -273,7 +273,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    edaflow.visualize_image_classes(
        data_source=image_paths,         # List of image paths
        samples_per_class=4,
-       max_classes=8,
+       max_classes_display=8,
        figsize=(12, 8),
        title="Training Set Overview"
    )
@@ -317,7 +317,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    edaflow.visualize_image_classes(
        data_source='path/to/dataset/',  # Directory with class subfolders
        samples_per_class=4,
-       max_classes=8,                   # Limit displayed classes
+       max_classes_display=8,           # Limit displayed classes
        figsize=(12, 8),
        title="Training Set Overview"
    )
@@ -326,7 +326,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    edaflow.visualize_image_classes(
        data_source=['path/to/class1/*.jpg', 'path/to/class2/*.jpg'],
        samples_per_class=4,
-       max_classes=8,
+       max_classes_display=8,
        figsize=(12, 8),
        title="Training Set Overview"
    )
@@ -406,7 +406,7 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
    edaflow.visualize_image_classes(
        data_source='ecommerce_images/', 
        samples_per_class=4,
-       max_classes=8,
+       max_classes_display=8,
        figsize=(12, 8),
        title="Product Catalog Overview"
    )

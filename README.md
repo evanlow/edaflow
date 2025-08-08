@@ -1273,8 +1273,8 @@ df = pd.DataFrame({
 # Comprehensive analysis with statistics
 stats = edaflow.visualize_image_classes(
     data_source=df,
-    image_path_column='image_path',
-    class_column='class',
+    image_column='image_path',
+    label_column='class',
     samples_per_class=6,
     show_image_info=True,       # Show dimensions and file sizes
     return_stats=True,          # Get detailed statistics
@@ -1293,8 +1293,8 @@ if stats['balance_ratio'] < 0.5:
 # Method 3: Production Dataset Validation
 validation_stats = edaflow.visualize_image_classes(
     data_source=production_df,
-    image_path_column='file_path',
-    class_column='predicted_class',
+    image_column='file_path',
+    label_column='predicted_class',
     samples_per_class=10,
     shuffle_samples=False,      # Reproducible sampling
     save_path='dataset_report.png',  # Save for documentation
@@ -1360,8 +1360,8 @@ edaflow.visualize_image_classes(
 # Validate production datasets
 stats = edaflow.visualize_image_classes(
     data_source=production_data,
-    image_path_column='path',
-    class_column='label', 
+    image_column='path',
+    label_column='label', 
     return_stats=True
 )
 
@@ -1428,8 +1428,8 @@ print(f"💡 Recommendations: {len(report['recommendations'])}")
 # Method 2: Production Pipeline Integration  
 validation_report = edaflow.assess_image_quality(
     production_df,
-    image_path_column='file_path',
-    class_column='label',
+    image_column='file_path',
+    label_column='label',
     sample_size=1000,             # Sample for large datasets
     return_detailed_report=True   # Per-image analysis
 )
@@ -1600,8 +1600,8 @@ for rec in features['recommendations']:
 # Focus on specific feature types for different domains
 medical_features = edaflow.analyze_image_features(
     medical_df,
-    image_path_column='scan_path',
-    class_column='diagnosis',
+    image_column='scan_path',
+    label_column='diagnosis',
     analyze_color=False,        # Medical scans often grayscale
     analyze_texture=True,       # Critical for medical diagnosis
     analyze_edges=True,         # Important for structure detection

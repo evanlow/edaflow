@@ -4533,45 +4533,43 @@ def visualize_image_classes(
         Either a directory path containing class-named subfolders of images,
         or a pandas DataFrame with image paths and class labels.
         
-    class_column : str, optional
-        Column name containing class labels (required if data_source is DataFrame).
-        
-    image_path_column : str, optional  
+    image_column : str, optional
         Column name containing image file paths (required if data_source is DataFrame).
         
-    samples_per_class : int, default=5
+    label_column : str, optional
+        Column name containing class labels (required if data_source is DataFrame).
+        
+    samples_per_class : int, default=4
         Number of random samples to display per class.
         
-    grid_layout : str or tuple, default='auto'
-        Grid layout for sample display:
-        - 'auto': Automatically determine optimal layout
-        - 'square': Force square grid layout
-        - (rows, cols): Specify exact grid dimensions
+    max_classes_display : int, default=20
+        Maximum number of classes to display. If dataset has more classes,
+        only the first max_classes_display classes will be shown with a note.
         
-    figsize : tuple, default=(15, 10)
-        Figure size as (width, height) in inches.
+    auto_skip_threshold : int, default=80
+        Threshold for automatically skipping visualization when too many classes
+        would make the display cluttered.
+        
+    max_images_display : int, default=80
+        Maximum total number of images to display across all classes.
+        
+    figsize : tuple, optional
+        Figure size as (width, height) in inches. If None, automatically calculated.
         
     shuffle_samples : bool, default=True
         Whether to randomly shuffle samples within each class.
         
-    show_class_counts : bool, default=True
-        Whether to display class distribution statistics.
-        
-    show_image_info : bool, default=False
+    show_image_info : bool, default=True
         Whether to display technical image information (dimensions, file size).
         
-    title : str, default="Class-wise Image Sample Visualization"
-        Title for the visualization.
+    title : str, optional
+        Title for the visualization. If None, automatically generated.
         
     save_path : str, optional
         Path to save the visualization. If None, plot is only displayed.
         
     return_stats : bool, default=False
         Whether to return detailed statistics about the dataset.
-        
-    image_paths : str, pd.DataFrame, or list, optional
-        **DEPRECATED**: Use 'data_source' parameter instead.
-        This parameter is maintained for backward compatibility only.
         
     Returns
     -------

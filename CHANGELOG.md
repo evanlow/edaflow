@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [0.12.17] - 2025-08-07
+
+### Fixed
+- **CRITICAL DOCUMENTATION FIX**: Corrected parameter names in all documentation
+  - Updated function docstring: `image_path_column` → `image_column`, `class_column` → `label_column`
+  - Fixed quickstart guide: `max_classes` → `max_classes_display` (7 instances)
+  - Fixed README examples: corrected column parameter names (5 instances)
+  - Fixed index page: `max_classes` → `max_classes_display`
+  - This resolves TypeError when users follow documentation examples
+
 ## [0.12.16] - 2025-08-07
 
 ### Fixed

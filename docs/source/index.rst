@@ -64,7 +64,7 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
    edaflow.visualize_image_classes(
        data_source='dataset/images/',  # Simple directory path
        samples_per_class=4,
-       max_classes=8
+       max_classes_display=8
    )
    edaflow.assess_image_quality(
        image_paths=image_list,         # List of image paths
