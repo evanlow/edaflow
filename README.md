@@ -3,14 +3,49 @@
 [![Documentation Status](https://readthedocs.org/projects/edaflow/badge/?version=latest)](https://edaflow.readthedocs.io/en/latest/?badge=latest)
 [![PyPI version](https://badge.fury.io/py/edaflow.svg)](https://badge.fury.io/py/edaflow)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Downloads](https://pepy.tech/badge/edaflow)](https://pepy.tech/project/edaflow)
+
+**Quick Navigation**: 
+📚 [Documentation](https://edaflow.readthedocs.io) | 
+📦 [PyPI Package](https://pypi.org/project/edaflow/) | 
+🚀 [Quick Start](https://edaflow.readthedocs.io/en/latest/quickstart.html) | 
+📋 [Changelog](#-changelog) | 
+🐛 [Issues](https://github.com/evanlow/edaflow/issues)
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.16** - [Latest Release](https://pypi.org/project/edaflow/0.12.16/) includes improved visualization layout spacing that prevents row overlaps in multi-row displays, ensuring clean separation between class names and images for professional scientific visualizations. *Updated: August 7, 2025*
+> **📦 Current Version: v0.12.21** - [Latest Release](https://pypi.org/project/edaflow/0.12.21/) includes comprehensive rich styling enhancements with vibrant, professional output for all major EDA functions, plus critical documentation fixes for parameter name mismatches. *Updated: August 8, 2025*
+
+## 📖 Table of Contents
+
+- [Description](#description)
+- [✨ What's New](#-whats-new-in-v01221)
+- [Features](#features)
+- [🆕 Recent Updates](#-recent-updates)
+- [📚 Documentation](#-documentation)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [📋 Changelog](#-changelog)
+- [Support](#support)
+- [Roadmap](#roadmap)
 
 ## Description
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
+
+## ✨ What's New in v0.12.21
+
+### 🔧 Critical Documentation Fixes
+- **Fixed Parameter Names**: Resolved all parameter name mismatches in documentation examples
+- **TypeError Resolution**: Sample code from documentation now works correctly
+- **API Consistency**: All examples match actual function signatures
+
+### 🌈 Rich Styling (v0.12.20)
+- **Vibrant Output**: ALL major EDA functions now feature professional, color-coded styling
+- **Smart Indicators**: Color-coded severity levels (✅ CLEAN, ⚠️ WARNING, 🚨 CRITICAL)
+- **Professional Tables**: Beautiful formatted output with rich library integration
+- **Actionable Insights**: Context-aware recommendations and visual status indicators
 
 ## Features
 
@@ -53,7 +88,26 @@ A Python package for streamlined exploratory data analysis workflows.
 
 ## 🆕 Recent Updates
 
-### v0.12.16 (Latest) - Layout Spacing Improvements
+### v0.12.21 (Latest) - Documentation Parameter Fixes
+- **🔧 CRITICAL FIXES**: Resolved parameter name mismatches in `visualize_scatter_matrix` documentation
+- **FIXED**: `regression_line` → `regression_type` parameter name in all examples
+- **FIXED**: `diagonal_type` → `diagonal` parameter name corrections
+- **FIXED**: `upper_triangle`/`lower_triangle` → `upper`/`lower` parameter names
+- **FIXED**: `color_column` → `color_by` parameter name corrections
+- **RESOLVED**: TypeError when using sample code from official documentation
+
+### v0.12.20 - Comprehensive Rich Styling
+- **🌈 VIBRANT OUTPUT**: ALL major EDA functions now feature rich, professional styling
+- **ENHANCED**: `check_null_columns` with color-coded severity levels (✅ CLEAN, ⚠️ MINOR, 🚨 WARNING, 💀 CRITICAL)
+- **ENHANCED**: `display_column_types` with side-by-side rich tables and memory usage analysis
+- **ENHANCED**: `impute_numerical_median` with professional imputation reporting and smart value formatting
+- **COMPREHENSIVE**: Professional tables, color-coded indicators, and actionable insights across all functions
+
+### v0.12.16 - Layout Spacing Improvements
+- **🎨 ROW OVERLAP FIX**: Eliminated overlapping rows in visualization layouts for cleaner displays
+- **🔬 SCIENTIFIC NAME OPTIMIZATION**: Enhanced spacing specifically for long taxonomic/scientific class names
+- **📐 PROFESSIONAL SPACING**: Improved hspace values and font sizing for publication-ready visualizations
+- **✅ SCALABLE DESIGN**: Better layouts from small (5 classes) to large datasets (100+ classes)
 - **🎨 ROW OVERLAP FIX**: Eliminated overlapping rows in visualization layouts for cleaner displays
 - **🔬 SCIENTIFIC NAME OPTIMIZATION**: Enhanced spacing specifically for long taxonomic/scientific class names
 - **� PROFESSIONAL SPACING**: Improved hspace values and font sizing for publication-ready visualizations
@@ -1938,6 +1992,57 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - `check_null_columns()` function for missing data analysis
 - Core dependencies setup
 - Documentation framework
+
+## 📋 Changelog
+
+### [0.12.21] - 2025-08-08 (Current)
+#### Fixed
+- **🔧 DOCUMENTATION PARAMETER FIXES**: Corrected parameter name mismatches in `visualize_scatter_matrix` documentation
+- **FIXED**: Changed `regression_line` → `regression_type` in README.md and quickstart.rst examples
+- **FIXED**: Changed `diagonal_type` → `diagonal` in documentation examples
+- **FIXED**: Changed `upper_triangle`/`lower_triangle` → `upper`/`lower` parameter names
+- **FIXED**: Changed `color_column` → `color_by` in documentation examples
+- **RESOLVED**: TypeError when using sample code from documentation
+
+### [0.12.20] - 2025-08-08
+#### Enhanced 
+- **🌈 COMPREHENSIVE RICH STYLING**: Enhanced ALL major EDA functions with vibrant, professional output
+- **ENHANCED MISSING DATA ANALYSIS**: `check_null_columns` with rich tables and color-coded severity levels
+- **ADVANCED COLUMN CLASSIFICATION**: `display_column_types` with side-by-side rich tables and memory analysis
+- **PROFESSIONAL IMPUTATION**: `impute_numerical_median` with smart formatting and completion rates
+- **COMPREHENSIVE ENHANCEMENT**: Professional tables, color-coded indicators, and actionable insights
+
+### [0.12.19] - 2025-08-08
+#### Enhanced
+- **🎨 RICH STYLING EXPANSION**: Enhanced `analyze_categorical_columns` and `convert_to_numeric` with professional output
+- **RICH TABLES**: Beautiful formatted tables with borders, colors, and professional styling
+- **SMART RECOMMENDATIONS**: Context-aware suggestions based on data characteristics
+- **VISUAL INDICATORS**: Emoji-based status indicators and color-coded warnings
+
+### [0.12.18] - 2025-08-08
+#### Enhanced
+- **🎨 RICH STYLING**: Enhanced `check_null_columns` with rich library formatting and color-coded output
+- **PROFESSIONAL TABLES**: Beautiful table formatting with borders and styling
+- **SMART INDICATORS**: Color-coded severity levels and visual status indicators
+
+### [0.12.17] - 2025-08-08
+#### Fixed
+- **DOCUMENTATION**: Fixed parameter name mismatches in function examples
+- **API CONSISTENCY**: Ensured documentation matches actual function signatures
+
+### [0.12.16] - 2025-08-07
+#### Enhanced
+- **🎨 LAYOUT SPACING**: Eliminated overlapping rows in visualization layouts
+- **SCIENTIFIC NAMES**: Enhanced spacing for long taxonomic/class names
+- **PROFESSIONAL SPACING**: Improved hspace values for publication-ready visualizations
+
+### [0.12.15] - 2025-08-07
+#### Enhanced
+- **📋 TRANSPARENCY**: Informative remarks when displaying subset of classes
+- **SMART GUIDANCE**: Clear context about total dataset scope
+- **ENHANCED UX**: Users understand curated vs complete class sets
+
+> 📖 **Full Changelog**: For complete version history and detailed changes, see [CHANGELOG.md](https://github.com/evanlow/edaflow/blob/main/CHANGELOG.md)
 
 ## Support
 
