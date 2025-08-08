@@ -132,7 +132,7 @@ def analyze_categorical_columns(df: pd.DataFrame,
                                              as potentially numeric. Defaults to 35.
     
     Returns:
-        None: Prints analysis results directly to console with color coding
+        None: Prints analysis results directly to console with rich color coding
     
     Example:
         >>> import pandas as pd
@@ -144,53 +144,214 @@ def analyze_categorical_columns(df: pd.DataFrame,
         ...     'numbers': [1, 2, 3]
         ... })
         >>> edaflow.analyze_categorical_columns(df, threshold=35)
-        # Output with color coding:
-        # age_str is potentially a numeric column that needs conversion
-        # age_str has ['25' '30' '35'] values
-        # mixed has too many non-numeric values (33.33% non-numeric)
-        # numbers is not an object column
+        # Output with rich color coding and tables
         
         # Alternative import style:
         >>> from edaflow.analysis import analyze_categorical_columns
     """
-    print("Analyzing categorical columns of object type...")
-    print("=" * 50)
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+        from rich import box
+        from rich.columns import Columns
+        
+        console = Console()
+        use_rich = True
+    except ImportError:
+        # Fallback to basic output if rich is not available
+        console = None
+        use_rich = False
     
-    for col in df.columns:
-        if df[col].dtype == 'object':
-            # Try to convert to numeric and check how many fail
-            numeric_col = pd.to_numeric(df[col], errors='coerce')
-            non_numeric_pct = (numeric_col.isnull().sum() / len(numeric_col)) * 100
-            
-            if non_numeric_pct < threshold:
-                # Potential numeric column - highlight in red with blue background
-                print('\x1b[1;31;44m{} is potentially a numeric column that needs conversion\x1b[m'.format(col))
-                print('\x1b[1;30;43m{} has {} unique values: {}\x1b[m'.format(
-                    col, df[col].nunique(), df[col].unique()[:10]  # Show first 10 unique values
-                ))
-            else:
-                # Truly categorical column
+    if use_rich:
+        # Rich-styled output
+        console.print()
+        console.print("🔍 CATEGORICAL DATA ANALYSIS", 
+                     style="bold white on blue", justify="center")
+        console.print("─" * 50, style="bright_blue")
+        console.print()
+        
+        # Create analysis results
+        object_columns = []
+        numeric_potential = []
+        truly_categorical = []
+        non_object_columns = []
+        
+        # Analyze each column
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                object_columns.append(col)
+                
+                # Try to convert to numeric and check how many fail
+                numeric_col = pd.to_numeric(df[col], errors='coerce')
+                non_numeric_pct = (numeric_col.isnull().sum() / len(numeric_col)) * 100
                 unique_count = df[col].nunique()
                 total_count = len(df[col])
-                print('{} has too many non-numeric values ({}% non-numeric)'.format(
-                    col, round(non_numeric_pct, 2)
-                ))
-                print('  └─ {} unique values out of {} total ({} unique values shown): {}'.format(
-                    unique_count, total_count, min(10, unique_count), 
-                    df[col].unique()[:10]  # Show first 10 unique values
-                ))
-        else:
-            print('{} is not an object column (dtype: {})'.format(col, df[col].dtype))
-    
-    print("=" * 50)
-    print("Analysis complete!")
+                unique_values = df[col].unique()[:5]  # Show first 5 unique values
+                
+                if non_numeric_pct < threshold:
+                    numeric_potential.append({
+                        'column': col,
+                        'non_numeric_pct': non_numeric_pct,
+                        'unique_count': unique_count,
+                        'unique_values': unique_values
+                    })
+                else:
+                    truly_categorical.append({
+                        'column': col,
+                        'non_numeric_pct': non_numeric_pct,
+                        'unique_count': unique_count,
+                        'total_count': total_count,
+                        'unique_values': unique_values
+                    })
+            else:
+                non_object_columns.append({
+                    'column': col,
+                    'dtype': str(df[col].dtype)
+                })
+        
+        # Display potentially numeric columns
+        if numeric_potential:
+            console.print("🚨 POTENTIALLY NUMERIC COLUMNS", style="bold red on yellow")
+            
+            numeric_table = Table(show_header=True, header_style="bold red", 
+                                box=box.ROUNDED, border_style="red")
+            numeric_table.add_column("⚠️ Column", style="bold red", no_wrap=True)
+            numeric_table.add_column("Non-Numeric %", justify="right", style="bold yellow")
+            numeric_table.add_column("Unique Values", justify="right", style="cyan")
+            numeric_table.add_column("Sample Values", style="dim white")
+            
+            for item in numeric_potential:
+                sample_text = str(list(item['unique_values']))[1:-1]  # Remove brackets
+                if len(sample_text) > 50:
+                    sample_text = sample_text[:47] + "..."
+                    
+                numeric_table.add_row(
+                    item['column'],
+                    f"{item['non_numeric_pct']:.1f}%",
+                    f"{item['unique_count']:,}",
+                    sample_text
+                )
+            
+            console.print(numeric_table)
+            console.print("💡 [bold cyan]Recommendation:[/bold cyan] Consider using convert_to_numeric() to convert these columns")
+            console.print()
+        
+        # Display truly categorical columns
+        if truly_categorical:
+            console.print("📊 CATEGORICAL COLUMNS", style="bold green on black")
+            
+            cat_table = Table(show_header=True, header_style="bold green",
+                            box=box.ROUNDED, border_style="green")
+            cat_table.add_column("✅ Column", style="bold green", no_wrap=True)
+            cat_table.add_column("Non-Numeric %", justify="right", style="yellow")
+            cat_table.add_column("Unique/Total", justify="right", style="cyan")
+            cat_table.add_column("Cardinality", justify="center", style="bold")
+            cat_table.add_column("Sample Values", style="dim white")
+            
+            for item in truly_categorical:
+                # Determine cardinality status
+                cardinality_ratio = item['unique_count'] / item['total_count']
+                if cardinality_ratio > 0.8:
+                    cardinality = Text("🆔 HIGH", style="bold red")
+                elif cardinality_ratio > 0.5:
+                    cardinality = Text("📈 MED", style="bold orange3")
+                elif item['unique_count'] > 50:
+                    cardinality = Text("⚠️ MANY", style="bold yellow")
+                else:
+                    cardinality = Text("✅ GOOD", style="bold green")
+                
+                sample_text = str(list(item['unique_values']))[1:-1]  # Remove brackets
+                if len(sample_text) > 40:
+                    sample_text = sample_text[:37] + "..."
+                
+                cat_table.add_row(
+                    item['column'],
+                    f"{item['non_numeric_pct']:.1f}%",
+                    f"{item['unique_count']:,}/{item['total_count']:,}",
+                    cardinality,
+                    sample_text
+                )
+            
+            console.print(cat_table)
+            console.print()
+        
+        # Display non-object columns  
+        if non_object_columns:
+            console.print("🔢 NON-OBJECT COLUMNS", style="bold blue on black")
+            
+            non_obj_table = Table(show_header=True, header_style="bold blue",
+                                box=box.SIMPLE, border_style="blue")
+            non_obj_table.add_column("Column", style="bold blue")
+            non_obj_table.add_column("Data Type", style="cyan")
+            
+            for item in non_object_columns:
+                non_obj_table.add_row(item['column'], item['dtype'])
+            
+            console.print(non_obj_table)
+            console.print()
+        
+        # Summary panel
+        summary_content = f"""
+[bold cyan]📈 Analysis Summary:[/bold cyan]
+• Total Columns: {len(df.columns)}
+• Object Columns: {len(object_columns)}
+• Potentially Numeric: {len(numeric_potential)} [red](need conversion)[/red]
+• True Categorical: {len(truly_categorical)} [green](properly typed)[/green]
+• Non-Object: {len(non_object_columns)} [blue](numeric/other types)[/blue]
+        """
+        
+        console.print(Panel(
+            summary_content.strip(),
+            title="📊 Column Type Analysis",
+            border_style="bright_magenta",
+            box=box.DOUBLE
+        ))
+        
+        console.print("✨ [bold green]Analysis complete![/bold green]")
+        console.print("─" * 50, style="bright_blue")
+        
+    else:
+        # Fallback to original basic output if rich is not available
+        print("Analyzing categorical columns of object type...")
+        print("=" * 50)
+        
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                # Try to convert to numeric and check how many fail
+                numeric_col = pd.to_numeric(df[col], errors='coerce')
+                non_numeric_pct = (numeric_col.isnull().sum() / len(numeric_col)) * 100
+                
+                if non_numeric_pct < threshold:
+                    # Potential numeric column - highlight in red with blue background
+                    print('\x1b[1;31;44m{} is potentially a numeric column that needs conversion\x1b[m'.format(col))
+                    print('\x1b[1;30;43m{} has {} unique values: {}\x1b[m'.format(
+                        col, df[col].nunique(), df[col].unique()[:10]  # Show first 10 unique values
+                    ))
+                else:
+                    # Truly categorical column
+                    unique_count = df[col].nunique()
+                    total_count = len(df[col])
+                    print('{} has too many non-numeric values ({}% non-numeric)'.format(
+                        col, round(non_numeric_pct, 2)
+                    ))
+                    print('  └─ {} unique values out of {} total ({} unique values shown): {}'.format(
+                        unique_count, total_count, min(10, unique_count), 
+                        df[col].unique()[:10]  # Show first 10 unique values
+                    ))
+            else:
+                print('{} is not an object column (dtype: {})'.format(col, df[col].dtype))
+        
+        print("=" * 50)
+        print("Analysis complete!")
 
 
 def convert_to_numeric(df: pd.DataFrame, 
                       threshold: Optional[float] = 35,
                       inplace: bool = False) -> pd.DataFrame:
     """
-    Convert object columns to numeric when appropriate based on data analysis.
+    Convert object columns to numeric when appropriate based on data analysis with rich formatting.
     
     This function examines object-type columns and converts them to numeric
     if the percentage of non-numeric values is below the specified threshold.
@@ -238,16 +399,48 @@ def convert_to_numeric(df: pd.DataFrame,
         - Use a lower threshold to be more strict about conversions
         - Use a higher threshold to be more lenient about mixed data
     """
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+        from rich import box
+        from rich.progress import Progress, SpinnerColumn, TextColumn
+        
+        console = Console()
+        rich_available = True
+    except ImportError:
+        rich_available = False
+        console = None
+    
     # Create a copy if not modifying inplace
     if not inplace:
         df_result = df.copy()
     else:
         df_result = df
     
-    print("Converting object columns to numeric where appropriate...")
-    print("=" * 60)
+    if rich_available:
+        # Rich formatted output
+        console.print("\n" + "="*60, style="bold cyan")
+        console.print("🔄 AUTOMATIC DATA TYPE CONVERSION", style="bold white on blue", justify="center")
+        console.print("="*60, style="bold cyan")
+        console.print(f"📊 Analyzing {len(df_result.columns)} columns with threshold: {threshold}%", style="bold yellow")
+    else:
+        # Fallback to plain output
+        print("\nConverting object columns to numeric where appropriate...")
+        print("=" * 60)
     
     conversions_made = []
+    skipped_already_numeric = []
+    skipped_too_many_non_numeric = []
+    
+    # Create rich table for results
+    if rich_available:
+        results_table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+        results_table.add_column("Column", style="bold white", no_wrap=True)
+        results_table.add_column("Action", justify="center")
+        results_table.add_column("Details", style="dim white")
+        results_table.add_column("Status", justify="center")
     
     for col in df_result.columns:
         if df_result[col].dtype == 'object':
@@ -262,35 +455,111 @@ def convert_to_numeric(df: pd.DataFrame,
                 new_nulls = df_result[col].isnull().sum()
                 values_converted_to_nan = new_nulls - original_nulls
                 
-                # Colored output for successful conversion
-                print('\x1b[1;31;44mConverting {} to a numerical column\x1b[m'.format(col))
-                print('  └─ {}% of values were non-numeric ({} values converted to NaN)'.format(
-                    round(non_numeric_pct, 2), values_converted_to_nan
-                ))
-                
                 conversions_made.append({
                     'column': col,
                     'non_numeric_pct': round(non_numeric_pct, 2),
-                    'values_converted_to_nan': values_converted_to_nan
+                    'values_converted_to_nan': values_converted_to_nan,
+                    'new_dtype': df_result[col].dtype
                 })
+                
+                if rich_available:
+                    status = Text("✅ CONVERTED", style="bold green")
+                    action = Text("🔄 Object → Numeric", style="bold cyan")
+                    details = f"{non_numeric_pct:.1f}% non-numeric ({values_converted_to_nan} → NaN)"
+                    results_table.add_row(col, action, details, status)
+                else:
+                    print('\x1b[1;31;44mConverting {} to a numerical column\x1b[m'.format(col))
+                    print('  └─ {}% of values were non-numeric ({} values converted to NaN)'.format(
+                        round(non_numeric_pct, 2), values_converted_to_nan
+                    ))
             else:
                 # Skip conversion - too many non-numeric values
-                print('{} skipped: {}% non-numeric values (threshold: {}%)'.format(
-                    col, round(non_numeric_pct, 2), threshold
-                ))
+                skipped_too_many_non_numeric.append({
+                    'column': col,
+                    'non_numeric_pct': round(non_numeric_pct, 2)
+                })
+                
+                if rich_available:
+                    status = Text("⚠️ SKIPPED", style="bold yellow")
+                    action = Text("🚫 No Conversion", style="dim yellow")
+                    details = f"{non_numeric_pct:.1f}% non-numeric (threshold: {threshold}%)"
+                    results_table.add_row(col, action, details, status)
+                else:
+                    print('{} skipped: {}% non-numeric values (threshold: {}%)'.format(
+                        col, round(non_numeric_pct, 2), threshold
+                    ))
         else:
-            print('{} skipped: already numeric (dtype: {})'.format(col, df_result[col].dtype))
+            # Already numeric
+            skipped_already_numeric.append({
+                'column': col,
+                'dtype': str(df_result[col].dtype)
+            })
+            
+            if rich_available:
+                status = Text("✅ GOOD", style="bold green")
+                action = Text("📊 Already Numeric", style="dim green")
+                details = f"dtype: {df_result[col].dtype}"
+                results_table.add_row(col, action, details, status)
+            else:
+                print('{} skipped: already numeric (dtype: {})'.format(col, df_result[col].dtype))
     
-    print("=" * 60)
-    
-    if conversions_made:
-        print(f"✅ Successfully converted {len(conversions_made)} columns to numeric:")
-        for conversion in conversions_made:
-            print(f"   • {conversion['column']}: {conversion['non_numeric_pct']}% non-numeric")
+    if rich_available:
+        console.print(results_table)
+        
+        # Summary statistics with rich formatting
+        summary_text = f"""
+📈 Total Columns Processed: {len(df_result.columns)}
+✅ Successfully Converted: {len(conversions_made)}
+📊 Already Numeric: {len(skipped_already_numeric)}
+⚠️  Skipped (Above Threshold): {len(skipped_too_many_non_numeric)}
+🎯 Conversion Threshold: {threshold}%
+        """
+        
+        if conversions_made:
+            console.print(Panel(
+                summary_text.strip(),
+                title="🎉 Conversion Summary",
+                style="bold green",
+                box=box.DOUBLE_EDGE
+            ))
+            
+            # Show conversion details
+            console.print("\n🔄 Conversion Details:", style="bold cyan")
+            conversion_detail_table = Table(show_header=True, header_style="bold green", box=box.SIMPLE)
+            conversion_detail_table.add_column("Column", style="bold white")
+            conversion_detail_table.add_column("New Data Type", style="bold cyan")
+            conversion_detail_table.add_column("Non-Numeric %", justify="right", style="yellow")
+            conversion_detail_table.add_column("Values → NaN", justify="right", style="red")
+            
+            for conversion in conversions_made:
+                conversion_detail_table.add_row(
+                    conversion['column'],
+                    str(conversion['new_dtype']),
+                    f"{conversion['non_numeric_pct']}%",
+                    str(conversion['values_converted_to_nan'])
+                )
+            
+            console.print(conversion_detail_table)
+        else:
+            console.print(Panel(
+                summary_text.strip(),
+                title="ℹ️ No Conversions Made",
+                style="bold blue",
+                box=box.ROUNDED
+            ))
+        
+        console.print("✨ Data type conversion complete!", style="bold green")
+        console.print("="*60, style="bold cyan")
     else:
-        print("ℹ️  No columns were converted (all were either already numeric or above threshold)")
-    
-    print("Conversion complete!")
+        # Fallback plain output
+        print("=" * 60)
+        if conversions_made:
+            print(f"✅ Successfully converted {len(conversions_made)} columns to numeric:")
+            for conversion in conversions_made:
+                print(f"   • {conversion['column']}: {conversion['non_numeric_pct']}% non-numeric")
+        else:
+            print("ℹ️  No columns were converted (all were either already numeric or above threshold)")
+        print("Conversion complete!")
     
     # Return the result DataFrame if not inplace, otherwise return None
     return None if inplace else df_result

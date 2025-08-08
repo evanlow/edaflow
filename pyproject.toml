@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "edaflow"
-version = "0.12.17"
+version = "0.12.19"
 description = "A Python package for exploratory data analysis workflows"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "MIT"
@@ -41,6 +41,7 @@ dependencies = [
     "scikit-learn>=1.0.0",
     "statsmodels>=0.13.0",
     "Pillow>=8.0.0",
+    "rich>=13.0.0",
 ]
 
 [project.optional-dependencies]

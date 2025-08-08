@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.19] - 2025-08-08
+
+### Enhanced
+- **VIBRANT CATEGORICAL ANALYSIS**: Completely redesigned `analyze_categorical_columns` output with rich styling
+  - Professional tables with color-coded status indicators (✅ GOOD, ⚠️ MANY, 🚨 HIGH cardinality)  
+  - Visual separation between potentially numeric vs truly categorical columns
+  - Smart cardinality warnings with recommendations
+  - Beautiful summary panels with emoji icons and statistics
+- **COLORFUL DATA TYPE CONVERSION**: Enhanced `convert_to_numeric` with rich, dynamic output
+  - Professional conversion tables showing before/after status for each column
+  - Color-coded actions: ✅ CONVERTED, ⚠️ SKIPPED, 📊 ALREADY NUMERIC
+  - Detailed summary panels with conversion statistics and threshold information
+  - Visual progress indicators and conversion details table
+  - Maintains backward compatibility with fallback to plain output if rich is unavailable
+  - Graceful fallback to basic styling if rich library unavailable
+
+### Dependencies
+- **NEW**: Added `rich>=13.0.0` dependency for enhanced terminal output formatting
+
 ## [Unreleased]
 
 ### Added
