@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.22** - [Latest Release](https://pypi.org/project/edaflow/0.12.22/) includes critical Google Colab compatibility fixes for ML encoding functions, plus clean workflow documentation with rich styling enhancements. *Updated: August 8, 2025*
+> **📦 Current Version: v0.12.27** - [Latest Release](https://pypi.org/project/edaflow/0.12.27/) includes comprehensive display formatting improvements across all core functions, ensuring clean and professional output with proper table border joining. *Updated: August 9, 2025*
 
 ## 📖 Table of Contents
 
@@ -34,17 +34,18 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.12.22
+## ✨ What's New in v0.12.27
 
-### 🔧 Google Colab Compatibility
-- **Fixed KeyError**: Resolved issues with `apply_smart_encoding` in Google Colab environments
-- **Flexible Column Handling**: Documentation examples now adapt to any dataset structure
-- **Universal Compatibility**: Works seamlessly across Jupyter, Colab, and all Python environments
+### 🎨 Display Formatting Excellence
+- **Professional Output**: Comprehensive display formatting improvements across all core functions
+- **Clean Borders**: All tables now use proper border joining with SIMPLE box style
+- **No Visual Clutter**: Removed unnecessary separator lines from headers and footers
+- **Consistent Styling**: Unified professional appearance across `check_null_columns`, `analyze_categorical_columns`, `convert_to_numeric`, `display_column_types`, and `impute_numerical_median`
 
-### 📚 Clean Workflow Enhancement
-- **Modern Documentation**: Removed redundant print statements from examples
-- **Rich Styling Focus**: Examples showcase professional, color-coded output capabilities
-- **Professional Appearance**: Clean code that users actually want to copy and use
+### � Recent Fixes (v0.12.24-0.12.26)
+- **LBP Warning Resolution**: Fixed scikit-image UserWarning in texture analysis functions
+- **Parameter Documentation**: Corrected `analyze_image_features` documentation mismatches
+- **RTD Synchronization**: Updated Read the Docs changelog with all recent improvements
 
 ### 🌈 Rich Styling (v0.12.20-0.12.21)
 - **Vibrant Output**: ALL major EDA functions now feature professional, color-coded styling

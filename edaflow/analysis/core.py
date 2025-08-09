@@ -111,13 +111,12 @@ def check_null_columns(df: pd.DataFrame,
     
     if use_rich:
         # Rich formatted output
-        console.print("\n" + "="*60, style="bold cyan")
+        console.print()  # Add simple spacing
         console.print("🔍 MISSING DATA ANALYSIS", style="bold white on blue", justify="center")
-        console.print("="*60, style="bold cyan")
         console.print(f"📊 Analyzing {len(df.columns)} columns with threshold: {threshold}%", style="bold yellow")
         
-        # Create rich table for null analysis
-        null_table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+        # Create rich table for null analysis with better box style
+        null_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
         null_table.add_column("Column", style="bold white", no_wrap=True)
         null_table.add_column("Null Count", justify="right", style="cyan")
         null_table.add_column("Null %", justify="right", style="yellow")
@@ -219,7 +218,6 @@ def check_null_columns(df: pd.DataFrame,
         ))
         
         console.print("✨ Missing data analysis complete!", style="bold green")
-        console.print("="*60, style="bold cyan")
 
     def style_nulls(val):
         """Apply color styling based on null percentage."""
@@ -294,7 +292,6 @@ def analyze_categorical_columns(df: pd.DataFrame,
         console.print()
         console.print("🔍 CATEGORICAL DATA ANALYSIS", 
                      style="bold white on blue", justify="center")
-        console.print("─" * 50, style="bright_blue")
         console.print()
         
         # Create analysis results
@@ -341,7 +338,7 @@ def analyze_categorical_columns(df: pd.DataFrame,
             console.print("🚨 POTENTIALLY NUMERIC COLUMNS", style="bold red on yellow")
             
             numeric_table = Table(show_header=True, header_style="bold red", 
-                                box=box.ROUNDED, border_style="red")
+                                box=box.SIMPLE, border_style="red")
             numeric_table.add_column("⚠️ Column", style="bold red", no_wrap=True)
             numeric_table.add_column("Non-Numeric %", justify="right", style="bold yellow")
             numeric_table.add_column("Unique Values", justify="right", style="cyan")
@@ -365,10 +362,10 @@ def analyze_categorical_columns(df: pd.DataFrame,
         
         # Display truly categorical columns
         if truly_categorical:
-            console.print("📊 CATEGORICAL COLUMNS", style="bold green on black")
+            console.print("📊 CATEGORICAL COLUMNS", style="bold green")
             
             cat_table = Table(show_header=True, header_style="bold green",
-                            box=box.ROUNDED, border_style="green")
+                            box=box.SIMPLE, border_style="green")
             cat_table.add_column("✅ Column", style="bold green", no_wrap=True)
             cat_table.add_column("Non-Numeric %", justify="right", style="yellow")
             cat_table.add_column("Unique/Total", justify="right", style="cyan")
@@ -404,7 +401,7 @@ def analyze_categorical_columns(df: pd.DataFrame,
         
         # Display non-object columns  
         if non_object_columns:
-            console.print("🔢 NON-OBJECT COLUMNS", style="bold blue on black")
+            console.print("🔢 NON-OBJECT COLUMNS", style="bold blue")
             
             non_obj_table = Table(show_header=True, header_style="bold blue",
                                 box=box.SIMPLE, border_style="blue")
@@ -431,11 +428,10 @@ def analyze_categorical_columns(df: pd.DataFrame,
             summary_content.strip(),
             title="📊 Column Type Analysis",
             border_style="bright_magenta",
-            box=box.DOUBLE
+            box=box.SIMPLE
         ))
         
         console.print("✨ [bold green]Analysis complete![/bold green]")
-        console.print("─" * 50, style="bright_blue")
         
     else:
         # Fallback to original basic output if rich is not available
@@ -546,9 +542,8 @@ def convert_to_numeric(df: pd.DataFrame,
     
     if rich_available:
         # Rich formatted output
-        console.print("\n" + "="*60, style="bold cyan")
+        console.print()
         console.print("🔄 AUTOMATIC DATA TYPE CONVERSION", style="bold white on blue", justify="center")
-        console.print("="*60, style="bold cyan")
         console.print(f"📊 Analyzing {len(df_result.columns)} columns with threshold: {threshold}%", style="bold yellow")
     else:
         # Fallback to plain output
@@ -561,7 +556,7 @@ def convert_to_numeric(df: pd.DataFrame,
     
     # Create rich table for results
     if rich_available:
-        results_table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+        results_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
         results_table.add_column("Column", style="bold white", no_wrap=True)
         results_table.add_column("Action", justify="center")
         results_table.add_column("Details", style="dim white")
@@ -670,11 +665,10 @@ def convert_to_numeric(df: pd.DataFrame,
                 summary_text.strip(),
                 title="ℹ️ No Conversions Made",
                 style="bold blue",
-                box=box.ROUNDED
+                box=box.SIMPLE
             ))
         
         console.print("✨ Data type conversion complete!", style="bold green")
-        console.print("="*60, style="bold cyan")
     else:
         # Fallback plain output
         print("=" * 60)
@@ -896,7 +890,7 @@ def display_column_types(df):
             console.print(Panel("⚠️ DataFrame is empty!", 
                               title="Empty DataFrame", 
                               style="bold yellow", 
-                              box=box.ROUNDED))
+                              box=box.SIMPLE))
         else:
             print("⚠️  DataFrame is empty!")
         return {'categorical': [], 'numerical': []}
@@ -907,13 +901,12 @@ def display_column_types(df):
     
     if use_rich:
         # Rich formatted output
-        console.print("\n" + "="*60, style="bold cyan")
+        console.print()
         console.print("📊 COLUMN TYPE CLASSIFICATION", style="bold white on blue", justify="center")
-        console.print("="*60, style="bold cyan")
         
         # Create side-by-side tables
         cat_table = Table(show_header=True, header_style="bold green", 
-                         title="📝 CATEGORICAL COLUMNS", box=box.ROUNDED,
+                         title="📝 CATEGORICAL COLUMNS", box=box.SIMPLE,
                          border_style="green")
         cat_table.add_column("#", style="dim", width=3)
         cat_table.add_column("Column Name", style="bold green")
@@ -922,7 +915,7 @@ def display_column_types(df):
         cat_table.add_column("Memory Usage", style="magenta", justify="right")
         
         num_table = Table(show_header=True, header_style="bold blue",
-                         title="🔢 NUMERICAL COLUMNS", box=box.ROUNDED,
+                         title="🔢 NUMERICAL COLUMNS", box=box.SIMPLE,
                          border_style="blue")
         num_table.add_column("#", style="dim", width=3)
         num_table.add_column("Column Name", style="bold blue")
@@ -1071,11 +1064,10 @@ def display_column_types(df):
             summary_content.strip(),
             title="📊 Column Analysis Summary",
             style="bold green",
-            box=box.DOUBLE_EDGE
+            box=box.SIMPLE
         ))
         
         console.print("✨ Column type analysis complete!", style="bold green")
-        console.print("="*60, style="bold cyan")
         
     else:
         # Fallback to basic output
@@ -1180,7 +1172,7 @@ def impute_numerical_median(df, columns=None, inplace=False):
             console.print(Panel("⚠️ DataFrame is empty. Nothing to impute.", 
                               title="Empty DataFrame", 
                               style="bold yellow", 
-                              box=box.ROUNDED))
+                              box=box.SIMPLE))
         else:
             print("⚠️  DataFrame is empty. Nothing to impute.")
         return df.copy() if not inplace else None
@@ -1197,7 +1189,7 @@ def impute_numerical_median(df, columns=None, inplace=False):
                 console.print(Panel("⚠️ No numerical columns found in DataFrame.", 
                                   title="No Numeric Columns", 
                                   style="bold yellow",
-                                  box=box.ROUNDED))
+                                  box=box.SIMPLE))
             else:
                 print("⚠️  No numerical columns found in DataFrame.")
             return result_df if not inplace else None
@@ -1220,13 +1212,12 @@ def impute_numerical_median(df, columns=None, inplace=False):
     
     if use_rich:
         # Rich formatted output
-        console.print("\n" + "="*60, style="bold cyan")
+        console.print()
         console.print("🔢 NUMERICAL IMPUTATION (MEDIAN)", style="bold white on blue", justify="center")
-        console.print("="*60, style="bold cyan")
         console.print(f"📊 Processing {len(numerical_cols)} numerical columns", style="bold yellow")
         
         # Create imputation table
-        imputation_table = Table(show_header=True, header_style="bold magenta", box=box.ROUNDED)
+        imputation_table = Table(show_header=True, header_style="bold magenta", box=box.SIMPLE)
         imputation_table.add_column("Column", style="bold white", no_wrap=True)
         imputation_table.add_column("Missing Count", justify="right", style="red")
         imputation_table.add_column("Median Value", justify="right", style="cyan")
@@ -1298,18 +1289,17 @@ def impute_numerical_median(df, columns=None, inplace=False):
                 success_text.strip(),
                 title="🎉 Imputation Success",
                 style="bold green",
-                box=box.DOUBLE_EDGE
+                box=box.SIMPLE
             ))
         else:
             console.print(Panel(
                 "ℹ️ No imputation was necessary\nAll numerical columns are already complete!",
                 title="ℹ️ No Action Required",
                 style="bold blue",
-                box=box.ROUNDED
+                box=box.SIMPLE
             ))
         
         console.print("✨ Numerical imputation complete!", style="bold green")
-        console.print("="*60, style="bold cyan")
         
     else:
         # Fallback to basic output

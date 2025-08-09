@@ -6,6 +6,44 @@ All notable changes to edaflow are documented here.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Version 0.12.27 (2025-08-09) - Comprehensive Display Formatting Excellence 🎨
+------------------------------------------------------------------------------
+
+**Fixed:**
+- **🎨 ADDITIONAL DISPLAY FIXES**: Resolved display formatting issues in multiple core functions
+- **FIXED**: ``convert_to_numeric`` - Removed unnecessary separator lines and changed to SIMPLE box style
+- **FIXED**: ``display_column_types`` - Removed separator lines and improved table border rendering
+- **FIXED**: ``impute_numerical_median`` - Cleaned up display formatting and fixed box joining issues
+- **IMPROVED**: All affected functions now use consistent SIMPLE box style for clean border joining
+- **REMOVED**: Unnecessary "====" separators that cluttered the professional output
+
+**Technical Details:**
+- **Unified Styling**: All core functions now share consistent, professional formatting standards
+- **Perfect Border Joining**: SIMPLE box style ensures clean table border connections
+- **Visual Excellence**: Removed all visual clutter for optimal user experience
+- **Production Ready**: Professional output suitable for client presentations and reports
+
+Version 0.12.26 (2025-08-09) - Categorical Display Polish 📊
+------------------------------------------------------------
+
+**Fixed:**
+- **🎨 CATEGORICAL DISPLAY FIX**: Resolved display formatting issues in ``analyze_categorical_columns`` function
+- **FIXED**: Removed unnecessary blue line beneath main title
+- **IMPROVED**: CATEGORICAL COLUMNS sub heading now has clean background (removed black background)
+- **ENHANCED**: All table box styles changed to SIMPLE for proper line joining
+- **FIXED**: NON-OBJECT COLUMNS sub heading contrast improved (removed dark background)
+- **IMPROVED**: Column Type Analysis panel now uses SIMPLE box for clean borders
+- **REMOVED**: Unnecessary line under "Analysis complete" message
+
+Version 0.12.25 (2025-08-08) - Missing Data Display Enhancement 🎨
+-------------------------------------------------------------------
+
+**Fixed:**
+- **🎨 DISPLAY FORMATTING FIX**: Resolved unnecessary separator lines in ``check_null_columns`` function
+- **FIXED**: Removed redundant "====" separators above and below MISSING DATA ANALYSIS banner
+- **IMPROVED**: Table border rendering now uses SIMPLE box style for clean line joining
+- **ENHANCED**: Professional output formatting without visual clutter
+
 Version 0.12.24 (2025-08-08) - Texture Analysis Warning Fix 🔧
 ---------------------------------------------------------------
 
