@@ -24,7 +24,7 @@ from .analysis import (
     summarize_eda_insights
 )
 
-__version__ = "0.12.27"
+__version__ = "0.12.28"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 

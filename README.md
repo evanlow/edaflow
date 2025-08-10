@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.27** - [Latest Release](https://pypi.org/project/edaflow/0.12.27/) includes comprehensive display formatting improvements across all core functions, ensuring clean and professional output with proper table border joining. *Updated: August 9, 2025*
+> **📦 Current Version: v0.12.28** - [Latest Release](https://pypi.org/project/edaflow/0.12.28/) includes comprehensive display formatting improvements across all core functions, ensuring clean and professional output with proper table border joining. *Updated: August 11, 2025*
 
 ## 📖 Table of Contents
 
@@ -34,7 +34,7 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.12.27
+## ✨ What's New in v0.12.28
 
 ### ✨ NEW FUNCTION: `summarize_eda_insights()`
 - **Comprehensive Analysis**: Generate complete EDA insights and actionable recommendations after completing your analysis workflow
@@ -69,7 +69,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Categorical Values Visualization**: Detailed exploration of categorical column values with insights
 - **Column Type Classification**: Simple categorization of DataFrame columns into categorical and numerical types
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
-- **EDA Insights Summary**: ⭐ *NEW in v0.12.27* Comprehensive EDA insights and actionable recommendations after completing analysis workflow
+- **EDA Insights Summary**: ⭐ *NEW in v0.12.28* Comprehensive EDA insights and actionable recommendations after completing analysis workflow
 
 ### 📊 **Advanced Visualizations**
 - **Numerical Distribution Visualization**: Advanced boxplot analysis with outlier detection and statistical summaries
@@ -1293,7 +1293,7 @@ edaflow.visualize_scatter_matrix(
 
 Perfect for exploring complex relationships in multivariate datasets and identifying patterns, correlations, and outliers across multiple dimensions.
 
-### EDA Insights Summary with `summarize_eda_insights` (NEW in v0.12.27!)
+### EDA Insights Summary with `summarize_eda_insights` (NEW in v0.12.28!)
 
 After completing your exploratory data analysis workflow, generate comprehensive insights and actionable recommendations with a single function call:
 
