@@ -28,6 +28,11 @@ Outlier Handling
 
 .. autofunction:: handle_outliers_median
 
+EDA Insights & Summary
+----------------------
+
+.. autofunction:: summarize_eda_insights
+
 Helper Functions
 ----------------
 

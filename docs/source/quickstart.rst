@@ -49,7 +49,7 @@ First, install and import edaflow:
 📊 **Complete EDA Workflow**
 ----------------------------
 
-Here's how to perform a complete exploratory data analysis with edaflow's 17 functions (14 for tabular data + 3 for computer vision):
+Here's how to perform a complete exploratory data analysis with edaflow's 18 functions (15 for tabular data + 3 for computer vision):
 
 .. code-block:: python
 
@@ -87,18 +87,32 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
    edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='correlation')
    edaflow.visualize_scatter_matrix(df_fully_imputed, regression_type='linear')
    
-   # Step 9: Outlier Detection and Visualization
+   # Step 9: Generate Comprehensive EDA Insights (NEW in v0.12.27!)
+   insights = edaflow.summarize_eda_insights(
+       df_fully_imputed, 
+       target_column='your_target_column',
+       eda_functions_used=['check_null_columns', 'analyze_categorical_columns', 
+                          'convert_to_numeric', 'visualize_histograms'],
+       class_threshold=0.1
+   )
+   
+   # View structured insights
+   print("Dataset Overview:", insights['dataset_overview'])
+   print("Data Quality Assessment:", insights['data_quality']) 
+   print("Recommendations:", insights['recommendations'])
+   
+   # Step 10: Outlier Detection and Visualization
    edaflow.visualize_numerical_boxplots(df_fully_imputed, show_skewness=True)
    edaflow.visualize_interactive_boxplots(df_fully_imputed)
    
-   # Step 10: Advanced Heatmap Analysis
+   # Step 11: Advanced Heatmap Analysis
    edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='missing')
    edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='values')
    
-   # Step 11: Outlier Handling
+   # Step 12: Outlier Handling
    df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbose=True)
    
-   # Step 12: Smart Encoding for ML (⭐ New in v0.12.0)
+   # Step 13: Smart Encoding for ML (⭐ New in v0.12.0)
    # Analyze optimal encoding strategies
    encoding_analysis = edaflow.analyze_encoding_needs(
        df_final,
@@ -114,7 +128,7 @@ Here's how to perform a complete exploratory data analysis with edaflow's 17 fun
        return_encoders=True              # Keep encoders for test data
    )
    
-   # Step 13: Results Verification
+   # Step 14: Results Verification
    edaflow.visualize_scatter_matrix(df_encoded, title="ML-Ready Encoded Data")
    edaflow.visualize_numerical_boxplots(df_encoded, title="Final Encoded Distribution")
 

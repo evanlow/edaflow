@@ -36,6 +36,13 @@ A Python package for streamlined exploratory data analysis workflows.
 
 ## ✨ What's New in v0.12.27
 
+### ✨ NEW FUNCTION: `summarize_eda_insights()`
+- **Comprehensive Analysis**: Generate complete EDA insights and actionable recommendations after completing your analysis workflow
+- **Smart Recommendations**: Provides intelligent next steps for modeling, preprocessing, and data quality improvements
+- **Target-Aware Analysis**: Supports both classification and regression scenarios with specific insights
+- **Function Tracking**: Knows which edaflow functions you've already used in your workflow
+- **Structured Output**: Returns organized dictionary with dataset overview, data quality assessment, and recommendations
+
 ### 🎨 Display Formatting Excellence
 - **Professional Output**: Comprehensive display formatting improvements across all core functions
 - **Clean Borders**: All tables now use proper border joining with SIMPLE box style
@@ -62,6 +69,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Categorical Values Visualization**: Detailed exploration of categorical column values with insights
 - **Column Type Classification**: Simple categorization of DataFrame columns into categorical and numerical types
 - **Data Type Detection**: Smart analysis to flag potential data conversion needs
+- **EDA Insights Summary**: ⭐ *NEW in v0.12.27* Comprehensive EDA insights and actionable recommendations after completing analysis workflow
 
 ### 📊 **Advanced Visualizations**
 - **Numerical Distribution Visualization**: Advanced boxplot analysis with outlier detection and statistical summaries
@@ -218,7 +226,11 @@ edaflow.visualize_histograms(df_fully_imputed, kde=True, show_normal_curve=True)
 edaflow.visualize_heatmap(df_fully_imputed, heatmap_type='correlation')
 edaflow.visualize_scatter_matrix(df_fully_imputed, show_regression=True)
 
-# 9. Outlier detection and visualization
+# 9. Generate comprehensive EDA insights and recommendations
+insights = edaflow.summarize_eda_insights(df_fully_imputed, target_column='your_target_col')
+print(insights)  # View insights dictionary
+
+# 10. Outlier detection and visualization
 edaflow.visualize_numerical_boxplots(df_fully_imputed, show_skewness=True)
 edaflow.visualize_interactive_boxplots(df_fully_imputed)
 
@@ -1280,6 +1292,52 @@ edaflow.visualize_scatter_matrix(
 - `'lowess'`: LOWESS smoothing curves
 
 Perfect for exploring complex relationships in multivariate datasets and identifying patterns, correlations, and outliers across multiple dimensions.
+
+### EDA Insights Summary with `summarize_eda_insights` (NEW in v0.12.27!)
+
+After completing your exploratory data analysis workflow, generate comprehensive insights and actionable recommendations with a single function call:
+
+```python
+import pandas as pd
+import edaflow
+
+# After completing your EDA workflow
+df = pd.read_csv('healthcare_data.csv')
+
+# Run various edaflow functions first...
+null_analysis = edaflow.check_null_columns(df)
+edaflow.analyze_categorical_columns(df)
+df_clean = edaflow.convert_to_numeric(df)
+# ... additional EDA functions ...
+
+# Generate comprehensive insights
+insights = edaflow.summarize_eda_insights(
+    df_clean, 
+    target_column='diagnosis',  # Your target column
+    eda_functions_used=['check_null_columns', 'analyze_categorical_columns', 'convert_to_numeric'],
+    class_threshold=0.1  # Flag classes with <10% representation
+)
+
+# Access structured insights
+print("Dataset Overview:", insights['dataset_overview'])
+print("Data Quality:", insights['data_quality'])
+print("Recommendations:", insights['recommendations'])
+```
+
+**What It Analyzes:**
+- 📊 **Dataset Characteristics**: Shape, memory usage, feature distribution
+- 🔍 **Data Quality Assessment**: Missing data patterns, completeness scores
+- ⚖️ **Class Balance Detection**: Identifies underrepresented classes for imbalanced datasets
+- 📈 **Feature Type Analysis**: Categorical vs numerical distributions
+- 🎯 **Smart Recommendations**: Actionable next steps for modeling and preprocessing
+
+**Key Features:**
+- ✅ **Comprehensive Analysis**: Single function covers all major EDA aspects
+- ✅ **Target-Aware**: Provides classification/regression specific insights
+- ✅ **Function Tracking**: Knows which edaflow functions you've already used
+- ✅ **Customizable Thresholds**: Adjust class imbalance detection sensitivity
+- ✅ **Structured Output**: Returns organized dictionary for programmatic use
+- ✅ **Beautiful Display**: Rich formatting with colors and tables when available
 
 ## 🖼️ Computer Vision EDA with `visualize_image_classes()` (NEW in v0.9.0!)
 

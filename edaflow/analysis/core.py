@@ -6632,3 +6632,446 @@ def apply_smart_encoding(df: pd.DataFrame,
     else:
         return df_work
 
+
+def summarize_eda_insights(df: pd.DataFrame, 
+                          target_column: Optional[str] = None,
+                          eda_functions_used: Optional[List[str]] = None,
+                          class_threshold: float = 0.1) -> dict:
+    """
+    Generate comprehensive EDA insights and recommendations after completing analysis workflow.
+    
+    This function analyzes the DataFrame and provides intelligent insights about:
+    - Dataset characteristics and shape
+    - Data quality assessment
+    - Class distribution and imbalance detection
+    - Missing data patterns
+    - Feature type analysis
+    - Actionable recommendations for modeling
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The DataFrame that has been analyzed
+    target_column : str, optional
+        The name of the target column for classification/regression analysis
+    eda_functions_used : list of str, optional
+        List of edaflow functions that have been executed
+    class_threshold : float, default 0.1
+        Threshold below which a class is considered underrepresented (10%)
+        
+    Returns
+    -------
+    dict
+        Comprehensive insights dictionary with analysis results and recommendations
+        
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> import edaflow
+    >>> 
+    >>> # After completing EDA workflow
+    >>> df = pd.read_csv('healthcare_data.csv')
+    >>> # ... run various edaflow functions ...
+    >>> 
+    >>> # Generate comprehensive insights
+    >>> insights = edaflow.summarize_eda_insights(df, target_column='ckd_status')
+    >>> 
+    >>> # Insights with specific functions tracked
+    >>> functions_used = ['check_null_columns', 'analyze_categorical_columns', 
+    ...                   'visualize_histograms', 'handle_outliers_median']
+    >>> insights = edaflow.summarize_eda_insights(df, 'ckd_status', functions_used)
+    """
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+        from rich.table import Table
+        from rich.text import Text
+        from rich import box
+        from rich.columns import Columns
+        
+        console = Console()
+        use_rich = True
+    except ImportError:
+        console = None
+        use_rich = False
+    
+    # Initialize insights dictionary
+    insights = {
+        'dataset_overview': {},
+        'data_quality': {},
+        'feature_analysis': {},
+        'target_analysis': {},
+        'recommendations': {},
+        'workflow_completeness': {}
+    }
+    
+    # Dataset Overview Analysis
+    total_rows, total_cols = df.shape
+    memory_usage = df.memory_usage(deep=True).sum()
+    
+    # Memory formatting
+    if memory_usage > 1024**3:  # GB
+        mem_str = f"{memory_usage / (1024**3):.2f} GB"
+    elif memory_usage > 1024**2:  # MB  
+        mem_str = f"{memory_usage / (1024**2):.1f} MB"
+    elif memory_usage > 1024:  # KB
+        mem_str = f"{memory_usage / 1024:.1f} KB"
+    else:
+        mem_str = f"{memory_usage} B"
+    
+    insights['dataset_overview'] = {
+        'shape': f"{total_rows:,} rows × {total_cols} columns",
+        'total_rows': total_rows,
+        'total_columns': total_cols,
+        'memory_usage': mem_str,
+        'memory_bytes': memory_usage
+    }
+    
+    # Data Quality Analysis
+    total_missing = df.isnull().sum().sum()
+    missing_percentage = (total_missing / (total_rows * total_cols)) * 100
+    columns_with_missing = df.isnull().sum()[df.isnull().sum() > 0]
+    
+    # Duplicate analysis
+    duplicate_rows = df.duplicated().sum()
+    duplicate_percentage = (duplicate_rows / total_rows) * 100
+    
+    insights['data_quality'] = {
+        'total_missing_values': total_missing,
+        'missing_percentage': missing_percentage,
+        'columns_with_missing': len(columns_with_missing),
+        'duplicate_rows': duplicate_rows,
+        'duplicate_percentage': duplicate_percentage,
+        'data_completeness': 100 - missing_percentage
+    }
+    
+    # Feature Type Analysis
+    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    categorical_cols = df.select_dtypes(include=['object']).columns.tolist()
+    
+    # Remove target from feature lists if specified
+    if target_column and target_column in numeric_cols:
+        numeric_cols.remove(target_column)
+    if target_column and target_column in categorical_cols:
+        categorical_cols.remove(target_column)
+    
+    insights['feature_analysis'] = {
+        'numeric_features': len(numeric_cols),
+        'categorical_features': len(categorical_cols),
+        'numeric_feature_names': numeric_cols,
+        'categorical_feature_names': categorical_cols,
+        'feature_ratio': f"{len(numeric_cols)}N:{len(categorical_cols)}C"
+    }
+    
+    # Target Analysis (if provided)
+    if target_column and target_column in df.columns:
+        target_analysis = {}
+        
+        if pd.api.types.is_numeric_dtype(df[target_column]):
+            # Regression target
+            target_analysis['type'] = 'regression'
+            target_analysis['min_value'] = df[target_column].min()
+            target_analysis['max_value'] = df[target_column].max()
+            target_analysis['mean_value'] = df[target_column].mean()
+            target_analysis['std_value'] = df[target_column].std()
+            target_analysis['missing_count'] = df[target_column].isnull().sum()
+        else:
+            # Classification target
+            target_analysis['type'] = 'classification'
+            class_counts = df[target_column].value_counts()
+            class_proportions = df[target_column].value_counts(normalize=True)
+            
+            target_analysis['unique_classes'] = len(class_counts)
+            target_analysis['class_counts'] = dict(class_counts)
+            target_analysis['class_proportions'] = dict(class_proportions)
+            target_analysis['missing_count'] = df[target_column].isnull().sum()
+            
+            # Class imbalance detection
+            min_proportion = class_proportions.min()
+            max_proportion = class_proportions.max()
+            imbalance_ratio = max_proportion / min_proportion
+            
+            target_analysis['class_imbalance'] = {
+                'is_imbalanced': min_proportion < class_threshold,
+                'min_class_proportion': min_proportion,
+                'max_class_proportion': max_proportion,
+                'imbalance_ratio': imbalance_ratio,
+                'underrepresented_classes': [cls for cls, prop in class_proportions.items() 
+                                           if prop < class_threshold]
+            }
+        
+        insights['target_analysis'] = target_analysis
+    
+    # Workflow Completeness Assessment
+    if eda_functions_used:
+        # Define comprehensive EDA workflow steps
+        comprehensive_workflow = [
+            'check_null_columns',
+            'display_column_types', 
+            'analyze_categorical_columns',
+            'convert_to_numeric',
+            'visualize_histograms',
+            'visualize_numerical_boxplots',
+            'handle_outliers_median',
+            'visualize_heatmap',
+            'visualize_scatter_matrix',
+            'visualize_categorical_values',
+            'impute_numerical_median',
+            'impute_categorical_mode',
+            'analyze_encoding_needs',
+            'apply_smart_encoding'
+        ]
+        
+        completed_steps = len(set(eda_functions_used).intersection(comprehensive_workflow))
+        workflow_completeness = (completed_steps / len(comprehensive_workflow)) * 100
+        
+        insights['workflow_completeness'] = {
+            'functions_used': eda_functions_used,
+            'completed_steps': completed_steps,
+            'total_steps': len(comprehensive_workflow),
+            'completeness_percentage': workflow_completeness,
+            'missing_steps': list(set(comprehensive_workflow) - set(eda_functions_used))
+        }
+    
+    # Generate Recommendations
+    recommendations = []
+    
+    # Data Quality Recommendations
+    if missing_percentage > 5:
+        recommendations.append({
+            'category': 'Data Quality',
+            'priority': 'High' if missing_percentage > 20 else 'Medium',
+            'issue': f'{missing_percentage:.1f}% missing data detected',
+            'action': 'Consider imputation strategies or investigate missing data patterns',
+            'functions': ['impute_numerical_median', 'impute_categorical_mode']
+        })
+    
+    if duplicate_percentage > 1:
+        recommendations.append({
+            'category': 'Data Quality', 
+            'priority': 'Medium',
+            'issue': f'{duplicate_percentage:.1f}% duplicate rows found',
+            'action': 'Remove duplicates or investigate if they represent valid cases',
+            'functions': ['df.drop_duplicates()']
+        })
+    
+    # Feature Engineering Recommendations
+    if len(categorical_cols) > len(numeric_cols) * 2:
+        recommendations.append({
+            'category': 'Feature Engineering',
+            'priority': 'Medium', 
+            'issue': 'High categorical feature ratio detected',
+            'action': 'Consider encoding strategies for machine learning models',
+            'functions': ['analyze_encoding_needs', 'apply_smart_encoding']
+        })
+    
+    # Class Imbalance Recommendations
+    if target_column and 'target_analysis' in insights and insights['target_analysis'].get('type') == 'classification':
+        imbalance_info = insights['target_analysis'].get('class_imbalance', {})
+        if imbalance_info.get('is_imbalanced', False):
+            recommendations.append({
+                'category': 'Class Imbalance',
+                'priority': 'High',
+                'issue': f'Severe class imbalance detected (ratio: {imbalance_info.get("imbalance_ratio", 0):.1f}:1)',
+                'action': 'Use stratified sampling, class weighting, or resampling techniques',
+                'functions': ['sklearn.utils.class_weight.compute_class_weight', 'imblearn.over_sampling.SMOTE']
+            })
+    
+    # Workflow Completeness Recommendations
+    if eda_functions_used and insights['workflow_completeness']['completeness_percentage'] < 70:
+        missing_critical = [func for func in insights['workflow_completeness']['missing_steps'] 
+                          if func in ['check_null_columns', 'analyze_categorical_columns', 
+                                    'visualize_histograms', 'visualize_heatmap']]
+        if missing_critical:
+            recommendations.append({
+                'category': 'EDA Completeness',
+                'priority': 'Medium',
+                'issue': f'EDA workflow only {insights["workflow_completeness"]["completeness_percentage"]:.1f}% complete',
+                'action': f'Consider running: {", ".join(missing_critical[:3])}',
+                'functions': missing_critical[:3]
+            })
+    
+    insights['recommendations'] = recommendations
+    
+    # Rich-styled output display
+    if use_rich:
+        console.print()
+        header_panel = Panel(
+            Text("🔍 COMPREHENSIVE EDA INSIGHTS & RECOMMENDATIONS", style="bold white"),
+            style="bright_blue",
+            padding=(0, 1)
+        )
+        console.print(header_panel)
+        console.print()
+        
+        # Dataset Overview
+        overview_table = Table(
+            title="📊 Dataset Overview",
+            box=box.SIMPLE,
+            show_header=True,
+            header_style="bold cyan"
+        )
+        overview_table.add_column("Metric", style="white", width=20)
+        overview_table.add_column("Value", style="yellow", width=25)
+        overview_table.add_column("Assessment", style="green", width=25)
+        
+        # Add rows with intelligent assessments
+        size_assessment = "Large dataset" if total_rows > 100000 else "Medium dataset" if total_rows > 10000 else "Small dataset"
+        complexity_assessment = "High complexity" if total_cols > 50 else "Medium complexity" if total_cols > 20 else "Manageable complexity"
+        memory_assessment = "High memory usage" if memory_usage > 100*1024**2 else "Efficient memory usage"
+        
+        overview_table.add_row("Dataset Size", f"{total_rows:,} × {total_cols}", size_assessment)
+        overview_table.add_row("Feature Complexity", f"{total_cols} features", complexity_assessment)
+        overview_table.add_row("Memory Usage", mem_str, memory_assessment)
+        
+        console.print(overview_table)
+        console.print()
+        
+        # Data Quality Assessment
+        quality_table = Table(
+            title="✅ Data Quality Assessment", 
+            box=box.SIMPLE,
+            show_header=True,
+            header_style="bold green"
+        )
+        quality_table.add_column("Quality Metric", style="white", width=20)
+        quality_table.add_column("Value", style="yellow", width=25)
+        quality_table.add_column("Status", style="bold", width=25)
+        
+        # Quality status indicators
+        missing_status = Text("🔴 Poor" if missing_percentage > 20 else "🟡 Fair" if missing_percentage > 5 else "🟢 Good", 
+                             style="bold red" if missing_percentage > 20 else "bold yellow" if missing_percentage > 5 else "bold green")
+        duplicate_status = Text("🟡 Review Needed" if duplicate_percentage > 1 else "🟢 Clean", 
+                               style="bold yellow" if duplicate_percentage > 1 else "bold green")
+        completeness_status = Text("🟢 Excellent" if missing_percentage < 1 else "🟡 Good" if missing_percentage < 5 else "🔴 Poor",
+                                  style="bold green" if missing_percentage < 1 else "bold yellow" if missing_percentage < 5 else "bold red")
+        
+        quality_table.add_row("Missing Data", f"{missing_percentage:.1f}%", missing_status)
+        quality_table.add_row("Duplicate Rows", f"{duplicate_percentage:.1f}%", duplicate_status)
+        quality_table.add_row("Data Completeness", f"{100-missing_percentage:.1f}%", completeness_status)
+        
+        console.print(quality_table)
+        console.print()
+        
+        # Target Analysis (if available)
+        if target_column and 'target_analysis' in insights:
+            target_info = insights['target_analysis']
+            
+            if target_info['type'] == 'classification':
+                class_table = Table(
+                    title=f"🎯 Target Analysis: {target_column}",
+                    box=box.SIMPLE,
+                    show_header=True,
+                    header_style="bold magenta"
+                )
+                class_table.add_column("Class", style="cyan", width=15)
+                class_table.add_column("Count", style="yellow", width=12)
+                class_table.add_column("Percentage", style="green", width=12)
+                class_table.add_column("Status", style="bold", width=15)
+                
+                for cls, count in target_info['class_counts'].items():
+                    percentage = target_info['class_proportions'][cls] * 100
+                    status = Text("🔴 Underrepresented" if percentage < class_threshold * 100 else "🟢 Balanced", 
+                                 style="bold red" if percentage < class_threshold * 100 else "bold green")
+                    class_table.add_row(str(cls), f"{count:,}", f"{percentage:.1f}%", status)
+                
+                console.print(class_table)
+                
+                # Class imbalance warning
+                if target_info['class_imbalance']['is_imbalanced']:
+                    imbalance_warning = Panel(
+                        f"⚠️ [bold red]Class Imbalance Detected![/bold red]\n"
+                        f"Imbalance ratio: {target_info['class_imbalance']['imbalance_ratio']:.1f}:1\n"
+                        f"Underrepresented classes: {', '.join(target_info['class_imbalance']['underrepresented_classes'])}\n\n"
+                        f"💡 [bold cyan]Recommendations:[/bold cyan]\n"
+                        f"• Use stratified train/test splits\n"
+                        f"• Consider class weighting in models\n" 
+                        f"• Explore resampling techniques (SMOTE, ADASYN)\n"
+                        f"• Focus on precision/recall metrics over accuracy",
+                        title="🎯 Class Balance Analysis",
+                        style="bold yellow",
+                        box=box.SIMPLE
+                    )
+                    console.print(imbalance_warning)
+                console.print()
+        
+        # Recommendations Panel
+        if recommendations:
+            rec_table = Table(
+                title="💡 Actionable Recommendations",
+                box=box.SIMPLE, 
+                show_header=True,
+                header_style="bold yellow"
+            )
+            rec_table.add_column("Priority", style="bold", width=8)
+            rec_table.add_column("Category", style="cyan", width=15)
+            rec_table.add_column("Issue & Action", style="white", width=45)
+            rec_table.add_column("Suggested Functions", style="dim white", width=20)
+            
+            for rec in recommendations:
+                priority_style = "bold red" if rec['priority'] == 'High' else "bold yellow" if rec['priority'] == 'Medium' else "bold green"
+                priority_text = Text(f"{rec['priority']}", style=priority_style)
+                issue_action = f"[bold]{rec['issue']}[/bold]\n{rec['action']}"
+                functions_text = '\n'.join(rec['functions'][:2])  # Show first 2 functions
+                
+                rec_table.add_row(priority_text, rec['category'], issue_action, functions_text)
+            
+            console.print(rec_table)
+        
+        # Workflow Summary
+        if eda_functions_used:
+            workflow_info = insights['workflow_completeness']
+            progress_text = f"{workflow_info['completeness_percentage']:.1f}% Complete"
+            
+            workflow_panel = Panel(
+                f"[bold cyan]🔄 EDA Workflow Progress:[/bold cyan] {progress_text}\n"
+                f"Functions executed: {workflow_info['completed_steps']}/{workflow_info['total_steps']}\n"
+                f"Recent functions: {', '.join(eda_functions_used[-3:])}" +
+                (f"\n[dim]Missing: {', '.join(workflow_info['missing_steps'][:3])}[/dim]" if workflow_info['missing_steps'] else ""),
+                title="📈 Analysis Completeness",
+                style="bold blue",
+                box=box.SIMPLE
+            )
+            console.print(workflow_panel)
+        
+        # Final summary
+        summary_panel = Panel(
+            f"[bold green]✨ EDA Summary Complete![/bold green]\n"
+            f"Dataset analyzed: {insights['dataset_overview']['shape']}\n"
+            f"Data quality: {100-missing_percentage:.1f}% complete\n"
+            f"Recommendations: {len(recommendations)} actionable items\n"
+            f"Ready for: {'Model training with class balancing' if any(r['category'] == 'Class Imbalance' for r in recommendations) else 'Advanced analysis and modeling'}",
+            title="🎉 Analysis Complete",
+            style="bold green", 
+            box=box.SIMPLE
+        )
+        console.print(summary_panel)
+        console.print()
+        
+    else:
+        # Fallback basic output
+        print("\n" + "="*60)
+        print("🔍 EDA INSIGHTS & RECOMMENDATIONS")
+        print("="*60)
+        
+        print(f"\n📊 Dataset: {insights['dataset_overview']['shape']}")
+        print(f"Memory usage: {mem_str}")
+        print(f"Data completeness: {100-missing_percentage:.1f}%")
+        
+        if target_column and 'target_analysis' in insights:
+            target_info = insights['target_analysis']
+            if target_info['type'] == 'classification':
+                print(f"\n🎯 Target '{target_column}' classes:")
+                for cls, count in target_info['class_counts'].items():
+                    percentage = target_info['class_proportions'][cls] * 100
+                    print(f"   {cls}: {count:,} ({percentage:.1f}%)")
+        
+        if recommendations:
+            print(f"\n💡 {len(recommendations)} Recommendations:")
+            for i, rec in enumerate(recommendations, 1):
+                print(f"   {i}. [{rec['priority']}] {rec['issue']}")
+                print(f"      → {rec['action']}")
+        
+        print("="*60)
+    
+    return insights

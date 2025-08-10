@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12.27] - 2025-08-09
 
+### Added
+- **✨ NEW FUNCTION**: `summarize_eda_insights()` - Generate comprehensive EDA insights and recommendations after completing analysis workflow
+  - Analyzes dataset characteristics, data quality, class distribution, and feature types  
+  - Provides intelligent recommendations for modeling and preprocessing
+  - Supports target column analysis for classification/regression tasks
+  - Tracks which edaflow functions have been used in the workflow
+  - Returns structured dictionary with organized insights and actionable recommendations
+
 ### Fixed
 - **🎨 ADDITIONAL DISPLAY FIXES**: Resolved display formatting issues in multiple core functions
 - **FIXED**: `convert_to_numeric` - Removed unnecessary separator lines and changed to SIMPLE box style

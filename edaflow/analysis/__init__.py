@@ -22,7 +22,8 @@ from .core import (
     assess_image_quality,
     analyze_image_features,
     analyze_encoding_needs,
-    apply_smart_encoding
+    apply_smart_encoding,
+    summarize_eda_insights
 )
 
 __all__ = [
@@ -43,5 +44,6 @@ __all__ = [
     'assess_image_quality',
     'analyze_image_features',
     'analyze_encoding_needs',
-    'apply_smart_encoding'
+    'apply_smart_encoding',
+    'summarize_eda_insights'
 ]

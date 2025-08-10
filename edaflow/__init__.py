@@ -20,7 +20,8 @@ from .analysis import (
     assess_image_quality,
     analyze_image_features,
     analyze_encoding_needs,
-    apply_smart_encoding
+    apply_smart_encoding,
+    summarize_eda_insights
 )
 
 __version__ = "0.12.27"
@@ -62,5 +63,6 @@ __all__ = [
     'assess_image_quality',
     'analyze_image_features',
     'analyze_encoding_needs',
-    'apply_smart_encoding'
+    'apply_smart_encoding',
+    'summarize_eda_insights'
 ]
