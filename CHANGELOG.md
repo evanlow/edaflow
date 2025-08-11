@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.0] - 2025-08-11
+
+### Added - Major ML Expansion 🚀
+- **🤖 NEW SUBPACKAGE**: Complete `edaflow.ml` subpackage with comprehensive machine learning workflow capabilities
+- **🔧 ML EXPERIMENT SETUP**: `ml.setup_ml_experiment()` for intelligent data splitting and validation
+- **📊 MODEL COMPARISON**: `ml.compare_models()` for multi-model evaluation with comprehensive metrics
+- **🎯 HYPERPARAMETER OPTIMIZATION**: Grid search, random search, and Bayesian optimization with `ml.optimize_hyperparameters()`
+- **📈 PERFORMANCE VISUALIZATION**: Learning curves, ROC curves, validation curves, and feature importance analysis
+- **💾 MODEL PERSISTENCE**: Complete artifact saving with `ml.save_model_artifacts()` and experiment tracking
+- **🏆 MODEL LEADERBOARDS**: Automated model ranking and comparison with `ml.display_leaderboard()`
+- **📋 COMPREHENSIVE REPORTING**: Generate detailed model reports with `ml.create_model_report()`
+
+### Added - Educational Learning System 🎓
+- **📚 EDA LEARNING GUIDE**: Comprehensive 50-page guide combining EDA theory with hands-on edaflow practice
+- **🤖 ML LEARNING GUIDE**: Complete 60-page machine learning guide from concepts to production deployment
+- **🎯 EDUCATIONAL INTEGRATION**: Strategic integration of learning resources with technical documentation
+- **📖 ENHANCED DOCUMENTATION**: Updated README and QUICKSTART with clear learning paths
+- **🧠 THEORY + PRACTICE**: Deep educational content explaining not just "how" but "why" and "when"
+- **🎓 PROFESSIONAL DEVELOPMENT**: Skill-building focus beyond tool usage
+
+### New ML Modules
+- **`edaflow.ml.config`**: ML experiment foundation and data validation
+- **`edaflow.ml.leaderboard`**: Model comparison and ranking system
+- **`edaflow.ml.tuning`**: Advanced hyperparameter optimization strategies
+- **`edaflow.ml.curves`**: Performance visualization and analysis
+- **`edaflow.ml.artifacts`**: Model persistence and experiment tracking
+
+### New Educational Resources
+- **`EDA_LEARNING_GUIDE.md`**: Complete EDA education with decision frameworks and professional workflows
+- **`ML_LEARNING_GUIDE.md`**: Comprehensive ML learning from algorithms to deployment best practices
+- **`EDUCATIONAL_INTEGRATION.md`**: Documentation strategy and learning path design
+
+### Enhanced Features
+- **🔀 COMPLETE WORKFLOW**: Seamless transition from EDA to ML modeling
+- **⚡ PARALLEL PROCESSING**: Multi-core hyperparameter optimization
+- **🎨 RICH STYLING**: Professional visualizations consistent with edaflow design
+- **📦 26 NEW FUNCTIONS**: Comprehensive ML toolkit with consistent API
+- **📚 EDUCATIONAL DIFFERENTIATION**: Unique market positioning through comprehensive learning resources
+
+### Dependencies
+- **scikit-optimize**: Added optional dependency for Bayesian optimization
+- **joblib**: Enhanced model persistence capabilities
+
 ## [0.12.33] - 2025-01-11
 
 ### Added 

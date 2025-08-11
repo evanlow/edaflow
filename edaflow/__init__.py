@@ -28,7 +28,10 @@ from .analysis import (
 
 from .display import optimize_display
 
-__version__ = "0.12.33"
+# Make ML subpackage available  
+from . import ml
+
+__version__ = "0.13.0"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 
@@ -40,7 +43,7 @@ def hello():
     Returns:
         str: A greeting message
     """
-    return "Hello from edaflow! Ready for exploratory data analysis."
+    return "Hello from edaflow! Ready for exploratory data analysis and machine learning."
 
 
 # Import main modules
@@ -69,5 +72,8 @@ __all__ = [
     'analyze_image_features',
     'analyze_encoding_needs',
     'apply_smart_encoding',
-    'summarize_eda_insights'
+    'apply_encoding',  # ⭐ New in v0.12.33: Clean consistent API
+    'apply_encoding_with_encoders',  # ⭐ New in v0.12.33: Explicit tuple return
+    'summarize_eda_insights',
+    'ml'  # ⭐ New ML subpackage
 ]
