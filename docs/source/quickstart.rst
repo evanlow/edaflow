@@ -8,6 +8,25 @@ This guide will get you up and running with edaflow in just a few minutes!
 
 First, install and import edaflow:
 
+.. code-block:: bash
+
+   pip install edaflow
+
+.. code-block:: python
+
+   import edaflow
+   import pandas as pd
+   
+   # ⭐ For perfect visibility in any notebook environment:
+   edaflow.optimize_display()  # Universal dark mode support!
+   
+   # Verify installation
+   print(edaflow.hello())
+   
+   # Load your data and start exploring
+   df = pd.read_csv('your_data.csv')
+   edaflow.check_null_columns(df)  # Beautiful, visible output!
+
    # Smart conversion
    df_converted = edaflow.convert_to_numeric(df_original, threshold=35)
    print(df_converted.dtypes)  # 'price' now converted to float
@@ -46,6 +65,35 @@ First, install and import edaflow:
    # Verify installation
    print(edaflow.hello())
 
+🎨 **Perfect Display Optimization** ⭐ *New in v0.12.30*
+--------------------------------------------------------
+
+edaflow is the **FIRST** EDA library with universal dark mode compatibility! Use ``optimize_display()`` for perfect visibility across all notebook platforms:
+
+.. code-block:: python
+
+   import edaflow
+   
+   # One line for perfect visibility everywhere!
+   edaflow.optimize_display()
+   
+   # Now all edaflow functions display perfectly in:
+   # ✅ Google Colab (light & dark modes)
+   # ✅ JupyterLab (all themes)  
+   # ✅ VS Code Notebooks (auto theme detection)
+   # ✅ Classic Jupyter (all themes)
+   # ✅ High contrast accessibility support
+
+**Platform-Specific Benefits:**
+
+* **Google Colab**: Automatic theme detection and optimization
+* **JupyterLab**: Perfect dark mode compatibility with all themes
+* **VS Code**: Native integration with VS Code theme system
+* **Accessibility**: High contrast mode support for better visibility
+
+.. tip::
+   **Best Practice**: Always call ``edaflow.optimize_display()`` at the start of your notebook for the best experience!
+
 📊 **Complete EDA Workflow**
 ----------------------------
 
@@ -55,6 +103,9 @@ Here's how to perform a complete exploratory data analysis with edaflow's 18 fun
 
    import pandas as pd
    import edaflow
+   
+   # ⭐ NEW: Optimize display for perfect visibility (Jupyter, Colab, VS Code)
+   edaflow.optimize_display()  # Universal dark mode compatibility!
    
    # Load your dataset
    df = pd.read_csv('your_data.csv')
@@ -135,6 +186,33 @@ Here's how to perform a complete exploratory data analysis with edaflow's 18 fun
 🎯 **Key Function Examples**
 ----------------------------
 
+**Universal Display Optimization** ⭐ *New in v0.12.30*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+   import edaflow
+   
+   # One line for perfect visibility across ALL platforms
+   config = edaflow.optimize_display(
+       high_contrast=False,    # Set to True for accessibility
+       verbose=True           # Show optimization details
+   )
+   
+   # Platform auto-detection results:
+   print(f"Platform detected: {config['platform']}")
+   print(f"Theme: {config['theme']}")
+   print(f"Optimizations applied: {config['optimizations']}")
+   
+   # Now ALL edaflow functions display perfectly:
+   # ✅ Google Colab - Auto-detects light/dark mode
+   # ✅ JupyterLab - Works with ANY theme
+   # ✅ VS Code - Native theme integration  
+   # ✅ Classic Jupyter - Full compatibility
+
+.. note::
+   **Why optimize_display()?** Different notebook platforms handle CSS and styling differently. This function automatically detects your environment and applies the perfect styling for maximum visibility and readability.
+
 **Missing Data Analysis**
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -142,6 +220,9 @@ Here's how to perform a complete exploratory data analysis with edaflow's 18 fun
 
    import pandas as pd
    import edaflow
+   
+   # Essential: Optimize display first!
+   edaflow.optimize_display()
    
    # Sample data with missing values
    df = pd.DataFrame({
@@ -176,6 +257,11 @@ Here's how to perform a complete exploratory data analysis with edaflow's 18 fun
 
 .. code-block:: python
 
+   import edaflow
+   
+   # Ensure perfect visibility for interactive plots
+   edaflow.optimize_display()
+   
    # Interactive Plotly boxplots with zoom and hover
    edaflow.visualize_interactive_boxplots(
        df,
@@ -189,6 +275,11 @@ Here's how to perform a complete exploratory data analysis with edaflow's 18 fun
 
 .. code-block:: python
 
+   import edaflow
+   
+   # Perfect visibility for all heatmap types
+   edaflow.optimize_display()
+   
    # Multiple heatmap types for different insights
    
    # 1. Correlation analysis
@@ -245,6 +336,9 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
 
    import edaflow
    import glob
+   
+   # Ensure perfect image visualization across all platforms
+   edaflow.optimize_display()
    
    # Load image dataset
    # Method 1: Simple directory path (recommended for organized datasets)
