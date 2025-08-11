@@ -24,7 +24,9 @@ from .analysis import (
     summarize_eda_insights
 )
 
-__version__ = "0.12.29"
+from .display import optimize_display
+
+__version__ = "0.12.30"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 
@@ -45,7 +47,8 @@ def hello():
 
 # Export main functions
 __all__ = [
-    'hello', 
+    'hello',
+    'optimize_display',  # ⭐ New in v0.12.30: Universal dark mode compatibility
     'check_null_columns', 
     'analyze_categorical_columns', 
     'convert_to_numeric', 
