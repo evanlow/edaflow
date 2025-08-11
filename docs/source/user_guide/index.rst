@@ -1,20 +1,21 @@
 User Guide
 ==========
 
-Comprehensive guides for using edaflow effectively in your data analysis workflows.
+Comprehensive guides for using edaflow effectively in your data analysis and machine learning workflows.
 
 .. toctree::
    :maxdepth: 2
 
    data_quality
    visualization
+   ml_guide
    advanced_features
    best_practices
 
 Overview
 --------
 
-The edaflow User Guide is organized into four main sections:
+The edaflow User Guide is organized into five main sections:
 
 **Data Quality & Cleaning**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,6 +35,16 @@ Explore edaflow's comprehensive visualization capabilities for understanding you
 * Correlation and relationship analysis
 * Advanced scatter matrix analysis
 
+**Machine Learning Workflows**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Master the complete ML pipeline with edaflow's comprehensive machine learning functions.
+
+* ML experiment setup and data validation
+* Multi-model comparison and ranking systems
+* Hyperparameter optimization strategies
+* Performance visualization and model artifacts
+* Complete workflow examples and best practices
+
 **Advanced Features**
 ~~~~~~~~~~~~~~~~~~~~
 Discover advanced features and customization options for power users.
@@ -45,7 +56,7 @@ Discover advanced features and customization options for power users.
 
 **Best Practices**
 ~~~~~~~~~~~~~~~~~~
-Learn recommended workflows and best practices for effective EDA.
+Learn recommended workflows and best practices for effective EDA and ML.
 
 * Recommended EDA workflow
 * Memory and performance considerations

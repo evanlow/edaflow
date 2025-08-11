@@ -1,5 +1,5 @@
-edaflow.summarize\_eda\_insights
-=================================
+﻿edaflow.summarize\_eda\_insights
+================================
 
 .. currentmodule:: edaflow
 

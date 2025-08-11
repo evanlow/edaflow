@@ -1,10 +1,10 @@
 Quick Start Guide
 =================
 
-This guide will get you up and running with edaflow in just a few minutes!
+This guide will get you up and running with edaflow for both EDA and ML workflows in just a few minutes!
 
-🚀 **Basic Usage**
-------------------
+🚀 **Installation & Basic Setup**
+----------------------------------
 
 First, install and import edaflow:
 
@@ -15,6 +15,7 @@ First, install and import edaflow:
 .. code-block:: python
 
    import edaflow
+   import edaflow.ml as ml  # For ML workflows
    import pandas as pd
    
    # ⭐ For perfect visibility in any notebook environment:
@@ -22,14 +23,79 @@ First, install and import edaflow:
    
    # Verify installation
    print(edaflow.hello())
+
+📊 **EDA Workflow Quick Start**
+-------------------------------
+
+.. code-block:: python
    
    # Load your data and start exploring
    df = pd.read_csv('your_data.csv')
+   
+   # Essential EDA functions
    edaflow.check_null_columns(df)  # Beautiful, visible output!
-
+   edaflow.analyze_categorical_columns(df)
+   
    # Smart conversion
-   df_converted = edaflow.convert_to_numeric(df_original, threshold=35)
+   df_converted = edaflow.convert_to_numeric(df, threshold=35)
    print(df_converted.dtypes)  # 'price' now converted to float
+   
+   # Visualizations
+   edaflow.visualize_heatmap(df_converted)
+   edaflow.visualize_scatter_matrix(df_converted)
+
+🤖 **ML Workflow Quick Start**
+------------------------------
+
+.. code-block:: python
+
+   # Prepare your data
+   X = df_converted.drop('target', axis=1)
+   y = df_converted['target']
+   
+   # Step 1: Setup ML Experiment
+   config = ml.setup_ml_experiment(
+       X=X, y=y,
+       test_size=0.2,
+       experiment_name="quick_start_ml"
+   )
+   
+   # Step 2: Compare Models
+   from sklearn.ensemble import RandomForestClassifier
+   from sklearn.linear_model import LogisticRegression
+   
+   models = {
+       'rf': RandomForestClassifier(),
+       'lr': LogisticRegression()
+   }
+   
+   results = ml.compare_models(
+       models=models,
+       X_train=config['X_train'],
+       y_train=config['y_train'],
+       X_test=config['X_test'],
+       y_test=config['y_test']
+   )
+   
+   # Step 3: Display Results
+   ml.display_leaderboard(results)
+   
+   # Step 4: Optimize Best Model
+   tuning_results = ml.optimize_hyperparameters(
+       model=RandomForestClassifier(),
+       X_train=config['X_train'],
+       y_train=config['y_train'],
+       param_distributions={
+           'n_estimators': [100, 200],
+           'max_depth': [5, 10, None]
+       },
+       method='grid_search'
+   )
+
+🖼️ **Computer Vision Quick Start**
+-----------------------------------
+
+.. code-block:: python
 
    # Computer Vision EDA - Explore image datasets
    
@@ -42,6 +108,7 @@ First, install and import edaflow:
    )
    
    # Method 2: File list with glob
+   import glob
    product_photos = glob.glob('ecommerce_images/*/*.jpg')
    edaflow.visualize_image_classes(
        data_source=product_photos, 

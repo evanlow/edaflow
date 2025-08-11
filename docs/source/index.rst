@@ -13,12 +13,14 @@ edaflow Documentation
    :target: https://github.com/evanlow/edaflow/blob/main/LICENSE
    :alt: License
 
-edaflow is a Python package designed to streamline exploratory data analysis (EDA) workflows. It provides 18 comprehensive functions that cover the essential steps of data exploration, from missing data analysis to advanced visualizations, computer vision dataset assessment, and smart categorical encoding.
+edaflow is a Python package designed to streamline both exploratory data analysis (EDA) and machine learning (ML) workflows. It provides 18+ comprehensive EDA functions and 26 powerful ML functions that cover the essential steps from data exploration to model deployment.
 
-**edaflow** simplifies and accelerates the EDA process by providing a collection of 18 powerful functions for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, preprocessing, and intelligent categorical encoding - now including computer vision datasets and quality assessment.
+**edaflow** simplifies and accelerates data science workflows by providing a collection of powerful functions for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, preprocessing, machine learning model development, and intelligent categorical encoding - now including computer vision datasets and quality assessment.
 
 🎯 **Key Features**
 -------------------
+
+**Exploratory Data Analysis (EDA)**
 
 * **Missing Data Analysis**: Color-coded analysis of null values with customizable thresholds
 * **Categorical Data Insights**: Identify object columns that might be numeric, detect data type issues
@@ -30,7 +32,17 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
 * **Image Quality Assessment**: Automated detection of corrupted, blurry, or low-quality images
 * **Smart Categorical Encoding**: Intelligent analysis and automated application of optimal encoding strategies
 * **Outlier Handling**: Automated outlier detection and replacement using multiple statistical methods
-* **Professional Output**: Beautiful, color-coded results optimized for Jupyter notebooks
+
+**Machine Learning (ML) Workflow**
+
+* **ML Experiment Setup**: Automated train/validation/test splits and configuration management
+* **Model Comparison**: Multi-model evaluation with comprehensive performance leaderboards
+* **Hyperparameter Optimization**: Grid search, random search, and Bayesian optimization
+* **Performance Visualization**: Learning curves, ROC curves, confusion matrices, and feature importance
+* **Model Persistence**: Complete model artifacts saving with metadata and experiment tracking
+* **Pipeline Configuration**: Automated preprocessing pipeline setup for ML workflows
+
+**Professional Output**: Beautiful, color-coded results optimized for Jupyter notebooks
 
 📦 **Quick Installation**
 -------------------------
@@ -42,12 +54,50 @@ edaflow is a Python package designed to streamline exploratory data analysis (ED
 🚀 **Quick Start Example**
 --------------------------
 
+**EDA Workflow:**
+
 .. code-block:: python
 
    import edaflow
    import pandas as pd
 
    # Load your data
+   df = pd.read_csv('your_data.csv')
+
+   # Complete EDA workflow
+   edaflow.check_null_columns(df)
+   edaflow.analyze_categorical_columns(df)
+   edaflow.visualize_heatmap(df)
+   edaflow.visualize_scatter_matrix(df)
+
+**ML Workflow:**
+
+.. code-block:: python
+
+   import edaflow.ml as ml
+   from sklearn.ensemble import RandomForestClassifier
+   from sklearn.linear_model import LogisticRegression
+
+   # Setup ML experiment
+   config = ml.setup_ml_experiment(
+       X=X, y=y, 
+       test_size=0.2,
+       experiment_name="model_comparison"
+   )
+
+   # Compare multiple models
+   models = {
+       'rf': RandomForestClassifier(),
+       'lr': LogisticRegression()
+   }
+   
+   results = ml.compare_models(
+       models=models,
+       X_train=config['X_train'],
+       y_train=config['y_train'],
+       X_test=config['X_test'],
+       y_test=config['y_test']
+   )
    df = pd.read_csv('your_data.csv')
 
    # Complete EDA workflow with 18 functions
