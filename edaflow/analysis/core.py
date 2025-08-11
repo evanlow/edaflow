@@ -6794,40 +6794,47 @@ def summarize_eda_insights(df: pd.DataFrame,
     if target_column and target_column in df.columns:
         target_analysis = {}
         
-        if pd.api.types.is_numeric_dtype(df[target_column]):
-            # Regression target
-            target_analysis['type'] = 'regression'
-            target_analysis['min_value'] = df[target_column].min()
-            target_analysis['max_value'] = df[target_column].max()
-            target_analysis['mean_value'] = df[target_column].mean()
-            target_analysis['std_value'] = df[target_column].std()
+        try:
+            if pd.api.types.is_numeric_dtype(df[target_column]):
+                # Regression target
+                target_analysis['type'] = 'regression'
+                target_analysis['min_value'] = df[target_column].min()
+                target_analysis['max_value'] = df[target_column].max()
+                target_analysis['mean_value'] = df[target_column].mean()
+                target_analysis['std_value'] = df[target_column].std()
+                target_analysis['missing_count'] = df[target_column].isnull().sum()
+            else:
+                # Classification target
+                target_analysis['type'] = 'classification'
+                class_counts = df[target_column].value_counts()
+                class_proportions = df[target_column].value_counts(normalize=True)
+                
+                target_analysis['unique_classes'] = len(class_counts)
+                target_analysis['class_counts'] = dict(class_counts)
+                target_analysis['class_proportions'] = dict(class_proportions)
+                target_analysis['missing_count'] = df[target_column].isnull().sum()
+                
+                # Class imbalance detection
+                min_proportion = class_proportions.min()
+                max_proportion = class_proportions.max()
+                imbalance_ratio = max_proportion / min_proportion
+                
+                target_analysis['class_imbalance'] = {
+                    'is_imbalanced': min_proportion < class_threshold,
+                    'min_class_proportion': min_proportion,
+                    'max_class_proportion': max_proportion,
+                    'imbalance_ratio': imbalance_ratio,
+                    'underrepresented_classes': [cls for cls, prop in class_proportions.items() 
+                                               if prop < class_threshold]
+                }
+            
+            insights['target_analysis'] = target_analysis
+        except Exception as e:
+            # If there's an error analyzing the target, set a basic error state
+            target_analysis['type'] = 'error'
+            target_analysis['error_message'] = str(e)
             target_analysis['missing_count'] = df[target_column].isnull().sum()
-        else:
-            # Classification target
-            target_analysis['type'] = 'classification'
-            class_counts = df[target_column].value_counts()
-            class_proportions = df[target_column].value_counts(normalize=True)
-            
-            target_analysis['unique_classes'] = len(class_counts)
-            target_analysis['class_counts'] = dict(class_counts)
-            target_analysis['class_proportions'] = dict(class_proportions)
-            target_analysis['missing_count'] = df[target_column].isnull().sum()
-            
-            # Class imbalance detection
-            min_proportion = class_proportions.min()
-            max_proportion = class_proportions.max()
-            imbalance_ratio = max_proportion / min_proportion
-            
-            target_analysis['class_imbalance'] = {
-                'is_imbalanced': min_proportion < class_threshold,
-                'min_class_proportion': min_proportion,
-                'max_class_proportion': max_proportion,
-                'imbalance_ratio': imbalance_ratio,
-                'underrepresented_classes': [cls for cls, prop in class_proportions.items() 
-                                           if prop < class_threshold]
-            }
-        
-        insights['target_analysis'] = target_analysis
+            insights['target_analysis'] = target_analysis
     
     # Workflow Completeness Assessment
     if eda_functions_used:
@@ -6893,7 +6900,8 @@ def summarize_eda_insights(df: pd.DataFrame,
         })
     
     # Class Imbalance Recommendations
-    if target_column and 'target_analysis' in insights and insights['target_analysis'].get('type') == 'classification':
+    if (target_column and 'target_analysis' in insights and 
+        insights['target_analysis'].get('type') == 'classification'):
         imbalance_info = insights['target_analysis'].get('class_imbalance', {})
         if imbalance_info.get('is_imbalanced', False):
             recommendations.append({
@@ -6984,7 +6992,7 @@ def summarize_eda_insights(df: pd.DataFrame,
         if target_column and 'target_analysis' in insights:
             target_info = insights['target_analysis']
             
-            if target_info['type'] == 'classification':
+            if target_info.get('type') == 'classification':
                 class_table = Table(
                     title=f"🎯 Target Analysis: {target_column}",
                     box=box.SIMPLE,
@@ -7087,7 +7095,7 @@ def summarize_eda_insights(df: pd.DataFrame,
         
         if target_column and 'target_analysis' in insights:
             target_info = insights['target_analysis']
-            if target_info['type'] == 'classification':
+            if target_info.get('type') == 'classification':
                 print(f"\n🎯 Target '{target_column}' classes:")
                 for cls, count in target_info['class_counts'].items():
                     percentage = target_info['class_proportions'][cls] * 100

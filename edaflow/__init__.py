@@ -26,7 +26,7 @@ from .analysis import (
 
 from .display import optimize_display
 
-__version__ = "0.12.30"
+__version__ = "0.12.31"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 

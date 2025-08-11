@@ -6,6 +6,49 @@ All notable changes to edaflow are documented here.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Version 0.12.31 (2025-01-05) - Critical KeyError Hotfix 🚨
+----------------------------------------------------------
+
+**Fixed:**
+- **🚨 CRITICAL HOTFIX**: Fixed KeyError: 'type' in ``summarize_eda_insights()`` function during Google Colab usage
+
+  - Enhanced exception handling when target analysis dictionary missing expected keys
+  - Implemented safe dictionary access using ``.get()`` method to prevent KeyErrors
+  - All existing functionality preserved - pure stability fix
+  - Verified fix across all notebook platforms (Colab, JupyterLab, VS Code)
+
+**Technical Details:**
+- **Robust Error Handling**: Added comprehensive try-catch blocks for edge cases
+- **Safe Dictionary Access**: Uses ``.get()`` method instead of direct key access
+- **Platform Compatibility**: Tested and verified across all major notebook environments
+- **Zero Regression**: No functionality changes - purely stability improvements
+
+Version 0.12.30 (2025-01-05) - Universal Display Optimization Breakthrough 🎨
+------------------------------------------------------------------------------
+
+**Added:**
+- **🎨 BREAKTHROUGH FEATURE**: Introduced ``optimize_display()`` function for universal notebook compatibility
+
+  - Automatic detection of Google Colab, JupyterLab, VS Code Notebooks, Classic Jupyter
+  - Dynamic CSS injection for perfect dark/light mode visibility across all platforms
+  - Automatic matplotlib backend optimization for each notebook environment
+  - Solves visibility issues in dark mode themes universally
+  - Zero configuration required - automatically detects and optimizes for your platform
+  - Works flawlessly across all major notebook platforms
+
+**Usage:**
+.. code-block:: python
+
+   from edaflow import optimize_display
+   optimize_display()  # Automatically optimizes for your platform
+
+**Technical Details:**
+- **Smart Platform Detection**: Automatically identifies current notebook environment
+- **Universal CSS Injection**: Applies platform-specific styling for optimal visibility
+- **Backend Optimization**: Sets optimal matplotlib backend for each platform
+- **Dark Mode Excellence**: Perfect visibility in dark themes across all platforms
+- **Zero Dependencies**: Uses only standard library features for maximum compatibility
+
 Version 0.12.29 (2025-08-11) - Critical Bug Fix for Unhashable Types 🐛
 ------------------------------------------------------------------------
 

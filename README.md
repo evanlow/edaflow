@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.29** - [Latest Release](https://pypi.org/project/edaflow/0.12.29/) includes critical bug fix for handling unhashable data types and comprehensive display formatting improvements. *Updated: August 11, 2025*
+> **📦 Current Version: v0.12.31** - [Latest Release](https://pypi.org/project/edaflow/0.12.31/) includes universal dark mode compatibility with `optimize_display()` function and critical KeyError fix for `summarize_eda_insights()`. *Updated: August 11, 2025*
 
 ## 📖 Table of Contents
 
@@ -34,13 +34,35 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.12.29
+## ✨ What's New in v0.12.31
 
-### 🐛 Critical Bug Fix: `analyze_categorical_columns()`
-- **Fixed TypeError**: Resolved crash when processing DataFrames with columns containing unhashable types (lists, dicts)
-- **Enhanced Error Handling**: Added robust exception handling for edge cases in data processing
-- **Improved Return Values**: Function now properly returns structured analysis results for programmatic use
-- **Better Compatibility**: Works seamlessly with complex nested data structures
+### 🎨 BREAKTHROUGH: Universal Dark Mode Compatibility (v0.12.30)
+- **NEW FUNCTION**: `optimize_display()` - The **FIRST** EDA library with universal notebook compatibility!
+- **Universal Platform Support**: Perfect visibility across Google Colab, JupyterLab, VS Code, and Classic Jupyter
+- **Automatic Detection**: Zero configuration needed - automatically detects your environment
+- **Accessibility Support**: Built-in high contrast mode for improved accessibility
+- **One-Line Solution**: `edaflow.optimize_display()` fixes all visibility issues instantly
+
+### 🐛 Critical Hotfix (v0.12.31)
+- **Fixed KeyError**: Resolved "KeyError: 'type'" in `summarize_eda_insights()` function
+- **Enhanced Error Handling**: Added robust exception handling for target analysis edge cases
+- **Improved Stability**: Function now handles missing or invalid target columns gracefully
+
+### 🌟 Platform Benefits:
+- ✅ **Google Colab**: Auto light/dark mode detection with perfect text visibility
+- ✅ **JupyterLab**: Dark theme compatibility with custom theme support
+- ✅ **VS Code**: Native theme integration with seamless notebook experience  
+- ✅ **Classic Jupyter**: Full compatibility with enhanced readability options
+
+```python
+import edaflow
+# ⭐ NEW: Perfect visibility everywhere!
+edaflow.optimize_display()  # Universal dark mode fix!
+
+# All functions now display beautifully
+edaflow.check_null_columns(df)
+edaflow.visualize_histograms(df)
+```
 
 ### ✨ NEW FUNCTION: `summarize_eda_insights()` (Added in v0.12.28)
 - **Comprehensive Analysis**: Generate complete EDA insights and actionable recommendations after completing your analysis workflow
@@ -1844,7 +1866,24 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
-> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.3 complete backward compatibility fix.
+> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.31 hotfix with KeyError resolution and v0.12.30 universal display optimization breakthrough.
+
+### v0.12.31 (2025-01-05) - Critical KeyError Hotfix 🚨
+- **CRITICAL**: Fixed KeyError: 'type' in `summarize_eda_insights()` function during Google Colab usage
+- **RESOLVED**: Exception handling when target analysis dictionary missing expected keys
+- **IMPROVED**: Enhanced error handling with safe dictionary access using `.get()` method
+- **MAINTAINED**: All existing functionality preserved - pure stability fix
+- **TESTED**: Verified fix works across all notebook platforms (Colab, JupyterLab, VS Code)
+
+### v0.12.30 (2025-01-05) - Universal Display Optimization Breakthrough 🎨
+- **BREAKTHROUGH**: Introduced `optimize_display()` function for universal notebook compatibility
+- **REVOLUTIONARY**: Automatic platform detection (Google Colab, JupyterLab, VS Code Notebooks, Classic Jupyter)
+- **ENHANCED**: Dynamic CSS injection for perfect dark/light mode visibility across all platforms
+- **NEW FEATURE**: Automatic matplotlib backend optimization for each notebook environment  
+- **ACCESSIBILITY**: Solves visibility issues in dark mode themes universally
+- **SEAMLESS**: Zero configuration required - automatically detects and optimizes for your platform
+- **COMPATIBILITY**: Works flawlessly across Google Colab, JupyterLab, VS Code, Classic Jupyter
+- **EXAMPLE**: Simple usage: `from edaflow import optimize_display; optimize_display()`
 
 ### v0.12.3 (2025-08-06) - Complete Positional Argument Compatibility Fix 🔧
 - **CRITICAL**: Fixed positional argument usage for `visualize_image_classes()` function  

@@ -23,6 +23,7 @@ Complete Function Index
    analyze_categorical_columns
    convert_to_numeric
    display_column_types
+   summarize_eda_insights
 
 **Data Cleaning & Preprocessing**
 
@@ -51,3 +52,4 @@ Complete Function Index
    :toctree: generated/
 
    hello
+   optimize_display

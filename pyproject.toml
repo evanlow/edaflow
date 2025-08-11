@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "edaflow"
-version = "0.12.30"
+version = "0.12.31"
 description = "A Python package for exploratory data analysis workflows with universal dark mode compatibility"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "MIT"

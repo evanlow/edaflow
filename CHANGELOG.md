@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.31] - 2025-01-05
+
+### Fixed
+- **🚨 CRITICAL HOTFIX**: Fixed KeyError: 'type' in `summarize_eda_insights()` function during Google Colab usage
+- **🛠️ ERROR HANDLING**: Enhanced exception handling when target analysis dictionary missing expected keys
+- **🔧 SAFE ACCESS**: Implemented safe dictionary access using `.get()` method to prevent KeyErrors
+- **✅ STABILITY**: All existing functionality preserved - pure stability fix
+- **🧪 VERIFIED**: Tested fix across all notebook platforms (Colab, JupyterLab, VS Code)
+
+## [0.12.30] - 2025-01-05
+
+### Added
+- **🎨 BREAKTHROUGH FEATURE**: Introduced `optimize_display()` function for universal notebook compatibility
+- **🚀 PLATFORM DETECTION**: Automatic detection of Google Colab, JupyterLab, VS Code Notebooks, Classic Jupyter
+- **✨ CSS INJECTION**: Dynamic CSS injection for perfect dark/light mode visibility across all platforms
+- **📊 MATPLOTLIB OPTIMIZATION**: Automatic matplotlib backend optimization for each notebook environment
+- **🌙 DARK MODE FIX**: Solves visibility issues in dark mode themes universally
+- **⚡ ZERO CONFIG**: No configuration required - automatically detects and optimizes for your platform
+- **🔄 UNIVERSAL COMPATIBILITY**: Works flawlessly across all major notebook platforms
+- **📖 SIMPLE USAGE**: `from edaflow import optimize_display; optimize_display()`
+
 ## [0.12.29] - 2025-08-11
 
 ### Fixed
