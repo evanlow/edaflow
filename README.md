@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.28** - [Latest Release](https://pypi.org/project/edaflow/0.12.28/) includes comprehensive display formatting improvements across all core functions, ensuring clean and professional output with proper table border joining. *Updated: August 11, 2025*
+> **📦 Current Version: v0.12.29** - [Latest Release](https://pypi.org/project/edaflow/0.12.29/) includes critical bug fix for handling unhashable data types and comprehensive display formatting improvements. *Updated: August 11, 2025*
 
 ## 📖 Table of Contents
 
@@ -34,9 +34,15 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.12.28
+## ✨ What's New in v0.12.29
 
-### ✨ NEW FUNCTION: `summarize_eda_insights()`
+### 🐛 Critical Bug Fix: `analyze_categorical_columns()`
+- **Fixed TypeError**: Resolved crash when processing DataFrames with columns containing unhashable types (lists, dicts)
+- **Enhanced Error Handling**: Added robust exception handling for edge cases in data processing
+- **Improved Return Values**: Function now properly returns structured analysis results for programmatic use
+- **Better Compatibility**: Works seamlessly with complex nested data structures
+
+### ✨ NEW FUNCTION: `summarize_eda_insights()` (Added in v0.12.28)
 - **Comprehensive Analysis**: Generate complete EDA insights and actionable recommendations after completing your analysis workflow
 - **Smart Recommendations**: Provides intelligent next steps for modeling, preprocessing, and data quality improvements
 - **Target-Aware Analysis**: Supports both classification and regression scenarios with specific insights
@@ -64,7 +70,7 @@ A Python package for streamlined exploratory data analysis workflows.
 
 ### 🔍 **Exploratory Data Analysis**
 - **Missing Data Analysis**: Color-coded analysis of null values with customizable thresholds
-- **Categorical Data Insights**: Identify object columns that might be numeric, detect data type issues
+- **Categorical Data Insights**: 🐛 *FIXED in v0.12.29* Identify object columns that might be numeric, detect data type issues (now handles unhashable types)
 - **Automatic Data Type Conversion**: Smart conversion of object columns to numeric when appropriate
 - **Categorical Values Visualization**: Detailed exploration of categorical column values with insights
 - **Column Type Classification**: Simple categorization of DataFrame columns into categorical and numerical types

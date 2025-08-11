@@ -6,7 +6,25 @@ All notable changes to edaflow are documented here.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
-Version 0.12.27 (2025-08-09) - Comprehensive Display Formatting Excellence 🎨
+Version 0.12.29 (2025-08-11) - Critical Bug Fix for Unhashable Types 🐛
+------------------------------------------------------------------------
+
+**Fixed:**
+- **🐛 CRITICAL FIX**: Fixed TypeError in ``analyze_categorical_columns`` when processing columns with unhashable types (lists, dicts)
+
+  - Added proper exception handling for ``nunique()`` and ``unique()`` operations on columns containing unhashable data types
+  - Function now converts unhashable types to strings before processing unique value counts
+  - Added comprehensive error handling to gracefully handle any processing errors
+  - Added missing return statement to provide structured data output for programmatic use
+  - Returns dictionary with keys: ``object_columns``, ``numeric_potential``, ``truly_categorical``, ``non_object_columns``
+
+**Technical Details:**
+- **Enhanced Compatibility**: Function now handles complex nested data structures without crashing
+- **Robust Processing**: Multiple fallback mechanisms ensure analysis completes successfully
+- **Better API**: Consistent return values enable programmatic access to analysis results
+
+Version 0.12.28 (2025-08-11) - Comprehensive Display Formatting Excellence 🎨
+------------------------------------------------------------------------------
 ------------------------------------------------------------------------------
 
 **Added:**
