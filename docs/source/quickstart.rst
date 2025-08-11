@@ -163,7 +163,7 @@ Here's how to perform a complete exploratory data analysis with edaflow's 18 fun
    # Step 12: Outlier Handling
    df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbose=True)
    
-   # Step 13: Smart Encoding for ML (⭐ New in v0.12.0)
+   # Step 13: Smart Encoding for ML (⭐ New Clean APIs in v0.12.33)
    # Analyze optimal encoding strategies
    encoding_analysis = edaflow.analyze_encoding_needs(
        df_final,
@@ -172,12 +172,17 @@ Here's how to perform a complete exploratory data analysis with edaflow's 18 fun
        ordinal_columns=None              # Optional: specify ordinal columns if known
    )
    
-   # Apply intelligent encoding transformations
-   df_encoded = edaflow.apply_smart_encoding(
+   # ✅ RECOMMENDED: Apply encoding with clean, consistent API
+   df_encoded = edaflow.apply_encoding(
        df_final,                         # Use the full dataset
-       encoding_analysis=encoding_analysis,
-       return_encoders=True              # Keep encoders for test data
+       encoding_analysis=encoding_analysis
    )
+   
+   # Alternative: If you need access to encoders for test data
+   # df_encoded, encoders = edaflow.apply_encoding_with_encoders(
+   #     df_final,
+   #     encoding_analysis=encoding_analysis
+   # )
    
    # Step 14: Results Verification
    edaflow.visualize_scatter_matrix(df_encoded, title="ML-Ready Encoded Data")
@@ -524,10 +529,12 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
 * ``assess_image_quality()`` - Quality analysis & corruption detection  
 * ``analyze_image_features()`` - Advanced feature analysis (colors, edges, texture)
 
-**Smart Encoding for ML** ⭐ *New in v0.12.0*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Smart Encoding for ML** ⭐ *New Clean APIs in v0.12.33*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * ``analyze_encoding_needs()`` - Intelligent analysis of optimal encoding strategies
-* ``apply_smart_encoding()`` - Automated categorical encoding with ML best practices
+* ``apply_encoding()`` - Clean, consistent DataFrame return (recommended)
+* ``apply_encoding_with_encoders()`` - Explicit tuple return when encoders needed
+* ``apply_smart_encoding()`` - Legacy function (still works, shows deprecation warning)
 
 .. code-block:: python
 
@@ -542,11 +549,16 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
        ordinal_columns=None              # Specify ordinal relationships if known
    )
    
-   # Step 2: Apply intelligent transformations  
-   df_encoded, encoders = edaflow.apply_smart_encoding(
+   # Step 2A: ✅ RECOMMENDED - Always returns DataFrame
+   df_encoded = edaflow.apply_encoding(
        df,                               # Use your full dataset
-       encoding_analysis=encoding_analysis,
-       return_encoders=True              # Keep for test data
+       encoding_analysis=encoding_analysis
+   )
+   
+   # Step 2B: Alternative - When you need encoders for test data  
+   df_encoded, encoders = edaflow.apply_encoding_with_encoders(
+       df,                               # Use your full dataset
+       encoding_analysis=encoding_analysis
    )
    
    # The pipeline automatically selects:

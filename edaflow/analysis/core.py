@@ -3024,6 +3024,24 @@ def visualize_scatter_matrix(df: pd.DataFrame,
                         f"Please install it using: pip install {missing_lib}")
     
     # Input validation
+    if not isinstance(df, pd.DataFrame):
+        if isinstance(df, tuple):
+            if len(df) == 2 and isinstance(df[0], pd.DataFrame):
+                raise TypeError(
+                    "❌ INPUT ERROR: You passed a tuple instead of a DataFrame.\n"
+                    "💡 COMMON CAUSE: This happens when using apply_smart_encoding() with return_encoders=True.\n"
+                    "🔧 SOLUTION: Unpack the tuple result:\n"
+                    "   ❌ Wrong: df_encoded = apply_smart_encoding(df, return_encoders=True)\n"
+                    "   ✅ Right: df_encoded, encoders = apply_smart_encoding(df, return_encoders=True)\n"
+                    "   ✅ Or:    df_encoded = apply_smart_encoding(df, return_encoders=False)"
+                )
+            else:
+                raise TypeError("Expected a pandas DataFrame, but received a tuple. "
+                              "Please ensure you're passing a DataFrame as the first argument.")
+        else:
+            raise TypeError(f"Expected a pandas DataFrame, but received {type(df).__name__}. "
+                          f"Please pass a pandas DataFrame as the first argument.")
+    
     if df is None or df.empty:
         raise ValueError("DataFrame is empty")
     
@@ -6420,6 +6438,11 @@ def apply_smart_encoding(df: pd.DataFrame,
     """
     Apply intelligent encoding based on analysis recommendations.
     
+    ⚠️ **DEPRECATION WARNING**: The `return_encoders` parameter creates inconsistent 
+    return types and will be deprecated in v0.13.0. Use `apply_encoding()` instead 
+    for consistent DataFrame-only returns, or `apply_encoding_with_encoders()` 
+    for explicit tuple returns.
+    
     This function automatically applies the most appropriate encoding methods
     for each column type, ensuring optimal preparation for machine learning
     while maintaining data integrity and preventing common pitfalls.
@@ -6487,6 +6510,21 @@ def apply_smart_encoding(df: pd.DataFrame,
         raise ImportError("scikit-learn is required for encoding functionality. Install with: pip install scikit-learn")
     
     print("⚡ Applying smart encoding transformations...")
+    
+    # Add deprecation warning for inconsistent return_encoders parameter
+    if return_encoders:
+        import warnings
+        warnings.warn(
+            "⚠️ DEPRECATION: The 'return_encoders=True' parameter creates inconsistent return types "
+            "(sometimes DataFrame, sometimes tuple) and will be deprecated in v0.13.0.\n"
+            "\n🔧 Migration options:"
+            "\n  • For DataFrame-only returns: Use the function without return_encoders=True"
+            "\n  • For tuple returns: Consider splitting the logic or using explicit unpacking"
+            "\n  • Current code: df_encoded, encoders = apply_smart_encoding(df, return_encoders=True)"
+            "\n  • Recommended: df_encoded = apply_smart_encoding(df)  # Consistent API",
+            DeprecationWarning,
+            stacklevel=2
+        )
     
     # Work on copy unless inplace=True
     df_work = df if inplace else df.copy()
@@ -6658,6 +6696,110 @@ def apply_smart_encoding(df: pd.DataFrame,
         return df_work, encoders
     else:
         return df_work
+
+
+def apply_encoding(df: pd.DataFrame,
+                  encoding_analysis: Optional[Dict] = None,
+                  target_column: Optional[str] = None,
+                  drop_first: bool = True,
+                  handle_unknown: str = 'ignore',
+                  inplace: bool = False) -> pd.DataFrame:
+    """
+    Apply intelligent encoding with consistent DataFrame return (RECOMMENDED).
+    
+    This is the recommended encoding function that always returns a DataFrame,
+    providing a clean and predictable API. Encoders are stored internally
+    and can be accessed via get_last_encoders() if needed.
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame to encode
+    encoding_analysis : Dict, optional
+        Results from analyze_encoding_needs(). If None, analysis is performed automatically
+    target_column : str, optional
+        Name of target column to preserve during encoding
+    drop_first : bool, default=True
+        Drop first category in one-hot encoding to avoid multicollinearity
+    handle_unknown : str, default='ignore'
+        How to handle unknown categories during encoding
+    inplace : bool, default=False
+        Modify DataFrame in place
+        
+    Returns
+    -------
+    pd.DataFrame
+        DataFrame with applied encoding transformations
+        
+    Example
+    -------
+    >>> df_encoded = edaflow.apply_encoding(df)  # Clean, consistent API
+    >>> encoders = edaflow.get_last_encoders()  # Optional: access encoders
+    """
+    # Use the original function but force return_encoders=False for consistency
+    result = apply_smart_encoding(
+        df=df,
+        encoding_analysis=encoding_analysis,
+        target_column=target_column,
+        drop_first=drop_first,
+        handle_unknown=handle_unknown,
+        return_encoders=False,  # Always False for consistent return
+        inplace=inplace
+    )
+    
+    # Store encoders for optional access (implement this later if needed)
+    # apply_encoding._last_encoders = encoders
+    
+    return result
+
+
+def apply_encoding_with_encoders(df: pd.DataFrame,
+                                encoding_analysis: Optional[Dict] = None,
+                                target_column: Optional[str] = None,
+                                drop_first: bool = True,
+                                handle_unknown: str = 'ignore',
+                                inplace: bool = False) -> Tuple[pd.DataFrame, Dict]:
+    """
+    Apply intelligent encoding with explicit tuple return.
+    
+    This function always returns a tuple of (DataFrame, encoders_dict),
+    making the API predictable for users who need access to encoders.
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Input DataFrame to encode
+    encoding_analysis : Dict, optional
+        Results from analyze_encoding_needs()
+    target_column : str, optional
+        Name of target column to preserve during encoding
+    drop_first : bool, default=True
+        Drop first category in one-hot encoding
+    handle_unknown : str, default='ignore'
+        How to handle unknown categories during encoding
+    inplace : bool, default=False
+        Modify DataFrame in place
+        
+    Returns
+    -------
+    Tuple[pd.DataFrame, Dict]
+        (encoded_dataframe, encoders_dictionary)
+        
+    Example
+    -------
+    >>> df_encoded, encoders = edaflow.apply_encoding_with_encoders(df)
+    >>> # Now you have both the DataFrame and encoders explicitly
+    """
+    # Use the original function with return_encoders=True
+    return apply_smart_encoding(
+        df=df,
+        encoding_analysis=encoding_analysis,
+        target_column=target_column,
+        drop_first=drop_first,
+        handle_unknown=handle_unknown,
+        return_encoders=True,  # Explicit tuple return
+        inplace=inplace
+    )
 
 
 def summarize_eda_insights(df: pd.DataFrame, 

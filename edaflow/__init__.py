@@ -21,12 +21,14 @@ from .analysis import (
     analyze_image_features,
     analyze_encoding_needs,
     apply_smart_encoding,
+    apply_encoding,
+    apply_encoding_with_encoders,
     summarize_eda_insights
 )
 
 from .display import optimize_display
 
-__version__ = "0.12.31"
+__version__ = "0.12.33"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 

@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.31** - [Latest Release](https://pypi.org/project/edaflow/0.12.31/) includes universal dark mode compatibility with `optimize_display()` function and critical KeyError fix for `summarize_eda_insights()`. *Updated: August 11, 2025*
+> **📦 Current Version: v0.12.33** - [Latest Release](https://pypi.org/project/edaflow/0.12.33/) includes major API improvements with new clean encoding functions, enhanced input validation, and universal dark mode compatibility. *Updated: August 11, 2025*
 
 ## 📖 Table of Contents
 
@@ -34,7 +34,46 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.12.31
+## ✨ What's New in v0.12.33
+
+### 🚀 Major API Improvement (v0.12.33)
+**NEW CLEAN APIs**: Introduced consistent, user-friendly encoding functions that eliminate confusion and crashes.
+
+**Root Cause Solved**: The inconsistent return type of `apply_smart_encoding()` (sometimes DataFrame, sometimes tuple) was causing AttributeError crashes and user confusion.
+
+**New Functions Added**:
+```python
+# ✅ NEW: Clean, consistent DataFrame return (RECOMMENDED)
+df_encoded = edaflow.apply_encoding(df)  # Always returns DataFrame
+
+# ✅ NEW: Explicit tuple return when encoders needed
+df_encoded, encoders = edaflow.apply_encoding_with_encoders(df)  # Always returns tuple
+
+# ⚠️ DEPRECATED: Inconsistent behavior (still works with warnings)
+df_encoded = edaflow.apply_smart_encoding(df, return_encoders=True)  # Sometimes tuple!
+```
+
+**Benefits**:
+- 🎯 **Zero Breaking Changes**: All existing workflows continue working exactly the same
+- 🛡️ **Better Error Messages**: Helpful guidance when mistakes are made  
+- 🔄 **Migration Path**: Multiple options for users who want cleaner APIs
+- 📚 **Clear Documentation**: Explicit examples showing best practices
+
+### 🐛 Critical Input Validation Fix (v0.12.32)
+**RESOLVED**: Fixed AttributeError: 'tuple' object has no attribute 'empty' in visualization functions when `apply_smart_encoding(..., return_encoders=True)` result is used incorrectly.
+
+**Problem Solved**: Users who passed the tuple result from `apply_smart_encoding` directly to visualization functions without unpacking were experiencing crashes in step 14 of EDA workflows.
+
+**Enhanced Error Messages**: Added intelligent input validation with helpful error messages guiding users to the correct usage pattern:
+```python
+# ❌ WRONG - This causes the AttributeError:
+df_encoded = edaflow.apply_smart_encoding(df, return_encoders=True)  # Returns (df, encoders) tuple!
+edaflow.visualize_scatter_matrix(df_encoded)  # Crashes with AttributeError
+
+# ✅ CORRECT - Unpack the tuple:  
+df_encoded, encoders = edaflow.apply_smart_encoding(df, return_encoders=True)
+edaflow.visualize_scatter_matrix(df_encoded)  # Works perfectly!
+```
 
 ### 🎨 BREAKTHROUGH: Universal Dark Mode Compatibility (v0.12.30)
 - **NEW FUNCTION**: `optimize_display()` - The **FIRST** EDA library with universal notebook compatibility!
@@ -43,7 +82,7 @@ A Python package for streamlined exploratory data analysis workflows.
 - **Accessibility Support**: Built-in high contrast mode for improved accessibility
 - **One-Line Solution**: `edaflow.optimize_display()` fixes all visibility issues instantly
 
-### 🐛 Critical Hotfix (v0.12.31)
+### 🐛 Critical KeyError Hotfix (v0.12.31)
 - **Fixed KeyError**: Resolved "KeyError: 'type'" in `summarize_eda_insights()` function
 - **Enhanced Error Handling**: Added robust exception handling for target analysis edge cases
 - **Improved Stability**: Function now handles missing or invalid target columns gracefully
@@ -1866,7 +1905,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Changelog
 
-> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.31 hotfix with KeyError resolution and v0.12.30 universal display optimization breakthrough.
+> **🚀 Latest Updates**: This changelog reflects the most current releases including v0.12.32 critical input validation fix, v0.12.31 hotfix with KeyError resolution and v0.12.30 universal display optimization breakthrough.
+
+### v0.12.32 (2025-08-11) - Critical Input Validation Fix 🐛
+- **CRITICAL**: Fixed AttributeError: 'tuple' object has no attribute 'empty' in visualization functions
+- **ROOT CAUSE**: Users passing tuple result from `apply_smart_encoding(..., return_encoders=True)` directly to visualization functions
+- **ENHANCED**: Added intelligent input validation with helpful error messages for common usage mistakes
+- **IMPROVED**: Better error handling in `visualize_scatter_matrix` and other visualization functions
+- **DOCUMENTED**: Clear examples showing correct vs incorrect usage patterns for `apply_smart_encoding`
+- **STABILITY**: Prevents crashes in step 14 of EDA workflows when encoding functions are misused
 
 ### v0.12.31 (2025-01-05) - Critical KeyError Hotfix 🚨
 - **CRITICAL**: Fixed KeyError: 'type' in `summarize_eda_insights()` function during Google Colab usage

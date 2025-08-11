@@ -6,6 +6,71 @@ All notable changes to edaflow are documented here.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+Version 0.12.33 (2025-01-11) - Major API Improvement 🚀
+-------------------------------------------------------
+
+**Added:**
+- **🚀 NEW CLEAN APIs**: Introduced ``apply_encoding()`` and ``apply_encoding_with_encoders()`` functions for consistent, predictable behavior
+
+  - ``apply_encoding(df)`` - Always returns DataFrame (recommended for most users)
+  - ``apply_encoding_with_encoders(df)`` - Always returns (DataFrame, encoders) tuple
+  - Clear, explicit function names that indicate exactly what they return
+  - Comprehensive documentation with usage examples
+
+**Fixed:**
+- **🐛 ROOT CAUSE RESOLVED**: Eliminated confusion from ``apply_smart_encoding()`` inconsistent return types
+
+  - Previous issue: Function returned DataFrame OR tuple based on ``return_encoders`` parameter
+  - Enhanced error messages with helpful guidance for wrong data types
+  - Robust detection and handling of tuple inputs in visualization functions
+
+**Deprecated:**
+- **⚠️ DEPRECATION WARNING**: ``apply_smart_encoding()`` with ``return_encoders=True`` now shows deprecation warning
+
+  - Existing code continues working with guidance toward better alternatives
+  - Clear migration path to new consistent functions
+
+**Usage Examples:**
+.. code-block:: python
+
+   # ✅ NEW RECOMMENDED - Always returns DataFrame
+   df_encoded = edaflow.apply_encoding(df)
+   
+   # ✅ NEW EXPLICIT - Always returns tuple
+   df_encoded, encoders = edaflow.apply_encoding_with_encoders(df)
+   
+   # ⚠️ DEPRECATED - Inconsistent return type (still works)
+   df_encoded = edaflow.apply_smart_encoding(df, return_encoders=True)  # tuple!
+
+Version 0.12.32 (2025-08-11) - Critical Input Validation Fix 🐛
+---------------------------------------------------------------
+
+**Fixed:**
+- **🐛 CRITICAL INPUT FIX**: Fixed AttributeError: 'tuple' object has no attribute 'empty' in visualization functions
+
+  - Root cause: Users passing tuple result from ``apply_smart_encoding(..., return_encoders=True)`` directly to visualization functions
+  - Enhanced input validation with helpful error messages for common usage mistakes
+  - Better error handling in ``visualize_scatter_matrix`` and other visualization functions
+  - Clear documentation showing correct vs incorrect usage patterns
+  - Prevents crashes in step 14 of EDA workflows when encoding functions are misused
+
+**Technical Details:**
+- **Smart Error Detection**: Automatically detects when tuple is passed instead of DataFrame
+- **Helpful Error Messages**: Guides users to correct usage pattern with code examples
+- **Robust Input Validation**: Added comprehensive type checking for all visualization functions
+- **Workflow Stability**: Eliminates common crash point in automated EDA workflows
+
+**Usage Examples:**
+.. code-block:: python
+
+   # ❌ WRONG - This causes AttributeError:
+   df_encoded = edaflow.apply_smart_encoding(df, return_encoders=True)  # Returns tuple!
+   edaflow.visualize_scatter_matrix(df_encoded)  # Crashes
+
+   # ✅ CORRECT - Unpack the tuple:
+   df_encoded, encoders = edaflow.apply_smart_encoding(df, return_encoders=True)
+   edaflow.visualize_scatter_matrix(df_encoded)  # Works perfectly!
+
 Version 0.12.31 (2025-01-05) - Critical KeyError Hotfix 🚨
 ----------------------------------------------------------
 

@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.33] - 2025-01-11
+
+### Added 
+- **🚀 NEW CLEAN APIs**: Introduced `apply_encoding()` and `apply_encoding_with_encoders()` functions for consistent, predictable behavior
+- **📚 EXPLICIT DOCUMENTATION**: Clear examples showing proper usage of new encoding functions
+- **🎯 BEST PRACTICE GUIDANCE**: Deprecation warnings guide users toward cleaner API alternatives
+
+### Fixed
+- **🐛 ROOT CAUSE RESOLVED**: Eliminated confusion from `apply_smart_encoding()` inconsistent return types (DataFrame vs tuple)
+- **🛡️ ENHANCED ERROR MESSAGES**: Better validation with helpful guidance when wrong data types are passed
+- **🔧 IMPROVED INPUT HANDLING**: Robust detection and handling of tuple inputs in visualization functions
+
+### Deprecated
+- **⚠️ DEPRECATION WARNING**: `apply_smart_encoding()` with `return_encoders=True` now shows deprecation warning recommending `apply_encoding_with_encoders()`
+- **🔄 MIGRATION PATH**: Existing code continues working with guidance toward better alternatives
+
+### Changed
+- **✅ ZERO BREAKING CHANGES**: All existing workflows continue working exactly the same
+- **🎨 API CONSISTENCY**: New functions provide predictable, consistent return types
+
+## [0.12.32] - 2025-08-11
+
+### Fixed
+- **🐛 CRITICAL INPUT FIX**: Fixed AttributeError: 'tuple' object has no attribute 'empty' in visualization functions
+- **🎯 ROOT CAUSE**: Resolved issue when users pass tuple result from `apply_smart_encoding(..., return_encoders=True)` directly to visualization functions
+- **🛠️ ENHANCED VALIDATION**: Added intelligent input validation with helpful error messages for common usage mistakes
+- **🔧 IMPROVED HANDLING**: Better error handling in `visualize_scatter_matrix` and other visualization functions  
+- **📚 CLEAR DOCUMENTATION**: Added examples showing correct vs incorrect usage patterns for `apply_smart_encoding`
+- **✅ EDA WORKFLOW FIX**: Prevents crashes in step 14 of EDA workflows when encoding functions are misused
+
 ## [0.12.31] - 2025-01-05
 
 ### Fixed
