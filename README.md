@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.12.33** - [Latest Release](https://pypi.org/project/edaflow/0.12.33/) includes major API improvements with new clean encoding functions, enhanced input validation, and universal dark mode compatibility. *Updated: August 11, 2025*
+> **📦 Current Version: v0.13.0** - [Latest Release](https://pypi.org/project/edaflow/0.13.0/) includes major machine learning expansion with comprehensive edaflow.ml subpackage featuring model comparison, hyperparameter optimization, learning curves, and experiment tracking. *Updated: August 11, 2025*
 
 ## 📖 Table of Contents
 
@@ -34,9 +34,39 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.12.33
+## ✨ What's New in v0.13.0
 
-### 🚀 Major API Improvement (v0.12.33)
+### 🚀 Major ML Expansion (v0.13.0)
+**NEW MACHINE LEARNING SUBPACKAGE**: Introduced comprehensive `edaflow.ml` subpackage with complete ML workflow capabilities.
+
+**Root Enhancement**: Extended edaflow beyond EDA into full machine learning workflows, providing end-to-end data science capabilities from exploration to model deployment.
+
+**New ML Modules Added**:
+- **`ml.config`**: ML experiment setup and data validation
+- **`ml.leaderboard`**: Multi-model comparison and ranking
+- **`ml.tuning`**: Advanced hyperparameter optimization
+- **`ml.curves`**: Learning curves and performance visualization
+- **`ml.artifacts`**: Model persistence and experiment tracking
+
+**Key ML Features**:
+```python
+# Complete ML workflow in one package
+import edaflow.ml as ml
+
+# Setup experiment with automatic data splitting
+experiment = ml.setup_ml_experiment(df, 'target')
+
+# Compare multiple models
+results = ml.compare_models(models, **experiment)
+
+# Optimize hyperparameters with multiple strategies
+best_model = ml.optimize_hyperparameters(model, params, **experiment)
+
+# Generate comprehensive visualizations
+ml.plot_learning_curves(model, **experiment)
+```
+
+### 🚀 Previous: Major API Improvement (v0.12.33)
 **NEW CLEAN APIs**: Introduced consistent, user-friendly encoding functions that eliminate confusion and crashes.
 
 **Root Cause Solved**: The inconsistent return type of `apply_smart_encoding()` (sometimes DataFrame, sometimes tuple) was causing AttributeError crashes and user confusion.
@@ -157,6 +187,70 @@ edaflow.visualize_histograms(df)
 - **Memory-Efficient Processing**: Intelligent handling of high-cardinality features to prevent memory issues
 - **Comprehensive Encoding Pipeline**: End-to-end preprocessing solution for ML model preparation
 
+### 🤖 **Machine Learning Workflows** ⭐ *NEW in v0.13.0*
+The powerful `edaflow.ml` subpackage provides comprehensive machine learning workflow capabilities:
+
+#### **ML Experiment Setup (`ml.config`)**
+- **Smart Data Validation**: Automatic data quality assessment and problem type detection
+- **Intelligent Data Splitting**: Train/validation/test splits with stratification support
+- **ML Pipeline Configuration**: Automated preprocessing pipeline setup for ML workflows
+
+#### **Model Comparison & Ranking (`ml.leaderboard`)**
+- **Multi-Model Evaluation**: Compare multiple models with comprehensive metrics
+- **Smart Leaderboards**: Automatically rank models by performance with visual displays
+- **Export Capabilities**: Save comparison results for reporting and analysis
+
+#### **Hyperparameter Optimization (`ml.tuning`)**
+- **Multiple Search Strategies**: Grid search, random search, and Bayesian optimization
+- **Cross-Validation Integration**: Built-in CV with customizable scoring metrics
+- **Parallel Processing**: Multi-core hyperparameter optimization for faster results
+
+#### **Learning & Performance Curves (`ml.curves`)**
+- **Learning Curves**: Visualize model performance vs training size
+- **Validation Curves**: Analyze hyperparameter impact on model performance
+- **ROC & Precision-Recall Curves**: Comprehensive classification performance analysis
+- **Feature Importance**: Visual analysis of model feature contributions
+
+#### **Model Persistence & Tracking (`ml.artifacts`)**
+- **Complete Model Artifacts**: Save models, configs, and metadata
+- **Experiment Tracking**: Track multiple experiments with organized storage
+- **Model Reports**: Generate comprehensive model performance reports
+- **Version Management**: Organized model versioning and retrieval
+
+**Quick ML Example:**
+```python
+import edaflow.ml as ml
+from sklearn.ensemble import RandomForestClassifier
+
+# Setup ML experiment
+experiment = ml.setup_ml_experiment(df, target_column='target')
+
+# Compare multiple models
+models = {
+    'RandomForest': RandomForestClassifier(),
+    'LogisticRegression': LogisticRegression()
+}
+comparison = ml.compare_models(models, **experiment)
+
+# Optimize hyperparameters
+results = ml.optimize_hyperparameters(
+    RandomForestClassifier(),
+    param_distributions={'n_estimators': [50, 100, 200]},
+    **experiment
+)
+
+# Generate learning curves
+ml.plot_learning_curves(results['best_model'], **experiment)
+
+# Save complete artifacts
+ml.save_model_artifacts(
+    model=results['best_model'],
+    model_name='optimized_rf',
+    experiment_config=experiment,
+    performance_metrics=results['cv_results']
+)
+```
+
 ### 🖼️ **Computer Vision Support**
 - **Computer Vision EDA**: Class-wise image sample visualization and comprehensive quality assessment for image classification datasets
 - **Image Quality Assessment**: Automated detection of corrupted images, quality issues, blur, artifacts, and dataset health metrics
@@ -169,7 +263,16 @@ edaflow.visualize_histograms(df)
 
 ## 🆕 Recent Updates
 
-### v0.12.22 (Latest) - Google Colab Compatibility
+### v0.13.0 (Latest) - Machine Learning Expansion
+- **🚀 MAJOR FEATURE**: Complete `edaflow.ml` subpackage with comprehensive ML workflow capabilities
+- **NEW MODULES**: Added 5 core ML modules (config, leaderboard, tuning, curves, artifacts)
+- **ML WORKFLOWS**: End-to-end machine learning from experiment setup to model deployment
+- **HYPERPARAMETER OPTIMIZATION**: Grid search, random search, and Bayesian optimization
+- **MODEL COMPARISON**: Multi-model evaluation with comprehensive metrics and leaderboards
+- **PERFORMANCE VISUALIZATION**: Learning curves, ROC curves, validation curves, and feature importance
+- **MODEL PERSISTENCE**: Complete artifact saving with experiment tracking and reporting
+
+### v0.12.22 - Google Colab Compatibility  
 - **🔧 CRITICAL FIX**: Resolved KeyError in `apply_smart_encoding` for Google Colab environments
 - **FIXED**: Removed hardcoded 'target' column assumptions in documentation examples
 - **ENHANCED**: Documentation examples now work universally across all Python environments
@@ -205,8 +308,19 @@ edaflow.visualize_histograms(df)
 - **📐 PROFESSIONAL LAYOUTS**: Publication-ready spacing with height-based positioning
 - **✨ VISUAL EXCELLENCE**: Dynamic title positioning for optimal appearance
 
-## �📚 Documentation
+## 📚 Documentation & Learning Resources
 
+### 🎓 **Complete Learning Path**
+- **[EDA Learning Guide](EDA_LEARNING_GUIDE.md)** - 🔍 Comprehensive guide combining EDA theory with hands-on edaflow practice
+- **[ML Learning Guide](ML_LEARNING_GUIDE.md)** - 🤖 Complete machine learning concepts from theory to production with edaflow.ml
+- **[Quick Start Guide](QUICKSTART.md)** - 🚀 Fast-track tutorials for immediate productivity
+
+### 📖 **Choose Your Learning Path**
+- **New to EDA?** Start with [EDA Learning Guide](EDA_LEARNING_GUIDE.md) → [Quick Start](QUICKSTART.md) 
+- **Ready for ML?** Complete [EDA Learning Guide](EDA_LEARNING_GUIDE.md) → [ML Learning Guide](ML_LEARNING_GUIDE.md)
+- **Need Quick Reference?** Jump to [API Documentation](https://edaflow.readthedocs.io)
+
+### 🔗 **Technical Documentation**
 Complete documentation is available at **[edaflow.readthedocs.io](https://edaflow.readthedocs.io)**
 
 - **[Installation Guide](https://edaflow.readthedocs.io/en/latest/installation.html)** - Setup instructions and troubleshooting
@@ -222,8 +336,8 @@ Complete documentation is available at **[edaflow.readthedocs.io](https://edaflo
 # Install latest version (recommended)
 pip install edaflow
 
-# Or install specific version
-pip install edaflow==0.12.8
+# Or install specific version  
+pip install edaflow==0.13.0
 ```
 
 ### From Source
@@ -248,10 +362,14 @@ pip install -e ".[dev]"
 - matplotlib >= 3.5.0
 - seaborn >= 0.11.0
 - scipy >= 1.9.0
+- scikit-learn >= 1.0.0
 - missingno >= 0.5.0
 - plotly >= 5.0.0
-- scipy >= 1.7.0
-- missingno >= 0.5.0
+- joblib >= 1.0.0
+
+### Optional ML Dependencies
+For advanced ML features:
+- **scikit-optimize** >= 0.9.0 (for Bayesian optimization)
 
 ## Quick Start
 
@@ -311,6 +429,57 @@ df_final = edaflow.handle_outliers_median(df_fully_imputed, method='iqr', verbos
 # 12. Results verification
 edaflow.visualize_scatter_matrix(df_final, title="Clean Data Relationships")
 edaflow.visualize_numerical_boxplots(df_final, title="Final Clean Distribution")
+```
+
+### 🤖 **Complete ML Workflow** ⭐ *NEW in v0.13.0*
+```python
+import edaflow.ml as ml
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.linear_model import LogisticRegression
+
+# Continue from cleaned data above...
+df_final['target'] = your_target_data  # Add your target column
+
+# 1. Setup ML experiment with automatic data splitting
+experiment = ml.setup_ml_experiment(df_final, target_column='target')
+
+# 2. Compare multiple models
+models = {
+    'RandomForest': RandomForestClassifier(random_state=42),
+    'GradientBoosting': GradientBoostingClassifier(random_state=42), 
+    'LogisticRegression': LogisticRegression(random_state=42)
+}
+
+# Train and compare models
+comparison = ml.compare_models(models, **experiment)
+print(comparison)  # Professional styled output
+
+# 3. Hyperparameter optimization for best model
+param_grid = {
+    'n_estimators': [50, 100, 200],
+    'max_depth': [3, 5, 7]
+}
+
+best_results = ml.optimize_hyperparameters(
+    RandomForestClassifier(random_state=42),
+    param_distributions=param_grid,
+    **experiment,
+    method='grid',
+    cv=5
+)
+
+# 4. Generate performance visualizations
+ml.plot_learning_curves(best_results['best_model'], **experiment)
+ml.plot_roc_curves(best_results['best_model'], **experiment) 
+ml.plot_feature_importance(best_results['best_model'], **experiment)
+
+# 5. Save complete model artifacts
+ml.save_model_artifacts(
+    model=best_results['best_model'],
+    model_name='final_optimized_model',
+    experiment_config=experiment,
+    performance_metrics=best_results['cv_results']
+)
 ```
 
 ### 🤖 **ML Preprocessing with Smart Encoding** ⭐ *Introduced in v0.12.0*
