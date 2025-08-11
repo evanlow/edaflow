@@ -305,27 +305,46 @@ def analyze_categorical_columns(df: pd.DataFrame,
             if df[col].dtype == 'object':
                 object_columns.append(col)
                 
-                # Try to convert to numeric and check how many fail
-                numeric_col = pd.to_numeric(df[col], errors='coerce')
-                non_numeric_pct = (numeric_col.isnull().sum() / len(numeric_col)) * 100
-                unique_count = df[col].nunique()
-                total_count = len(df[col])
-                unique_values = df[col].unique()[:5]  # Show first 5 unique values
-                
-                if non_numeric_pct < threshold:
-                    numeric_potential.append({
-                        'column': col,
-                        'non_numeric_pct': non_numeric_pct,
-                        'unique_count': unique_count,
-                        'unique_values': unique_values
-                    })
-                else:
+                try:
+                    # Try to convert to numeric and check how many fail
+                    numeric_col = pd.to_numeric(df[col], errors='coerce')
+                    non_numeric_pct = (numeric_col.isnull().sum() / len(numeric_col)) * 100
+                    
+                    # Handle potential unhashable types (like lists) in columns
+                    try:
+                        unique_count = df[col].nunique()
+                        unique_values = df[col].unique()[:5]  # Show first 5 unique values
+                    except TypeError:
+                        # Handle unhashable types by converting to string first
+                        unique_count = df[col].astype(str).nunique()
+                        unique_values = df[col].astype(str).unique()[:5]
+                    
+                    total_count = len(df[col])
+                    
+                    if non_numeric_pct < threshold:
+                        numeric_potential.append({
+                            'column': col,
+                            'non_numeric_pct': non_numeric_pct,
+                            'unique_count': unique_count,
+                            'unique_values': unique_values
+                        })
+                    else:
+                        truly_categorical.append({
+                            'column': col,
+                            'non_numeric_pct': non_numeric_pct,
+                            'unique_count': unique_count,
+                            'total_count': total_count,
+                            'unique_values': unique_values
+                        })
+                except Exception as e:
+                    # If any other error occurs, treat as categorical with basic info
                     truly_categorical.append({
                         'column': col,
-                        'non_numeric_pct': non_numeric_pct,
-                        'unique_count': unique_count,
-                        'total_count': total_count,
-                        'unique_values': unique_values
+                        'non_numeric_pct': 100.0,
+                        'unique_count': 'unknown',
+                        'total_count': len(df[col]),
+                        'unique_values': ['Error processing column'],
+                        'error': str(e)
                     })
             else:
                 non_object_columns.append({
@@ -466,6 +485,14 @@ def analyze_categorical_columns(df: pd.DataFrame,
         
         print("=" * 50)
         print("Analysis complete!")
+    
+    # Return structured data for programmatic use
+    return {
+        'object_columns': object_columns,
+        'numeric_potential': numeric_potential,
+        'truly_categorical': truly_categorical,
+        'non_object_columns': non_object_columns
+    }
 
 
 def convert_to_numeric(df: pd.DataFrame, 

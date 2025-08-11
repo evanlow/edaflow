@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.12.29] - 2025-08-11
+
+### Fixed
+- **🐛 CRITICAL FIX**: Fixed TypeError in `analyze_categorical_columns` when processing columns with unhashable types (lists, dicts)
+  - Added proper exception handling for `nunique()` and `unique()` operations on columns containing unhashable data types
+  - Function now converts unhashable types to strings before processing unique value counts
+  - Added comprehensive error handling to gracefully handle any processing errors
+  - Added missing return statement to provide structured data output for programmatic use
+  - Returns dictionary with keys: `object_columns`, `numeric_potential`, `truly_categorical`, `non_object_columns`
+
 ## [0.12.28] - 2025-08-09
 
 ### Added
