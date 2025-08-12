@@ -5,9 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.1] - 2025-08-12
+
+### Fixed
+- **Theme Detection**: Fixed hardcoded theme detection in `optimize_display()` that was defaulting to light theme
+- **Google Colab Compatibility**: Improved theme detection for Google Colab dark mode environments  
+- **Dynamic CSS**: Enhanced CSS to properly respond to environment theme changes
+- **Environment Variables**: Added support for `COLAB_THEME` environment variable detection
+
 ## [0.13.0] - 2025-08-11
 
-### Added - Major ML Expansion 🚀
+### Added - ML Expansion
 - **🤖 NEW SUBPACKAGE**: Complete `edaflow.ml` subpackage with comprehensive machine learning workflow capabilities
 - **🔧 ML EXPERIMENT SETUP**: `ml.setup_ml_experiment()` for intelligent data splitting and validation
 - **📊 MODEL COMPARISON**: `ml.compare_models()` for multi-model evaluation with comprehensive metrics
@@ -51,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.12.33] - 2025-01-11
 
 ### Added 
-- **🚀 NEW CLEAN APIs**: Introduced `apply_encoding()` and `apply_encoding_with_encoders()` functions for consistent, predictable behavior
+- **NEW CLEAN APIs**: Introduced `apply_encoding()` and `apply_encoding_with_encoders()` functions for consistent, predictable behavior
 - **📚 EXPLICIT DOCUMENTATION**: Clear examples showing proper usage of new encoding functions
 - **🎯 BEST PRACTICE GUIDANCE**: Deprecation warnings guide users toward cleaner API alternatives
 
@@ -91,12 +99,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **🎨 BREAKTHROUGH FEATURE**: Introduced `optimize_display()` function for universal notebook compatibility
-- **🚀 PLATFORM DETECTION**: Automatic detection of Google Colab, JupyterLab, VS Code Notebooks, Classic Jupyter
-- **✨ CSS INJECTION**: Dynamic CSS injection for perfect dark/light mode visibility across all platforms
+- **PLATFORM DETECTION**: Automatic detection of Google Colab, JupyterLab, VS Code Notebooks, Classic Jupyter
+- **CSS INJECTION**: Dynamic CSS injection for improved dark/light mode visibility across all platforms
 - **📊 MATPLOTLIB OPTIMIZATION**: Automatic matplotlib backend optimization for each notebook environment
 - **🌙 DARK MODE FIX**: Solves visibility issues in dark mode themes universally
 - **⚡ ZERO CONFIG**: No configuration required - automatically detects and optimizes for your platform
-- **🔄 UNIVERSAL COMPATIBILITY**: Works flawlessly across all major notebook platforms
+- **🔄 UNIVERSAL COMPATIBILITY**: Works reliably across all major notebook platforms
 - **📖 SIMPLE USAGE**: `from edaflow import optimize_display; optimize_display()`
 
 ## [0.12.29] - 2025-08-11
@@ -162,7 +170,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **FIXED**: Changed `analyze_colors` → `analyze_color` in quickstart.rst documentation (3 instances)
 - **FIXED**: Changed `bins` → `bins_per_channel` in RTD documentation examples
 - **RESOLVED**: TypeError when users followed RTD documentation examples exactly
-- **ENHANCED**: Documentation now matches actual function signature perfectly
+- **ENHANCED**: Documentation now matches actual function signature correctly
 - **TESTED**: Created comprehensive test suite to prevent future parameter mismatches
 
 ## [0.12.22] - 2025-08-08

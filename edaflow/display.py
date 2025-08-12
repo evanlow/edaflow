@@ -3,7 +3,7 @@ edaflow.display - Universal Notebook Display Optimization
 ========================================================
 
 Automatically detects notebook environment (Jupyter, Colab, VS Code) and 
-applies optimal styling for perfect visibility in any theme.
+applies optimal styling for better visibility across different themes.
 
 Main Functions:
 - optimize_display(): One-function solution for universal compatibility
@@ -17,13 +17,14 @@ def optimize_display(
     theme: Optional[str] = None,
     high_contrast: bool = False,
     apply_matplotlib: bool = True,
-    verbose: bool = True
+    verbose: bool = True,
+    clean_output: bool = True
 ) -> Dict[str, Union[str, bool, List[str]]]:
     """
     🎯 Optimize edaflow display for any notebook environment.
     
     Automatically detects platform (Jupyter, Colab, VS Code) and theme,
-    then applies CSS fixes and matplotlib configuration for perfect visibility.
+    then applies CSS fixes and matplotlib configuration for improved visibility.
     
     Parameters:
     -----------
@@ -35,6 +36,8 @@ def optimize_display(
         Configure matplotlib for better plot visibility.  
     verbose : bool, default True
         Show detection results and applied optimizations.
+    clean_output : bool, default True
+        Use clean HTML output in Colab for better readability.
     
     Returns:
     --------
@@ -44,13 +47,13 @@ def optimize_display(
     ---------
     >>> import edaflow
     >>> edaflow.optimize_display()  # Auto-detect and optimize
-    ✅ Display optimized for Google Colab (light theme)
-    🚀 All edaflow functions now display perfectly!
+    ✅ Display optimized for Google Colab (dark theme)
+    � edaflow functions should now display with improved visibility
     
     >>> edaflow.optimize_display(theme='dark', high_contrast=True)  # Custom
     ✅ Display optimized for VS Code (dark theme)
     🎨 High contrast mode: ENABLED
-    🚀 All edaflow functions now display perfectly!
+    � edaflow functions should now display with improved visibility
     """
     
     # 1. DETECT PLATFORM AND THEME
@@ -87,13 +90,8 @@ def optimize_display(
     # 4. SET UP COLORS
     color_config = _setup_color_palette(final_theme, high_contrast, platform_info['platform'])
     
-    if verbose:
-        print(f"✅ Display optimized for {platform_info['platform']} ({final_theme} theme)")
-        if high_contrast:
-            print("🎨 High contrast mode: ENABLED")
-        print("🚀 All edaflow functions now display perfectly!")
-    
-    return {
+    # 5. DISPLAY RESULTS
+    result = {
         'platform': platform_info['platform'],
         'theme': final_theme,
         'high_contrast': high_contrast,
@@ -101,6 +99,18 @@ def optimize_display(
         'matplotlib_configured': matplotlib_configured,
         'optimizations': platform_info.get('features', [])
     }
+    
+    if verbose:
+        if clean_output and platform_info['platform'] == 'Google Colab':
+            _display_clean_colab_output(result)
+        else:
+            # Traditional text output
+            print(f"✅ Display optimized for {platform_info['platform']} ({final_theme} theme)")
+            if high_contrast:
+                print("🎨 High contrast mode: ENABLED")
+            print("� edaflow functions should now display with improved visibility")
+    
+    return result
 
 
 def _detect_notebook_platform() -> Dict[str, Union[str, List[str]]]:
@@ -123,7 +133,7 @@ def _detect_notebook_platform() -> Dict[str, Union[str, List[str]]]:
         if _is_google_colab():
             result.update({
                 'platform': 'Google Colab',
-                'detected_theme': 'light',  # Colab default
+                'detected_theme': _detect_colab_theme(),  # Dynamic detection
                 'confidence': 'high',
                 'features': ['colab_css', 'mobile_friendly', 'google_colors']
             })
@@ -182,6 +192,104 @@ def _is_google_colab() -> bool:
             return False
 
 
+def _detect_colab_theme() -> str:
+    """
+    Detect Google Colab theme more accurately.
+    
+    Returns:
+        str: 'dark', 'light', or 'auto'
+    """
+    try:
+        # Method 1: Check environment variables for theme hints
+        import os
+        theme_hint = os.environ.get('COLAB_THEME', '').lower()
+        if theme_hint in ['dark', 'light']:
+            return theme_hint
+            
+        # Method 2: Try JavaScript-based detection
+        try:
+            from IPython.display import Javascript, display
+            import time
+            
+            # Use JavaScript to detect theme from Colab's DOM/CSS
+            js_code = """
+            function detectColabTheme() {
+                // Method 1: Check computed styles on body
+                const body = document.body;
+                const computedStyle = getComputedStyle(body);
+                const bgColor = computedStyle.backgroundColor;
+                
+                // Method 2: Check for dark theme indicators
+                const isDarkByColor = bgColor === 'rgb(66, 66, 66)' || 
+                                     bgColor === 'rgb(48, 48, 48)' ||
+                                     bgColor === 'rgb(32, 32, 32)';
+                
+                // Method 3: Check CSS classes
+                const isDarkByClass = body.classList.contains('theme-dark') ||
+                                     body.classList.contains('dark') ||
+                                     document.documentElement.classList.contains('dark');
+                
+                // Method 4: Check media query preference
+                const prefersDark = window.matchMedia && 
+                                  window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                // Combine all detection methods
+                const isDark = isDarkByColor || isDarkByClass || prefersDark;
+                
+                // Store in a way Python can access (though this is tricky)
+                window._colabThemeDetected = isDark ? 'dark' : 'light';
+                
+                // Also try to set a cookie for persistence
+                document.cookie = `colab_theme=${isDark ? 'dark' : 'light'};path=/`;
+                
+                return isDark ? 'dark' : 'light';
+            }
+            
+            detectColabTheme();
+            """
+            
+            # Execute the JavaScript (silently)
+            display(Javascript(js_code))
+            time.sleep(0.1)  # Give JS time to execute
+            
+            # Try to read back the result from cookie
+            import http.cookies
+            cookies = http.cookies.SimpleCookie()
+            cookie_header = os.environ.get('HTTP_COOKIE', '')
+            if cookie_header:
+                cookies.load(cookie_header)
+                if 'colab_theme' in cookies:
+                    detected_theme = cookies['colab_theme'].value
+                    if detected_theme in ['dark', 'light']:
+                        return detected_theme
+                        
+        except Exception:
+            pass
+            
+        # Method 3: Try to infer from user preferences or system settings
+        try:
+            # Check if running in dark mode based on system preferences
+            # This is platform-specific and may not always work
+            if hasattr(os, 'environ'):
+                # Check common dark mode environment variables
+                dark_indicators = [
+                    os.environ.get('THEME', '').lower() == 'dark',
+                    os.environ.get('COLOR_SCHEME', '').lower() == 'dark',
+                    'dark' in os.environ.get('TERM', '').lower()
+                ]
+                if any(dark_indicators):
+                    return 'dark'
+                    
+        except Exception:
+            pass
+        
+    except Exception:
+        pass
+    
+    # Default to 'auto' for better theme adaptation - let CSS handle it
+    return 'auto'
+
+
 def _is_vscode() -> bool:
     """Check if running in VS Code."""
     return bool(
@@ -218,20 +326,55 @@ def _apply_css_optimizations(platform: str, theme: str, high_contrast: bool) -> 
         # Not in IPython environment, skip CSS injection
         return
     
-    # Universal CSS base
+    # Universal CSS base with dynamic theme detection
     css = '''
     <style>
-    /* edaflow universal display optimizations */
+    /* edaflow universal display optimizations with dynamic theme support */
+    
+    /* Auto theme detection using CSS selectors and media queries */
     .jp-OutputArea-output pre,
     .output pre,
     .output_text pre {
-        background-color: transparent !important;
         border: 1px solid #ccc;
         padding: 8px;
         border-radius: 4px;
         font-family: 'Courier New', monospace;
         line-height: 1.4;
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
     }
+    
+    /* Dynamic theme detection for dark mode */
+    @media (prefers-color-scheme: dark),
+    [data-jp-theme-name*="Dark"] *,
+    [data-jp-theme-name*="dark"] *,
+    .theme-dark *,
+    body[style*="rgb(66, 66, 66)"] *,
+    body[style*="rgb(48, 48, 48)"] * {
+        --bg-color: rgba(40, 40, 40, 0.9);
+        --text-color: #E8E8E8;
+        --border-color: #666666;
+    }
+    
+    /* Dynamic theme detection for light mode */
+    @media (prefers-color-scheme: light),
+    [data-jp-theme-name*="Light"] *,
+    [data-jp-theme-name*="light"] *,
+    .theme-light *,
+    body:not([style*="rgb(66, 66, 66)"]):not([style*="rgb(48, 48, 48)"]) * {
+        --bg-color: rgba(248, 248, 248, 0.9);
+        --text-color: #333333;
+        --border-color: #CCCCCC;
+    }
+    
+    /* Apply the dynamic theme variables */
+    .jp-OutputArea-output pre,
+    .output pre,
+    .output_text pre {
+        background-color: var(--bg-color, transparent) !important;
+        color: var(--text-color, inherit) !important;
+        border-color: var(--border-color, #ccc) !important;
+    }
+    
     
     .jp-OutputArea-output table,
     .output table,
@@ -497,6 +640,77 @@ def _get_platform_colors(platform: str, theme: str, high_contrast: bool) -> List
     else:
         # Universal bright colors for dark themes
         return ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD']
+
+
+def _display_clean_colab_output(result: Dict[str, Union[str, bool, List[str]]]) -> None:
+    """Display optimization results in a clean, Colab-friendly format."""
+    try:
+        from IPython.display import HTML, display
+        
+        # Extract key information
+        platform = result.get('platform', 'Unknown')
+        theme = result.get('theme', 'auto')
+        high_contrast = result.get('high_contrast', False)
+        css_applied = result.get('css_applied', False)
+        matplotlib_configured = result.get('matplotlib_configured', False)
+        
+        # Choose colors based on detected theme
+        if theme == 'dark':
+            bg_color = '#2d3748'
+            text_color = '#e2e8f0'
+            success_color = '#48bb78'
+            info_color = '#4299e1'
+        else:
+            bg_color = '#f7fafc'
+            text_color = '#2d3748'
+            success_color = '#38a169'
+            info_color = '#3182ce'
+        
+        # Create clean HTML display
+        html = f"""
+        <div style="
+            background: {bg_color};
+            color: {text_color};
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid {success_color};
+            margin: 10px 0;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+        ">
+            <h3 style="margin: 0 0 10px 0; color: {success_color};">
+                ✅ Display Optimization Complete
+            </h3>
+            
+            <div style="margin: 8px 0;">
+                <span style="color: {info_color}; font-weight: bold;">📱 Platform:</span> {platform}
+            </div>
+            
+            <div style="margin: 8px 0;">
+                <span style="color: {info_color}; font-weight: bold;">🎨 Theme:</span> {theme.title()}
+                {' (High Contrast)' if high_contrast else ''}
+            </div>
+            
+            <div style="margin: 8px 0;">
+                <span style="color: {info_color}; font-weight: bold;">🔧 Status:</span>
+                {'✅ CSS Applied' if css_applied else '❌ CSS Failed'} • 
+                {'✅ Matplotlib Configured' if matplotlib_configured else '❌ Matplotlib Failed'}
+            </div>
+            
+            <div style="margin-top: 12px; font-style: italic; opacity: 0.8;">
+                � edaflow functions should now display with improved visibility
+            </div>
+        </div>
+        """
+        
+        display(HTML(html))
+        
+    except Exception:
+        # Fallback to regular text output
+        print(f"✅ Display optimized for {platform} ({theme} theme)")
+        if high_contrast:
+            print("🎨 High contrast mode: ENABLED")
+        print("� edaflow functions should now display with improved visibility")
 
 
 # Export main function

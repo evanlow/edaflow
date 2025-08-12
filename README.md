@@ -36,7 +36,7 @@ A Python package for streamlined exploratory data analysis workflows.
 
 ## ✨ What's New in v0.13.0
 
-### 🚀 Major ML Expansion (v0.13.0)
+### ML Expansion (v0.13.0)
 **NEW MACHINE LEARNING SUBPACKAGE**: Introduced comprehensive `edaflow.ml` subpackage with complete ML workflow capabilities.
 
 **Root Enhancement**: Extended edaflow beyond EDA into full machine learning workflows, providing end-to-end data science capabilities from exploration to model deployment.
@@ -66,7 +66,7 @@ best_model = ml.optimize_hyperparameters(model, params, **experiment)
 ml.plot_learning_curves(model, **experiment)
 ```
 
-### 🚀 Previous: Major API Improvement (v0.12.33)
+### Previous: API Improvement (v0.12.33)
 **NEW CLEAN APIs**: Introduced consistent, user-friendly encoding functions that eliminate confusion and crashes.
 
 **Root Cause Solved**: The inconsistent return type of `apply_smart_encoding()` (sometimes DataFrame, sometimes tuple) was causing AttributeError crashes and user confusion.
@@ -102,12 +102,12 @@ edaflow.visualize_scatter_matrix(df_encoded)  # Crashes with AttributeError
 
 # ✅ CORRECT - Unpack the tuple:  
 df_encoded, encoders = edaflow.apply_smart_encoding(df, return_encoders=True)
-edaflow.visualize_scatter_matrix(df_encoded)  # Works perfectly!
+edaflow.visualize_scatter_matrix(df_encoded)  # Should work well!
 ```
 
 ### 🎨 BREAKTHROUGH: Universal Dark Mode Compatibility (v0.12.30)
 - **NEW FUNCTION**: `optimize_display()` - The **FIRST** EDA library with universal notebook compatibility!
-- **Universal Platform Support**: Perfect visibility across Google Colab, JupyterLab, VS Code, and Classic Jupyter
+- **Universal Platform Support**: Improved visibility across Google Colab, JupyterLab, VS Code, and Classic Jupyter
 - **Automatic Detection**: Zero configuration needed - automatically detects your environment
 - **Accessibility Support**: Built-in high contrast mode for improved accessibility
 - **One-Line Solution**: `edaflow.optimize_display()` fixes all visibility issues instantly
@@ -118,14 +118,14 @@ edaflow.visualize_scatter_matrix(df_encoded)  # Works perfectly!
 - **Improved Stability**: Function now handles missing or invalid target columns gracefully
 
 ### 🌟 Platform Benefits:
-- ✅ **Google Colab**: Auto light/dark mode detection with perfect text visibility
+- ✅ **Google Colab**: Auto light/dark mode detection with improved text visibility
 - ✅ **JupyterLab**: Dark theme compatibility with custom theme support
 - ✅ **VS Code**: Native theme integration with seamless notebook experience  
 - ✅ **Classic Jupyter**: Full compatibility with enhanced readability options
 
 ```python
 import edaflow
-# ⭐ NEW: Perfect visibility everywhere!
+# ⭐ NEW: Improved visibility everywhere!
 edaflow.optimize_display()  # Universal dark mode fix!
 
 # All functions now display beautifully
@@ -259,12 +259,12 @@ ml.save_model_artifacts(
 - **Data Imputation**: Smart missing value imputation using median for numerical and mode for categorical columns
 - **Outlier Handling**: Automated outlier detection and replacement using IQR, Z-score, and Modified Z-score methods
 - **Styled Output**: Beautiful, color-coded results for Jupyter notebooks and terminals
-- **Easy Integration**: Works seamlessly with pandas, numpy, scikit-learn, and other popular libraries
+- **Easy Integration**: Works easily with pandas, numpy, scikit-learn, and other popular libraries
 
 ## 🆕 Recent Updates
 
 ### v0.13.0 (Latest) - Machine Learning Expansion
-- **🚀 MAJOR FEATURE**: Complete `edaflow.ml` subpackage with comprehensive ML workflow capabilities
+- **FEATURE**: Complete `edaflow.ml` subpackage with comprehensive ML workflow capabilities
 - **NEW MODULES**: Added 5 core ML modules (config, leaderboard, tuning, curves, artifacts)
 - **ML WORKFLOWS**: End-to-end machine learning from experiment setup to model deployment
 - **HYPERPARAMETER OPTIMIZATION**: Grid search, random search, and Bayesian optimization
@@ -313,7 +313,7 @@ ml.save_model_artifacts(
 ### 🎓 **Complete Learning Path**
 - **[EDA Learning Guide](EDA_LEARNING_GUIDE.md)** - 🔍 Comprehensive guide combining EDA theory with hands-on edaflow practice
 - **[ML Learning Guide](ML_LEARNING_GUIDE.md)** - 🤖 Complete machine learning concepts from theory to production with edaflow.ml
-- **[Quick Start Guide](QUICKSTART.md)** - 🚀 Fast-track tutorials for immediate productivity
+- **[Quick Start Guide](QUICKSTART.md)** - Fast-track tutorials for immediate productivity
 
 ### 📖 **Choose Your Learning Path**
 - **New to EDA?** Start with [EDA Learning Guide](EDA_LEARNING_GUIDE.md) → [Quick Start](QUICKSTART.md) 
@@ -454,7 +454,7 @@ models = {
 comparison = ml.compare_models(models, **experiment)
 print(comparison)  # Professional styled output
 
-# 3. Hyperparameter optimization for best model
+# 3. Hyperparameter optimization for good model selection
 param_grid = {
     'n_estimators': [50, 100, 200],
     'max_depth': [3, 5, 7]
@@ -2039,9 +2039,9 @@ edaflow/
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
 5. Open a Pull Request
 
 ## Development
