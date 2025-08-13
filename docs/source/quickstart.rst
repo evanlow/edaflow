@@ -505,12 +505,11 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
        performance_metrics={
            'cv_score': final_comparison.loc[final_comparison['model'] == best_model_name, 'roc_auc'].iloc[0],
            'test_score': final_score,
-           'model_type': best_model_name
-       },
-       metadata={
+           'model_type': best_model_name,
+           # Metadata integrated into performance_metrics
            'experiment_name': config['experiment_name'],  # ⭐ NEW: Experiment tracking
            'training_date': pd.Timestamp.now().strftime('%Y-%m-%d'),
-           'data_shape': df_ml.shape,
+           'data_shape': str(df_ml.shape),  # Convert to string for JSON serialization
            'feature_count': len(config['feature_names'])
        }
    )
