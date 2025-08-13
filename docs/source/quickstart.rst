@@ -148,7 +148,7 @@ First, install and import edaflow:
            'n_estimators': [100, 200],
            'max_depth': [5, 10, None]
        },
-       method='grid_search'
+       method='grid'
    )
 
 🖼️ **Computer Vision Quick Start**
@@ -401,23 +401,23 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
        print(f"Optimizing {model_name}...")
        
        if model_name == 'RandomForest':
-           param_space = {
+           param_distributions = {
                'n_estimators': [100, 200, 300],
                'max_depth': [5, 10, 15, None],
                'min_samples_split': [2, 5, 10]
            }
-           method = 'grid_search'
+           method = 'grid'
        elif model_name == 'GradientBoosting':
-           param_space = {
+           param_distributions = {
                'n_estimators': (50, 200),
                'learning_rate': (0.01, 0.3),
                'max_depth': (3, 8)
            }
-           method = 'bayesian_optimization'
+           method = 'bayesian'
        
        results = ml.optimize_hyperparameters(
            model=baseline_models[model_name],
-           param_distributions=param_space,
+           param_distributions=param_distributions,
            X_train=config['X_train'],
            y_train=config['y_train'],
            method=method,

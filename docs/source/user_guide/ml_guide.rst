@@ -122,11 +122,10 @@ Here's a comprehensive example showing the full ML workflow:
        X_train=config['X_train'],
        y_train=config['y_train'],
        param_distributions=param_distributions,
-       method='random_search',
+       method='random',
        n_iter=50,
-       cv_folds=5,
-       scoring='roc_auc',
-       n_jobs=-1
+       cv=5,
+       scoring='roc_auc'
    )
 
    # Step 8: Performance Visualizations
@@ -359,10 +358,10 @@ Hyperparameter Tuning Functions
    }
    
    grid_results = ml.grid_search_models(
-       model=RandomForestClassifier(),
-       param_grid=param_grid,
+       models={'RandomForest': RandomForestClassifier()},
+       param_grids={'RandomForest': param_grid},
        X_train=X_train, y_train=y_train,
-       cv_folds=5,
+       cv=5,
        scoring='accuracy'
    )
 
@@ -370,7 +369,7 @@ Hyperparameter Tuning Functions
 
 .. code-block:: python
 
-   param_bounds = {
+   param_space = {
        'n_estimators': (50, 200),
        'max_depth': (3, 10),
        'min_samples_split': (2, 20)
@@ -378,10 +377,10 @@ Hyperparameter Tuning Functions
    
    bayes_results = ml.bayesian_optimization(
        model=RandomForestClassifier(),
-       param_bounds=param_bounds,
+       param_space=param_space,
        X_train=X_train, y_train=y_train,
        n_calls=50,
-       cv_folds=5
+       cv=5
    )
 
 Performance Visualization Functions
