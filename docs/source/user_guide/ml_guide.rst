@@ -89,7 +89,8 @@ Here's a comprehensive example showing the full ML workflow:
        comparison_results=comparison_results,
        sort_by='roc_auc',
        ascending=False,
-       show_std=True
+       show_std=True,
+       figsize=(12, 4)
    )
 
    # Step 6: Rank Models and Select Best Performer
@@ -251,7 +252,8 @@ Model Comparison Functions
        comparison_results=results,
        sort_by='f1_score',
        show_std=True,
-       highlight_best=True
+       highlight_best=True,
+       figsize=(12, 4)
    )
 
 **Rank Models**

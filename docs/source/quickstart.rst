@@ -137,7 +137,7 @@ First, install and import edaflow:
    )
    
    # Step 3: Display Results
-   ml.display_leaderboard(results)
+   ml.display_leaderboard(results, figsize=(12, 4))
    
    # Step 4: Optimize Best Model
    tuning_results = ml.optimize_hyperparameters(
@@ -389,7 +389,7 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    )
    
    # Step 4: Display Results
-   ml.display_leaderboard(baseline_results)
+   ml.display_leaderboard(baseline_results, figsize=(12, 4))
    
    # Step 5: Hyperparameter Optimization for Top Models
    # Get top 2 models (adapt based on actual metrics available)
@@ -434,7 +434,7 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
        experiment_config=config
    )
    
-   ml.display_leaderboard(final_comparison)
+   ml.display_leaderboard(final_comparison, figsize=(12, 4))
    
    # Select best model
    best_model_name = final_comparison.loc[final_comparison['roc_auc'].idxmax(), 'model']
