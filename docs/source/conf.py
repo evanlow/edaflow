@@ -22,8 +22,8 @@ copyright = '2025, Evan Low'
 author = 'Evan Low'
 
 # The full version, including alpha/beta/rc tags
-release = '0.13.3'
-version = '0.13.0'
+release = '0.15.0'
+version = '0.15.0'
 
 
 # -- General configuration ---------------------------------------------------

@@ -513,8 +513,8 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
        'n_classes': config['experiment_config']['n_classes'],
        'test_size': config.get('test_size', 0.2),  # Use get() with default
        'val_size': config.get('val_size', 0.15),  # Correct key name
-       'random_state': config['random_state'],
-       'stratified': config['stratified'],
+       'random_state': config.get('random_state', 42),  # Use get() with default
+       'stratified': config.get('stratified', True),    # Use get() with default
        'total_samples': config['experiment_config']['total_samples'],
        'train_samples': config['experiment_config']['train_samples'],
        'val_samples': config['experiment_config']['val_samples'],
@@ -540,9 +540,11 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    # Step 10: Model Report Generation
    report = ml.create_model_report(
        model=best_model,
-       experiment_data=config,
+       model_name=f"{best_model_name}_production_model",
+       experiment_config=config,
        performance_metrics=best_model_row.iloc[0].to_dict(),
-       include_plots=True
+       validation_results=None,  # Optional: add validation results if available
+       save_path=None           # Optional: specify path to save report
    )
    
    print(f"✅ Complete ML workflow finished!")
