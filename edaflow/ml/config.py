@@ -16,23 +16,30 @@ import warnings
 
 
 def setup_ml_experiment(
-    data: pd.DataFrame,
-    target_column: str,
+    data: Optional[pd.DataFrame] = None,
+    target_column: Optional[str] = None,
     test_size: float = 0.2,
     validation_size: float = 0.2,
     random_state: int = 42,
     stratify: bool = True,
-    verbose: bool = True
+    verbose: bool = True,
+    # Alternative sklearn-style parameters
+    X: Optional[pd.DataFrame] = None,
+    y: Optional[pd.Series] = None
 ) -> Dict[str, Any]:
     """
     Set up a complete ML experiment with train/validation/test splits.
     
+    This function supports two calling patterns:
+    1. DataFrame with target column: setup_ml_experiment(data, target_column)
+    2. Sklearn-style: setup_ml_experiment(X=X, y=y)
+    
     Parameters:
     -----------
-    data : pd.DataFrame
-        The dataset to prepare for ML
-    target_column : str
-        Name of the target variable column
+    data : pd.DataFrame, optional
+        The complete dataset including features and target
+    target_column : str, optional
+        Name of the target variable column (required if using data parameter)
     test_size : float, default=0.2
         Proportion of data to use for testing
     validation_size : float, default=0.2
@@ -43,26 +50,73 @@ def setup_ml_experiment(
         Whether to stratify the splits (for classification)
     verbose : bool, default=True
         Whether to print experiment setup details
+    X : pd.DataFrame, optional
+        Feature matrix (alternative to data + target_column pattern)
+    y : pd.Series, optional
+        Target vector (alternative to data + target_column pattern)
         
     Returns:
     --------
     Dict[str, Any]
         Dictionary containing X_train, X_val, X_test, y_train, y_val, y_test,
         feature_names, target_name, and experiment_config
+        
+    Examples:
+    ---------
+    # Method 1: DataFrame with target column (recommended)
+    >>> experiment = ml.setup_ml_experiment(df, target_column='target')
+    
+    # Method 2: Sklearn-style (also supported)
+    >>> X = df.drop('target', axis=1)
+    >>> y = df['target']
+    >>> experiment = ml.setup_ml_experiment(X=X, y=y)
     """
     
-    if verbose:
-        print("🧪 Setting up ML Experiment...")
-        print(f"📊 Dataset shape: {data.shape}")
-        print(f"🎯 Target column: {target_column}")
+    # Handle different calling patterns
+    if data is not None and target_column is not None:
+        # Standard edaflow pattern: DataFrame + target_column
+        if verbose:
+            print("🧪 Setting up ML Experiment...")
+            print(f"📊 Dataset shape: {data.shape}")
+            print(f"🎯 Target column: {target_column}")
+        
+        # Validate target column exists
+        if target_column not in data.columns:
+            raise ValueError(f"Target column '{target_column}' not found in dataset")
+        
+        # Separate features and target
+        X = data.drop(columns=[target_column])
+        y = data[target_column]
+        target_name = target_column
+        
+    elif X is not None and y is not None:
+        # Sklearn-style pattern: separate X and y
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("X must be a pandas DataFrame")
+        if not isinstance(y, (pd.Series, pd.DataFrame)):
+            raise TypeError("y must be a pandas Series or DataFrame")
+        
+        # Convert y to Series if it's a DataFrame
+        if isinstance(y, pd.DataFrame):
+            if y.shape[1] != 1:
+                raise ValueError("y DataFrame must have exactly one column")
+            target_name = y.columns[0]
+            y = y.iloc[:, 0]
+        else:
+            target_name = y.name if y.name else 'target'
+        
+        if verbose:
+            print("🧪 Setting up ML Experiment (sklearn-style)...")
+            print(f"📊 Features shape: {X.shape}")
+            print(f"📊 Target shape: {y.shape}")
+            print(f"🎯 Target name: {target_name}")
     
-    # Validate target column exists
-    if target_column not in data.columns:
-        raise ValueError(f"Target column '{target_column}' not found in dataset")
-    
-    # Separate features and target
-    X = data.drop(columns=[target_column])
-    y = data[target_column]
+    else:
+        raise ValueError(
+            "Must provide either:\n"
+            "1. data and target_column parameters, or\n"
+            "2. X and y parameters"
+        )
     
     # Determine problem type
     is_classification = _is_classification_problem(y)
@@ -106,14 +160,14 @@ def setup_ml_experiment(
     # Create experiment configuration
     experiment_config = {
         'problem_type': problem_type,
-        'target_column': target_column,
+        'target_column': target_name,
         'feature_names': list(X.columns),
         'n_classes': len(y.unique()) if is_classification else None,
         'test_size': test_size,
         'validation_size': validation_size,
         'random_state': random_state,
         'stratified': stratify and is_classification,
-        'total_samples': len(data),
+        'total_samples': len(X) + len(y),
         'train_samples': len(X_train),
         'val_samples': len(X_val),
         'test_samples': len(X_test)
@@ -127,7 +181,7 @@ def setup_ml_experiment(
         'y_val': y_val,
         'y_test': y_test,
         'feature_names': list(X.columns),
-        'target_name': target_column,
+        'target_name': target_name,
         'experiment_config': experiment_config
     }
 

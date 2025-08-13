@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.3] - 2025-08-13
+
+### Fixed
+- **ML Workflow Compatibility**: Fixed `TypeError: setup_ml_experiment() got an unexpected keyword argument 'X'`
+- **Parameter Support**: Added support for sklearn-style parameter pattern `setup_ml_experiment(X=X, y=y)`
+- **Backward Compatibility**: Maintained existing DataFrame + target_column calling pattern
+- **Input Validation**: Enhanced type checking and error handling for both calling patterns
+- **Documentation**: Updated function docstring with examples for both usage patterns
+
+### Enhanced
+- **Dual API Support**: Functions now accept both edaflow-style and sklearn-style parameter patterns
+- **Error Messages**: Improved error messages for invalid parameter combinations
+- **Type Safety**: Added comprehensive input validation for DataFrames and Series
+
 ## [0.13.2] - 2025-08-12
 
 ### Enhanced
