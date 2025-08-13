@@ -328,12 +328,12 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    from sklearn.svm import SVC
    
    # Load your ML-ready dataset (after completing EDA workflow above)
-   df_ml_ready = df_encoded  # From EDA workflow above
-   print(f"ML Dataset shape: {df_ml_ready.shape}")
+   df_ml = df_encoded  # From EDA workflow above
+   print(f"ML Dataset shape: {df_ml.shape}")
    
    # Step 1: ML Experiment Setup ⭐ NEW: Enhanced parameters in v0.14.0
    config = ml.setup_ml_experiment(
-       df_ml_ready, 'target_column',
+       df_ml, 'target_column',
        test_size=0.2,               # Test set: 20%
        val_size=0.15,               # ⭐ NEW: Validation set: 15% 
        experiment_name="complete_ml_workflow",  # ⭐ NEW: Experiment tracking
@@ -343,8 +343,8 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    )
    
    # Alternative: sklearn-style calling (also enhanced)
-   # X = df_ml_ready.drop('target_column', axis=1)
-   # y = df_ml_ready['target_column']
+   # X = df_ml.drop('target_column', axis=1)
+   # y = df_ml['target_column']
    # config = ml.setup_ml_experiment(
    #     X=X, y=y,
    #     val_size=0.15, experiment_name="sklearn_style_workflow"
@@ -510,7 +510,7 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
        metadata={
            'experiment_name': config['experiment_name'],  # ⭐ NEW: Experiment tracking
            'training_date': pd.Timestamp.now().strftime('%Y-%m-%d'),
-           'data_shape': df_ml_ready.shape,
+           'data_shape': df_ml.shape,
            'feature_count': len(config['feature_names'])
        }
    )
