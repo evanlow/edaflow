@@ -500,19 +500,22 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    # Step 9: Model Artifacts & Deployment Preparation
    from datetime import datetime
    
+   # Get CV score safely to avoid DataFrame boolean ambiguity
+   cv_score = float(final_comparison.loc[final_comparison['model'] == best_model_name, 'roc_auc'].values[0])
+   
    ml.save_model_artifacts(
        model=best_model,
        model_name=f"{config['experiment_name']}_production_model",  # ⭐ NEW: Uses experiment name
        experiment_config=config,
        performance_metrics={
-           'cv_score': final_comparison.loc[final_comparison['model'] == best_model_name, 'roc_auc'].iloc[0],
-           'test_score': final_score,
-           'model_type': best_model_name,
+           'cv_score': cv_score,
+           'test_score': float(final_score),
+           'model_type': str(best_model_name),
            # Metadata integrated into performance_metrics
-           'experiment_name': config['experiment_name'],  # ⭐ NEW: Experiment tracking
+           'experiment_name': str(config['experiment_name']),  # ⭐ NEW: Experiment tracking
            'training_date': datetime.now().strftime('%Y-%m-%d'),
            'data_shape': f"{df_ml.shape[0]}x{df_ml.shape[1]}",  # Format as string: "1000x20"
-           'feature_count': len(config['feature_names'])
+           'feature_count': int(len(config['feature_names']))
        }
    )
    
