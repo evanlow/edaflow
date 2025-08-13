@@ -421,7 +421,7 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
            X_train=config['X_train'],
            y_train=config['y_train'],
            method=method,
-           n_iter=20 if method == 'random' else None,
+           n_iter=20,
            cv=5
        )
        
