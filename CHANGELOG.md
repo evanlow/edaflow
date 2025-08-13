@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.13.2] - 2025-08-12
+
+### Enhanced
+- **Display Optimization**: Enhanced Rich console styling across all major EDA functions for improved visual consistency
+- **Google Colab Compatibility**: Optimized console width constraints and panel styling for better notebook rendering
+- **Visual Standards**: Applied consistent rounded borders, proper alignment, and professional color schemes
+- **User Experience**: Improved readability and visual hierarchy in data analysis outputs
+
 ## [0.13.1] - 2025-08-12
 
 ### Fixed

@@ -414,6 +414,43 @@ def _apply_css_optimizations(platform: str, theme: str, high_contrast: bool) -> 
         background-color: #e8f0fe !important;
         color: #1a73e8 !important;
     }
+    
+    /* Rich console output fixes for Google Colab */
+    pre[style*="color"] {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+        line-height: 1.4 !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+        overflow-x: hidden !important;
+        padding: 8px 12px !important;
+        border-radius: 4px !important;
+        margin: 4px 0 !important;
+    }
+    
+    /* Fix Rich panel alignment and borders in Colab */
+    pre[style*="border"] {
+        border-style: solid !important;
+        border-width: 1px !important;
+        box-sizing: border-box !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Rich table styling improvements for Colab */
+    pre table, 
+    pre[style*="table"] {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+    }
+    
+    /* Ensure proper text wrapping in Rich panels */
+    pre[style*="│"] {
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+    }
     '''
     
     elif platform == 'VS Code':

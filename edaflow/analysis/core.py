@@ -91,7 +91,8 @@ def check_null_columns(df: pd.DataFrame,
         from rich.text import Text
         from rich import box
         
-        console = Console()
+        # Optimize console for Google Colab compatibility
+        console = Console(width=80, force_terminal=True)
         use_rich = True
     except ImportError:
         console = None
@@ -180,7 +181,9 @@ def check_null_columns(df: pd.DataFrame,
                 "💡 Recommendation: Consider imputation strategies",
                 title="🚨 WARNING LEVELS",
                 style="bold yellow",
-                box=box.DOUBLE_EDGE
+                box=box.ROUNDED,
+                width=80,
+                padding=(0, 1)
             ))
         
         # Overall summary
@@ -214,7 +217,9 @@ def check_null_columns(df: pd.DataFrame,
             summary_text.strip(),
             title=health_title,
             style=health_style,
-            box=box.DOUBLE_EDGE
+            box=box.ROUNDED,
+            width=80,
+            padding=(0, 1)
         ))
         
         console.print("✨ Missing data analysis complete!", style="bold green")
@@ -280,7 +285,8 @@ def analyze_categorical_columns(df: pd.DataFrame,
         from rich import box
         from rich.columns import Columns
         
-        console = Console()
+        # Optimize console for Google Colab compatibility
+        console = Console(width=80, force_terminal=True)
         use_rich = True
     except ImportError:
         # Fallback to basic output if rich is not available
@@ -447,7 +453,9 @@ def analyze_categorical_columns(df: pd.DataFrame,
             summary_content.strip(),
             title="📊 Column Type Analysis",
             border_style="bright_magenta",
-            box=box.SIMPLE
+            box=box.ROUNDED,
+            width=80,
+            padding=(0, 1)
         ))
         
         console.print("✨ [bold green]Analysis complete![/bold green]")
@@ -555,7 +563,8 @@ def convert_to_numeric(df: pd.DataFrame,
         from rich import box
         from rich.progress import Progress, SpinnerColumn, TextColumn
         
-        console = Console()
+        # Optimize console for Google Colab compatibility
+        console = Console(width=80, force_terminal=True)
         rich_available = True
     except ImportError:
         rich_available = False
@@ -667,7 +676,9 @@ def convert_to_numeric(df: pd.DataFrame,
                 summary_text.strip(),
                 title="🎉 Conversion Summary",
                 style="bold green",
-                box=box.DOUBLE_EDGE
+                box=box.ROUNDED,
+                width=80,
+                padding=(0, 1)
             ))
             
             # Show conversion details
@@ -903,7 +914,8 @@ def display_column_types(df):
         from rich import box
         from rich.columns import Columns
         
-        console = Console()
+        # Optimize console for Google Colab compatibility
+        console = Console(width=80, force_terminal=True)
         use_rich = True
     except ImportError:
         console = None
@@ -1091,7 +1103,9 @@ def display_column_types(df):
             summary_content.strip(),
             title="📊 Column Analysis Summary",
             style="bold green",
-            box=box.SIMPLE
+            box=box.ROUNDED,
+            width=80,
+            padding=(0, 1)
         ))
         
         console.print("✨ Column type analysis complete!", style="bold green")
@@ -1184,7 +1198,8 @@ def impute_numerical_median(df, columns=None, inplace=False):
         from rich.text import Text
         from rich import box
         
-        console = Console()
+        # Optimize console for Google Colab compatibility
+        console = Console(width=80, force_terminal=True)
         use_rich = True
     except ImportError:
         console = None
@@ -6858,7 +6873,8 @@ def summarize_eda_insights(df: pd.DataFrame,
         from rich import box
         from rich.columns import Columns
         
-        console = Console()
+        # Optimize console for Google Colab compatibility
+        console = Console(width=80, force_terminal=True)
         use_rich = True
     except ImportError:
         console = None
@@ -7076,6 +7092,8 @@ def summarize_eda_insights(df: pd.DataFrame,
         header_panel = Panel(
             Text("🔍 COMPREHENSIVE EDA INSIGHTS & RECOMMENDATIONS", style="bold white"),
             style="bright_blue",
+            box=box.ROUNDED,
+            width=80,
             padding=(0, 1)
         )
         console.print(header_panel)
@@ -7167,7 +7185,9 @@ def summarize_eda_insights(df: pd.DataFrame,
                         f"• Focus on precision/recall metrics over accuracy",
                         title="🎯 Class Balance Analysis",
                         style="bold yellow",
-                        box=box.SIMPLE
+                        box=box.ROUNDED,
+                        width=80,
+                        padding=(0, 1)
                     )
                     console.print(imbalance_warning)
                 console.print()
@@ -7207,7 +7227,9 @@ def summarize_eda_insights(df: pd.DataFrame,
                 (f"\n[dim]Missing: {', '.join(workflow_info['missing_steps'][:3])}[/dim]" if workflow_info['missing_steps'] else ""),
                 title="📈 Analysis Completeness",
                 style="bold blue",
-                box=box.SIMPLE
+                box=box.ROUNDED,
+                width=80,
+                padding=(0, 1)
             )
             console.print(workflow_panel)
         
@@ -7220,7 +7242,9 @@ def summarize_eda_insights(df: pd.DataFrame,
             f"Ready for: {'Model training with class balancing' if any(r['category'] == 'Class Imbalance' for r in recommendations) else 'Advanced analysis and modeling'}",
             title="🎉 Analysis Complete",
             style="bold green", 
-            box=box.SIMPLE
+            box=box.ROUNDED,
+            width=80,
+            padding=(0, 1)
         )
         console.print(summary_panel)
         console.print()

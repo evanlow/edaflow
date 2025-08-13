@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.13.0** - [Latest Release](https://pypi.org/project/edaflow/0.13.0/) includes major machine learning expansion with comprehensive edaflow.ml subpackage featuring model comparison, hyperparameter optimization, learning curves, and experiment tracking. *Updated: August 11, 2025*
+> **📦 Current Version: v0.13.2** - [Latest Release](https://pypi.org/project/edaflow/0.13.2/) includes enhanced display optimization and visual improvements for better data analysis presentation across all environments. *Updated: August 12, 2025*
 
 ## 📖 Table of Contents
 
@@ -34,7 +34,10 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.13.0
+## ✨ What's New in v0.13.2
+
+### Display Enhancement (v0.13.2)
+**ENHANCED VISUAL EXPERIENCE**: Improved Rich console styling across all EDA functions for consistent, professional data analysis presentation. Enhanced Google Colab compatibility with optimized display formatting.
 
 ### ML Expansion (v0.13.0)
 **NEW MACHINE LEARNING SUBPACKAGE**: Introduced comprehensive `edaflow.ml` subpackage with complete ML workflow capabilities.
@@ -141,10 +144,10 @@ edaflow.visualize_histograms(df)
 - **Structured Output**: Returns organized dictionary with dataset overview, data quality assessment, and recommendations
 
 ### 🎨 Display Formatting Excellence
-- **Professional Output**: Comprehensive display formatting improvements across all core functions
-- **Clean Borders**: All tables now use proper border joining with SIMPLE box style
-- **No Visual Clutter**: Removed unnecessary separator lines from headers and footers
-- **Consistent Styling**: Unified professional appearance across `check_null_columns`, `analyze_categorical_columns`, `convert_to_numeric`, `display_column_types`, and `impute_numerical_median`
+- **Enhanced Visual Experience**: Refined Rich console styling with optimized panel borders and alignment
+- **Google Colab Optimized**: Improved display formatting specifically tailored for notebook environments
+- **Consistent Design**: Professional rounded borders, proper width constraints, and refined color schemes
+- **Universal Compatibility**: Beautiful output rendering across all major Python environments and notebooks
 
 ### � Recent Fixes (v0.12.24-0.12.26)
 - **LBP Warning Resolution**: Fixed scikit-image UserWarning in texture analysis functions
@@ -263,7 +266,13 @@ ml.save_model_artifacts(
 
 ## 🆕 Recent Updates
 
-### v0.13.0 (Latest) - Machine Learning Expansion
+### v0.13.2 (Latest) - Enhanced Display Experience
+- **ENHANCED**: Improved Rich console styling across all major EDA functions for professional data presentation
+- **VISUAL CONSISTENCY**: Applied consistent rounded borders, optimal alignment, and refined color schemes
+- **GOOGLE COLAB**: Enhanced compatibility with optimized display formatting for better notebook rendering
+- **USER EXPERIENCE**: Improved readability and visual hierarchy in all data analysis outputs
+
+### v0.13.0 - Machine Learning Expansion
 - **FEATURE**: Complete `edaflow.ml` subpackage with comprehensive ML workflow capabilities
 - **NEW MODULES**: Added 5 core ML modules (config, leaderboard, tuning, curves, artifacts)
 - **ML WORKFLOWS**: End-to-end machine learning from experiment setup to model deployment
