@@ -498,6 +498,8 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    print(f"🎯 Final test accuracy: {final_score:.4f}")
    
    # Step 9: Model Artifacts & Deployment Preparation
+   from datetime import datetime
+   
    ml.save_model_artifacts(
        model=best_model,
        model_name=f"{config['experiment_name']}_production_model",  # ⭐ NEW: Uses experiment name
@@ -508,8 +510,8 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
            'model_type': best_model_name,
            # Metadata integrated into performance_metrics
            'experiment_name': config['experiment_name'],  # ⭐ NEW: Experiment tracking
-           'training_date': pd.Timestamp.now().strftime('%Y-%m-%d'),
-           'data_shape': str(df_ml.shape),  # Convert to string for JSON serialization
+           'training_date': datetime.now().strftime('%Y-%m-%d'),
+           'data_shape': f"{df_ml.shape[0]}x{df_ml.shape[1]}",  # Format as string: "1000x20"
            'feature_count': len(config['feature_names'])
        }
    )
