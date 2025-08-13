@@ -19,13 +19,16 @@ def setup_ml_experiment(
     data: Optional[pd.DataFrame] = None,
     target_column: Optional[str] = None,
     test_size: float = 0.2,
-    validation_size: float = 0.2,
+    validation_size: Optional[float] = None,
     random_state: int = 42,
     stratify: bool = True,
     verbose: bool = True,
+    experiment_name: Optional[str] = None,
     # Alternative sklearn-style parameters
     X: Optional[pd.DataFrame] = None,
-    y: Optional[pd.Series] = None
+    y: Optional[pd.Series] = None,
+    # Alternative parameter names for compatibility
+    val_size: Optional[float] = None
 ) -> Dict[str, Any]:
     """
     Set up a complete ML experiment with train/validation/test splits.
@@ -42,18 +45,22 @@ def setup_ml_experiment(
         Name of the target variable column (required if using data parameter)
     test_size : float, default=0.2
         Proportion of data to use for testing
-    validation_size : float, default=0.2
-        Proportion of training data to use for validation
+    validation_size : float, optional
+        Proportion of training data to use for validation (default=0.2)
     random_state : int, default=42
         Random seed for reproducibility
     stratify : bool, default=True
         Whether to stratify the splits (for classification)
     verbose : bool, default=True
         Whether to print experiment setup details
+    experiment_name : str, optional
+        Name for the experiment (default='ml_experiment')
     X : pd.DataFrame, optional
         Feature matrix (alternative to data + target_column pattern)
     y : pd.Series, optional
         Target vector (alternative to data + target_column pattern)
+    val_size : float, optional
+        Alternative name for validation_size (for compatibility)
         
     Returns:
     --------
@@ -71,6 +78,17 @@ def setup_ml_experiment(
     >>> y = df['target']
     >>> experiment = ml.setup_ml_experiment(X=X, y=y)
     """
+    
+    # Handle parameter compatibility
+    # Use val_size if provided, otherwise use validation_size, default to 0.2
+    if val_size is not None:
+        validation_size = val_size
+    elif validation_size is None:
+        validation_size = 0.2
+    
+    # Set default experiment name if not provided
+    if experiment_name is None:
+        experiment_name = "ml_experiment"
     
     # Handle different calling patterns
     if data is not None and target_column is not None:
@@ -159,6 +177,7 @@ def setup_ml_experiment(
     
     # Create experiment configuration
     experiment_config = {
+        'experiment_name': experiment_name,
         'problem_type': problem_type,
         'target_column': target_name,
         'feature_names': list(X.columns),
@@ -182,6 +201,7 @@ def setup_ml_experiment(
         'y_test': y_test,
         'feature_names': list(X.columns),
         'target_name': target_name,
+        'experiment_name': experiment_name,  # Add experiment_name to top level for easy access
         'experiment_config': experiment_config
     }
 
@@ -283,18 +303,28 @@ def configure_model_pipeline(
 
 
 def validate_ml_data(
-    experiment_data: Dict[str, Any],
+    experiment_data: Optional[Dict[str, Any]] = None,
     check_missing: bool = True,
     check_duplicates: bool = True,
     check_outliers: bool = True,
-    verbose: bool = True
+    verbose: bool = True,
+    # Alternative sklearn-style parameters
+    X: Optional[pd.DataFrame] = None,
+    y: Optional[pd.Series] = None,
+    # Additional parameters for direct X,y usage
+    check_cardinality: bool = True,
+    check_distributions: bool = True
 ) -> Dict[str, Any]:
     """
     Validate data quality for ML experiments.
     
+    This function supports two calling patterns:
+    1. Experiment config: validate_ml_data(experiment_config)
+    2. Sklearn-style: validate_ml_data(X=X_train, y=y_train)
+    
     Parameters:
     -----------
-    experiment_data : Dict[str, Any]
+    experiment_data : Dict[str, Any], optional
         Dictionary from setup_ml_experiment containing splits
     check_missing : bool, default=True
         Whether to check for missing values
@@ -304,6 +334,14 @@ def validate_ml_data(
         Whether to check for outliers
     verbose : bool, default=True
         Whether to print validation details
+    X : pd.DataFrame, optional
+        Feature data (alternative to experiment_data)
+    y : pd.Series, optional
+        Target data (alternative to experiment_data)
+    check_cardinality : bool, default=True
+        Whether to check feature cardinality
+    check_distributions : bool, default=True
+        Whether to check feature distributions
         
     Returns:
     --------
@@ -317,21 +355,43 @@ def validate_ml_data(
     validation_results = {}
     recommendations = []
     
-    # Get data splits
-    X_train = experiment_data['X_train']
-    X_val = experiment_data['X_val'] 
-    X_test = experiment_data['X_test']
-    y_train = experiment_data['y_train']
+    # Handle different calling patterns
+    if experiment_data is not None:
+        # Pattern 1: Using experiment config
+        X_train = experiment_data['X_train']
+        X_val = experiment_data.get('X_val')
+        X_test = experiment_data.get('X_test')
+        y_train = experiment_data['y_train']
+        
+        if verbose:
+            print(f"📊 Validating experiment: {experiment_data.get('experiment_config', {}).get('experiment_name', 'Unknown')}")
+            
+    elif X is not None and y is not None:
+        # Pattern 2: Using X, y directly (sklearn-style)
+        X_train = X
+        X_val = None
+        X_test = None
+        y_train = y
+        
+        if verbose:
+            print("📊 Validating provided X, y data")
+            
+    else:
+        raise ValueError("Must provide either experiment_data OR both X and y parameters")
+    
+    # Get primary data for validation
+    primary_X = X_train
+    primary_y = y_train
     
     # Check missing values
     if check_missing:
-        train_missing = X_train.isnull().sum()
+        train_missing = primary_X.isnull().sum()
         missing_cols = train_missing[train_missing > 0]
         
         validation_results['missing_values'] = {
             'total_missing': train_missing.sum(),
             'columns_with_missing': len(missing_cols),
-            'missing_percentages': (missing_cols / len(X_train) * 100).to_dict()
+            'missing_percentages': (missing_cols / len(primary_X) * 100).to_dict()
         }
         
         if len(missing_cols) > 0:
@@ -339,23 +399,20 @@ def validate_ml_data(
             if verbose:
                 print(f"❓ Missing values found in {len(missing_cols)} columns")
     
-    # Check duplicates
-    if check_duplicates:
-        train_duplicates = X_train.duplicated().sum()
-        validation_results['duplicates'] = {
-            'duplicate_rows': train_duplicates,
-            'duplicate_percentage': (train_duplicates / len(X_train) * 100)
-        }
-        
-        if train_duplicates > 0:
-            recommendations.append(f"⚠️ {train_duplicates} duplicate rows found")
-            if verbose:
-                print(f"🔄 {train_duplicates} duplicate rows detected")
-    
     # Check for class imbalance (classification only)
-    if experiment_data['experiment_config']['problem_type'] == 'classification':
-        class_counts = y_train.value_counts()
-        class_ratios = class_counts / len(y_train)
+    # Determine problem type
+    if experiment_data is not None:
+        problem_type = experiment_data.get('experiment_config', {}).get('problem_type', 'auto')
+    else:
+        # Auto-detect for X, y pattern
+        if len(primary_y.unique()) <= 20:
+            problem_type = 'classification'
+        else:
+            problem_type = 'regression'
+    
+    if problem_type == 'classification':
+        class_counts = primary_y.value_counts()
+        class_ratios = class_counts / len(primary_y)
         min_class_ratio = class_ratios.min()
         
         validation_results['class_balance'] = {
@@ -369,6 +426,56 @@ def validate_ml_data(
             recommendations.append(f"⚠️ Class imbalance detected (min class: {min_class_ratio:.1%})")
             if verbose:
                 print(f"⚖️ Class imbalance: smallest class is {min_class_ratio:.1%}")
+
+    # Check duplicates
+    if check_duplicates:
+        train_duplicates = primary_X.duplicated().sum()
+        validation_results['duplicates'] = {
+            'duplicate_rows': train_duplicates,
+            'duplicate_percentage': (train_duplicates / len(primary_X) * 100)
+        }
+        
+        if train_duplicates > 0:
+            recommendations.append(f"⚠️ {train_duplicates} duplicate rows found")
+            if verbose:
+                print(f"🔄 {train_duplicates} duplicate rows detected")
+
+    # Additional checks for X, y pattern
+    if X is not None and y is not None:
+        # Check cardinality
+        if check_cardinality:
+            high_cardinality_cols = []
+            for col in primary_X.columns:
+                if primary_X[col].dtype == 'object':
+                    unique_count = primary_X[col].nunique()
+                    if unique_count > 50:
+                        high_cardinality_cols.append((col, unique_count))
+            
+            validation_results['cardinality'] = {
+                'high_cardinality_columns': high_cardinality_cols
+            }
+            
+            if high_cardinality_cols:
+                recommendations.append(f"⚠️ {len(high_cardinality_cols)} high-cardinality columns found")
+                if verbose:
+                    print(f"🔢 High cardinality columns: {len(high_cardinality_cols)}")
+        
+        # Check distributions 
+        if check_distributions:
+            skewed_cols = []
+            for col in primary_X.select_dtypes(include=[np.number]).columns:
+                skewness = abs(primary_X[col].skew())
+                if skewness > 2.0:
+                    skewed_cols.append((col, skewness))
+            
+            validation_results['distributions'] = {
+                'skewed_columns': skewed_cols
+            }
+            
+            if skewed_cols:
+                recommendations.append(f"⚠️ {len(skewed_cols)} highly skewed columns found")
+                if verbose:
+                    print(f"📊 Skewed distributions: {len(skewed_cols)}")
     
     # Data quality score
     quality_score = 100.0

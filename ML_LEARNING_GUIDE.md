@@ -184,8 +184,20 @@ print("""
    - Required for reliable performance estimates
 """)
 
-# Validate data quality
-ml.validate_ml_data(experiment['X_train'], experiment['y_train'])
+# Validate data quality - ⭐ Enhanced with dual API support
+# Pattern 1: Using experiment config (recommended)
+validation_report = ml.validate_ml_data(experiment, verbose=True)
+
+# Pattern 2: Direct X, y usage (sklearn-style) - also supported!
+# validation_report = ml.validate_ml_data(
+#     X=experiment['X_train'],
+#     y=experiment['y_train'], 
+#     check_missing=True,
+#     check_cardinality=True,
+#     check_distributions=True
+# )
+
+print(f"📊 Data Quality Score: {validation_report['quality_score']}/100")
 ```
 
 ---
@@ -1065,8 +1077,9 @@ def complete_ml_project_workflow(df, target_column, project_name):
         stratify=True, verbose=True
     )
     
-    # Validate data quality
-    ml.validate_ml_data(experiment['X_train'], experiment['y_train'])
+    # Validate data quality - ⭐ Both patterns supported
+    validation_report = ml.validate_ml_data(experiment, verbose=True)
+    print(f"📊 Data Quality: {validation_report['quality_score']}/100")
     
     # PHASE 2: BASELINE MODEL ESTABLISHMENT  
     print("\n🏃 PHASE 2: BASELINE MODELS")

@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.14.2] - 2025-08-13
+
+### Enhanced - API Consistency & Dual Pattern Support 🔄
+- **validate_ml_data Enhancement**: Added full support for both experiment_config and X,y calling patterns
+- **Dual API Consistency**: All ML functions now support consistent calling patterns like setup_ml_experiment()
+- **Enhanced Parameters**: Added check_cardinality and check_distributions parameters for X,y pattern
+- **Auto Problem Detection**: Intelligent problem type detection when using X,y pattern
+- **Documentation Enhancement**: Comprehensive dual API pattern examples in quickstart.rst and ML_LEARNING_GUIDE.md
+- **User Experience**: Fixed reported error where validate_ml_data didn't accept X,y parameters
+
+### Fixed - Function Signature Compatibility
+- **Parameter Support**: validate_ml_data now accepts X=X_train, y=y_train as requested by users
+- **Error Resolution**: Fixed unexpected keyword argument 'X' error reported in documentation
+- **API Parity**: All ML functions now have consistent parameter patterns for maximum flexibility
+
+## [0.14.1] - 2025-08-13
+
+### Enhanced - Complete ML Workflow Documentation 📚
+- **Complete ML Workflow Documentation**: Added comprehensive "Complete ML Workflow" section to match existing "Complete EDA Workflow" documentation structure
+- **Documentation Parity**: ML workflow examples now have the same level of detail and comprehensiveness as EDA workflows
+- **API Parameter Fixes**: Corrected all documentation examples to use proper function signatures
+- **Model Fitting Requirements**: Updated examples to show proper model fitting before comparison
+- **Deployment Ready**: All ML workflow documentation examples tested and verified working
+
+## [0.14.0] - 2025-08-13
+
+### Enhanced - ML Workflow Major Update 🚀
+- **Parameter Expansion**: Added comprehensive support for `val_size` and `experiment_name` parameters in `setup_ml_experiment()`
+- **Dual API Enhancement**: Improved sklearn-style and DataFrame-style parameter compatibility
+- **Validation Split Logic**: Enhanced validation data creation with proper `val_size` parameter handling
+- **Experiment Tracking**: Added `experiment_name` parameter for comprehensive experiment identification and tracking
+- **Downstream Integration**: Enhanced all ML functions (`compare_models`, `validate_ml_data`, `configure_model_pipeline`) to properly utilize new parameters
+- **Documentation Alignment**: Updated all documentation (README, quickstart, user guide) with comprehensive parameter examples
+- **Complete ML Workflow Documentation**: Added comprehensive "Complete ML Workflow" section to match existing "Complete EDA Workflow" documentation structure
+
+### Fixed - ML Function Compatibility
+- **compare_models Enhancement**: Added `experiment_config` parameter support for seamless integration
+- **Parameter Processing**: Fixed parameter mapping and validation logic for `val_size` → `validation_size`
+- **Syntax Corrections**: Resolved syntax errors in `tuning.py` module
+- **Configuration Structure**: Enhanced experiment configuration dictionary with proper metadata storage
+
+### Improved - ML Best Practices
+- **Data Split Quality**: Proper train/validation/test separation with configurable validation size
+- **Model Evaluation**: Enhanced model evaluation on dedicated validation sets
+- **Experiment Configuration**: Comprehensive metadata tracking including experiment names, problem types, and data characteristics
+- **Backward Compatibility**: Maintained full compatibility with existing ML workflow code
+
 ## [0.13.3] - 2025-08-13
 
 ### Fixed

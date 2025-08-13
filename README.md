@@ -56,8 +56,11 @@ A Python package for streamlined exploratory data analysis workflows.
 # Complete ML workflow in one package
 import edaflow.ml as ml
 
-# Setup experiment with automatic data splitting
-experiment = ml.setup_ml_experiment(df, 'target')
+# Setup experiment with flexible parameter support
+# Both calling patterns work:
+experiment = ml.setup_ml_experiment(df, 'target')  # DataFrame style
+# OR
+experiment = ml.setup_ml_experiment(X=X, y=y, val_size=0.15)  # sklearn style
 
 # Compare multiple models
 results = ml.compare_models(models, **experiment)
@@ -225,8 +228,21 @@ The powerful `edaflow.ml` subpackage provides comprehensive machine learning wor
 import edaflow.ml as ml
 from sklearn.ensemble import RandomForestClassifier
 
-# Setup ML experiment
+# Setup ML experiment - Multiple parameter patterns supported
+# Method 1: DataFrame + target column (recommended)
 experiment = ml.setup_ml_experiment(df, target_column='target')
+
+# Method 2: sklearn-style (also supported)
+X = df.drop('target', axis=1)
+y = df['target']
+experiment = ml.setup_ml_experiment(
+    X=X, y=y,
+    test_size=0.2,
+    val_size=0.15,  # Alternative to validation_size
+    experiment_name="my_ml_project",
+    stratify=True,
+    random_state=42
+)
 
 # Compare multiple models
 models = {
@@ -440,55 +456,95 @@ edaflow.visualize_scatter_matrix(df_final, title="Clean Data Relationships")
 edaflow.visualize_numerical_boxplots(df_final, title="Final Clean Distribution")
 ```
 
-### 🤖 **Complete ML Workflow** ⭐ *NEW in v0.13.0*
+### 🤖 **Complete ML Workflow** ⭐ *Enhanced in v0.14.0*
 ```python
 import edaflow.ml as ml
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
 
 # Continue from cleaned data above...
 df_final['target'] = your_target_data  # Add your target column
 
-# 1. Setup ML experiment with automatic data splitting
-experiment = ml.setup_ml_experiment(df_final, target_column='target')
+# 1. Setup ML experiment ⭐ NEW: Enhanced parameters in v0.14.0
+experiment = ml.setup_ml_experiment(
+    df_final, 'target',
+    test_size=0.2,               # Test set: 20%
+    val_size=0.15,               # ⭐ NEW: Validation set: 15% 
+    experiment_name="production_ml_pipeline",  # ⭐ NEW: Experiment tracking
+    random_state=42,
+    stratify=True
+)
 
-# 2. Compare multiple models
+# Alternative: sklearn-style calling (also enhanced)
+# X = df_final.drop('target', axis=1)
+# y = df_final['target']
+# experiment = ml.setup_ml_experiment(X=X, y=y, val_size=0.15, experiment_name="sklearn_workflow")
+
+print(f"Training: {len(experiment['X_train'])}, Validation: {len(experiment['X_val'])}, Test: {len(experiment['X_test'])}")
+
+# 2. Compare multiple models ⭐ Enhanced with validation set support
 models = {
     'RandomForest': RandomForestClassifier(random_state=42),
-    'GradientBoosting': GradientBoostingClassifier(random_state=42), 
-    'LogisticRegression': LogisticRegression(random_state=42)
+    'GradientBoosting': GradientBoostingClassifier(random_state=42),
+    'LogisticRegression': LogisticRegression(random_state=42),
+    'SVM': SVC(random_state=42, probability=True)
 }
 
-# Train and compare models
-comparison = ml.compare_models(models, **experiment)
+# Fit all models
+for name, model in models.items():
+    model.fit(experiment['X_train'], experiment['y_train'])
+
+# ⭐ Enhanced compare_models with experiment_config support
+comparison = ml.compare_models(
+    models=models,
+    experiment_config=experiment,  # ⭐ NEW: Automatically uses validation set
+    verbose=True
+)
 print(comparison)  # Professional styled output
 
-# 3. Hyperparameter optimization for good model selection
+# 3. Hyperparameter optimization ⭐ Enhanced with validation set
 param_grid = {
-    'n_estimators': [50, 100, 200],
-    'max_depth': [3, 5, 7]
+    'n_estimators': [100, 200, 300],
+    'max_depth': [5, 10, 15, None],
+    'min_samples_split': [2, 5, 10]
 }
 
 best_results = ml.optimize_hyperparameters(
     RandomForestClassifier(random_state=42),
     param_distributions=param_grid,
-    **experiment,
-    method='grid',
+    X_train=experiment['X_train'],
+    y_train=experiment['y_train'],
+    method='grid_search',
     cv=5
 )
 
-# 4. Generate performance visualizations
-ml.plot_learning_curves(best_results['best_model'], **experiment)
-ml.plot_roc_curves(best_results['best_model'], **experiment) 
-ml.plot_feature_importance(best_results['best_model'], **experiment)
+# 4. Generate comprehensive performance visualizations
+ml.plot_learning_curves(best_results['best_model'], 
+                       X_train=experiment['X_train'], y_train=experiment['y_train'])
+ml.plot_roc_curves({'optimized_model': best_results['best_model']}, 
+                   X_test=experiment['X_test'], y_test=experiment['y_test'])
+ml.plot_feature_importance(best_results['best_model'], 
+                          feature_names=experiment['feature_names'])
 
-# 5. Save complete model artifacts
+# 5. Save complete model artifacts with experiment tracking
 ml.save_model_artifacts(
     model=best_results['best_model'],
-    model_name='final_optimized_model',
+    model_name=f"{experiment['experiment_name']}_optimized_model",  # ⭐ NEW: Uses experiment name
     experiment_config=experiment,
-    performance_metrics=best_results['cv_results']
+    performance_metrics={
+        'cv_score': best_results['best_score'],
+        'test_score': best_results['best_model'].score(experiment['X_test'], experiment['y_test']),
+        'model_type': 'RandomForestClassifier'
+    },
+    metadata={
+        'experiment_name': experiment['experiment_name'],  # ⭐ NEW: Experiment tracking
+        'data_shape': df_final.shape,
+        'feature_count': len(experiment['feature_names'])
+    }
 )
+
+print(f"✅ Complete ML pipeline finished! Experiment: {experiment['experiment_name']}")
 ```
 
 ### 🤖 **ML Preprocessing with Smart Encoding** ⭐ *Introduced in v0.12.0*

@@ -78,11 +78,26 @@ edaflow is a Python package designed to streamline both exploratory data analysi
    from sklearn.ensemble import RandomForestClassifier
    from sklearn.linear_model import LogisticRegression
 
-   # Setup ML experiment
+   # Setup ML experiment (supports both calling patterns)
+   
+   # DataFrame-style (recommended)
    config = ml.setup_ml_experiment(
-       X=X, y=y, 
+       df, 'target',
+       val_size=0.15,
        test_size=0.2,
-       experiment_name="model_comparison"
+       experiment_name="model_comparison",
+       random_state=42,
+       stratify=True
+   )
+   
+   # Alternative: sklearn-style
+   config = ml.setup_ml_experiment(
+       X=X, y=y,
+       val_size=0.15,
+       test_size=0.2,
+       experiment_name="model_comparison",
+       random_state=42,
+       stratify=True
    )
 
    # Compare multiple models

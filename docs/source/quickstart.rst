@@ -53,11 +53,26 @@ First, install and import edaflow:
    X = df_converted.drop('target', axis=1)
    y = df_converted['target']
    
-   # Step 1: Setup ML Experiment
+   # Step 1: Setup ML Experiment (supports both calling patterns)
+   
+   # DataFrame-style (recommended)
+   config = ml.setup_ml_experiment(
+       df_converted, 'target',
+       val_size=0.15,
+       test_size=0.2,
+       experiment_name="quick_start_ml",
+       random_state=42,
+       stratify=True
+   )
+   
+   # Alternative: sklearn-style
    config = ml.setup_ml_experiment(
        X=X, y=y,
+       val_size=0.15,
        test_size=0.2,
-       experiment_name="quick_start_ml"
+       experiment_name="quick_start_ml",
+       random_state=42,
+       stratify=True
    )
    
    # Step 2: Compare Models
@@ -254,6 +269,300 @@ Here's how to perform a complete exploratory data analysis with edaflow's 18 fun
    # Step 14: Results Verification
    edaflow.visualize_scatter_matrix(df_encoded, title="ML-Ready Encoded Data")
    edaflow.visualize_numerical_boxplots(df_encoded, title="Final Encoded Distribution")
+
+🤖 **Complete ML Workflow** ⭐ *Enhanced in v0.14.0*
+-----------------------------------------------------
+
+Here's how to perform a complete machine learning workflow using edaflow's 26 ML functions, featuring the new enhanced `setup_ml_experiment` with `val_size` and `experiment_name` parameters:
+
+.. code-block:: python
+
+   import edaflow.ml as ml
+   import pandas as pd
+   from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+   from sklearn.linear_model import LogisticRegression
+   from sklearn.svm import SVC
+   
+   # Load your ML-ready dataset (after completing EDA workflow above)
+   df_ml_ready = df_encoded  # From EDA workflow above
+   print(f"ML Dataset shape: {df_ml_ready.shape}")
+   
+   # Step 1: ML Experiment Setup ⭐ NEW: Enhanced parameters in v0.14.0
+   config = ml.setup_ml_experiment(
+       df_ml_ready, 'target_column',
+       test_size=0.2,               # Test set: 20%
+       val_size=0.15,               # ⭐ NEW: Validation set: 15% 
+       experiment_name="complete_ml_workflow",  # ⭐ NEW: Experiment tracking
+       random_state=42,
+       stratify=True,
+       verbose=True
+   )
+   
+   # Alternative: sklearn-style calling (also enhanced)
+   # X = df_ml_ready.drop('target_column', axis=1)
+   # y = df_ml_ready['target_column']
+   # config = ml.setup_ml_experiment(
+   #     X=X, y=y,
+   #     val_size=0.15, experiment_name="sklearn_style_workflow"
+   # )
+   
+   print(f"Training samples: {len(config['X_train'])}")
+   print(f"Validation samples: {len(config['X_val'])}")  # ⭐ NEW: Validation set
+   print(f"Test samples: {len(config['X_test'])}")
+   
+   # Step 2: Data Validation ⭐ Enhanced with dual API support
+   # Pattern 1: Using experiment config (recommended)
+   validation_report = ml.validate_ml_data(config, verbose=True)
+   
+   # Pattern 2: Direct X, y usage (sklearn-style) - also supported!
+   # validation_report = ml.validate_ml_data(
+   #     X=config['X_train'],
+   #     y=config['y_train'],
+   #     check_missing=True,
+   #     check_cardinality=True,
+   #     check_distributions=True
+   # )
+   
+   print(f"Data Quality Score: {validation_report['quality_score']}/100")
+   
+   # Step 3: Baseline Model Comparison
+   baseline_models = {
+       'RandomForest': RandomForestClassifier(random_state=42),
+       'GradientBoosting': GradientBoostingClassifier(random_state=42),
+       'LogisticRegression': LogisticRegression(random_state=42),
+       'SVM': SVC(random_state=42, probability=True)
+   }
+   
+   # Fit all baseline models
+   for name, model in baseline_models.items():
+       model.fit(config['X_train'], config['y_train'])
+   
+   # ⭐ Enhanced compare_models with experiment_config support
+   baseline_results = ml.compare_models(
+       models=baseline_models,
+       experiment_config=config,  # ⭐ NEW: Uses validation set automatically
+       verbose=True
+   )
+   
+   # Step 4: Display Results
+   ml.display_leaderboard(baseline_results)
+   
+   # Step 5: Hyperparameter Optimization for Top Models
+   # Get top 2 models (adapt based on actual metrics available)
+   performance_col = [col for col in baseline_results.columns if col not in ['model', 'eval_time_ms', 'complexity']][0]
+   top_model_names = baseline_results.nlargest(2, performance_col)['model'].tolist()
+   
+   optimized_models = {}
+   for model_name in top_model_names:
+       print(f"Optimizing {model_name}...")
+       
+       if model_name == 'RandomForest':
+           param_space = {
+               'n_estimators': [100, 200, 300],
+               'max_depth': [5, 10, 15, None],
+               'min_samples_split': [2, 5, 10]
+           }
+           method = 'grid_search'
+       elif model_name == 'GradientBoosting':
+           param_space = {
+               'n_estimators': (50, 200),
+               'learning_rate': (0.01, 0.3),
+               'max_depth': (3, 8)
+           }
+           method = 'bayesian_optimization'
+       
+       results = ml.optimize_hyperparameters(
+           model=baseline_models[model_name],
+           param_distributions=param_space,
+           X_train=config['X_train'],
+           y_train=config['y_train'],
+           method=method,
+           n_iter=20 if method == 'random' else None,
+           cv=5
+       )
+       
+       optimized_models[model_name] = results['best_model']
+       print(f"  Best {model_name} score: {results['best_score']:.4f}")
+   
+   # Step 6: Final Model Selection
+   final_comparison = ml.compare_models(
+       models=optimized_models,
+       experiment_config=config
+   )
+   
+   ml.display_leaderboard(final_comparison)
+   
+   # Select best model
+   best_model_name = final_comparison.loc[final_comparison['roc_auc_mean'].idxmax(), 'model']
+   best_model = optimized_models[best_model_name]
+   
+   print(f"🏆 Selected model: {best_model_name}")
+   
+   # Step 7: Comprehensive Model Evaluation
+   print("\n📊 Model Performance Visualization:")
+   
+   # Learning curves
+   ml.plot_learning_curves(
+       model=best_model,
+       X_train=config['X_train'],
+       y_train=config['y_train'],
+       cv=5
+   )
+   
+   # ROC curves
+   ml.plot_roc_curves(
+       models=optimized_models,
+       X_test=config['X_test'],
+       y_test=config['y_test']
+   )
+   
+   # Precision-Recall curves
+   ml.plot_precision_recall_curves(
+       models=optimized_models,
+       X_test=config['X_test'],
+       y_test=config['y_test']
+   )
+   
+   # Confusion matrix
+   ml.plot_confusion_matrix(
+       model=best_model,
+       X_test=config['X_test'],
+       y_test=config['y_test'],
+       normalize='true'
+   )
+   
+   # Feature importance
+   if hasattr(best_model, 'feature_importances_'):
+       ml.plot_feature_importance(
+           model=best_model,
+           feature_names=config['feature_names'],
+           top_k=15
+       )
+   
+   # Validation curves for key hyperparameters
+   if best_model_name == 'RandomForest':
+       ml.plot_validation_curves(
+           model=RandomForestClassifier(random_state=42),
+           X=config['X_train'],
+           y=config['y_train'],
+           param_name='n_estimators',
+           param_range=[50, 100, 150, 200, 250, 300]
+       )
+   
+   # Step 8: Final Test Set Evaluation
+   final_score = best_model.score(config['X_test'], config['y_test'])
+   print(f"🎯 Final test accuracy: {final_score:.4f}")
+   
+   # Step 9: Model Artifacts & Deployment Preparation
+   ml.save_model_artifacts(
+       model=best_model,
+       model_name=f"{config['experiment_name']}_production_model",  # ⭐ NEW: Uses experiment name
+       experiment_config=config,
+       performance_metrics={
+           'cv_score': final_comparison.loc[final_comparison['model'] == best_model_name, 'roc_auc_mean'].iloc[0],
+           'test_score': final_score,
+           'model_type': best_model_name
+       },
+       metadata={
+           'experiment_name': config['experiment_name'],  # ⭐ NEW: Experiment tracking
+           'training_date': pd.Timestamp.now().strftime('%Y-%m-%d'),
+           'data_shape': df_ml_ready.shape,
+           'feature_count': len(config['feature_names'])
+       }
+   )
+   
+   # Step 10: Model Report Generation
+   report = ml.create_model_report(
+       model=best_model,
+       experiment_data=config,
+       performance_metrics=final_comparison.loc[final_comparison['model'] == best_model_name].iloc[0].to_dict(),
+       include_plots=True
+   )
+   
+   print(f"✅ Complete ML workflow finished!")
+   print(f"📁 Model artifacts saved with experiment name: {config['experiment_name']}")
+   print(f"📊 Model ready for production deployment")
+
+**⚖️ Consistent API Patterns Across ML Functions**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+edaflow ML functions support dual API patterns for maximum flexibility:
+
+.. code-block:: python
+
+   # 🔬 setup_ml_experiment - Two calling patterns
+   
+   # Pattern 1: DataFrame + target column (recommended)
+   config = ml.setup_ml_experiment(
+       df_cleaned, 'target_column',
+       val_size=0.15, 
+       experiment_name="my_experiment"
+   )
+   
+   # Pattern 2: sklearn-style (X, y)
+   config = ml.setup_ml_experiment(
+       X=X, y=y,
+       val_size=0.15,
+       experiment_name="my_experiment"
+   )
+   
+   # 🔍 validate_ml_data - Two calling patterns
+   
+   # Pattern 1: Using experiment config (recommended)
+   validation_report = ml.validate_ml_data(config, verbose=True)
+   
+   # Pattern 2: Direct X, y usage
+   validation_report = ml.validate_ml_data(
+       X=config['X_train'], y=config['y_train'],
+       check_missing=True,
+       check_cardinality=True,
+       check_distributions=True
+   )
+   
+   # ⚖️ compare_models - Enhanced with experiment_config
+   
+   # Uses experiment config automatically for validation sets
+   results = ml.compare_models(
+       models=models,
+       experiment_config=config,  # Automatically uses validation set
+       verbose=True
+   )
+
+**Benefits of Dual API Support:**
+
+- **Consistency**: Same patterns across all ML functions
+- **Flexibility**: Choose the pattern that fits your workflow  
+- **Migration**: Easy to adopt from existing sklearn code
+- **Integration**: Seamless with edaflow's experiment tracking
+
+**🔗 EDA to ML Workflow Integration**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For a seamless transition from EDA to ML:
+
+.. code-block:: python
+
+   # Complete pipeline: EDA → ML
+   
+   # 1. Start with raw data
+   df_raw = pd.read_csv('your_data.csv')
+   
+   # 2. Complete EDA workflow (from above)
+   edaflow.optimize_display()
+   df_eda_complete = edaflow.convert_to_numeric(df_raw)
+   # ... (complete EDA steps from above section)
+   
+   # 3. Seamless transition to ML
+   config = ml.setup_ml_experiment(
+       df_encoded, 'target_column',
+       val_size=0.15,
+       experiment_name="eda_to_ml_pipeline"  # ⭐ NEW: Track the complete workflow
+   )
+   
+   # 4. Continue with ML workflow...
+   # (ML steps from above)
+
+This creates a complete data science pipeline from raw data exploration to production-ready models!
 
 🎯 **Key Function Examples**
 ----------------------------
