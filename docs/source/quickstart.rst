@@ -437,7 +437,7 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    ml.display_leaderboard(final_comparison)
    
    # Select best model
-   best_model_name = final_comparison.loc[final_comparison['roc_auc_mean'].idxmax(), 'model']
+   best_model_name = final_comparison.loc[final_comparison['roc_auc'].idxmax(), 'model']
    best_model = optimized_models[best_model_name]
    
    print(f"🏆 Selected model: {best_model_name}")
@@ -503,7 +503,7 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
        model_name=f"{config['experiment_name']}_production_model",  # ⭐ NEW: Uses experiment name
        experiment_config=config,
        performance_metrics={
-           'cv_score': final_comparison.loc[final_comparison['model'] == best_model_name, 'roc_auc_mean'].iloc[0],
+           'cv_score': final_comparison.loc[final_comparison['model'] == best_model_name, 'roc_auc'].iloc[0],
            'test_score': final_score,
            'model_type': best_model_name
        },
