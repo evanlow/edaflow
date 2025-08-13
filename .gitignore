@@ -167,3 +167,24 @@ Thumbs.db
 # Local development
 .vscode/settings.json
 .idea/workspace.xml
+
+# Test and development files
+test_*.py
+*_test.py
+quick_*.py
+debug_*.py
+verify_*.py
+validate_*.py
+deployment_*.py
+comprehensive_*.py
+final_*.py
+static_*.py
+simple_*.py
+focused_*.py
+check_*.py
+downstream_*.py
+tuning_*_verification.py
+example_*.py
+
+# Temporary development documentation
+BUG_FIX_*.md
