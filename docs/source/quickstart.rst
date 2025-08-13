@@ -480,7 +480,7 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
        ml.plot_feature_importance(
            model=best_model,
            feature_names=config['feature_names'],
-           top_k=15
+           top_n=15
        )
    
    # Validation curves for key hyperparameters
