@@ -506,36 +506,36 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    
    # Create a serializable version of the experiment config
    serializable_config = {
-        'experiment_name': config['experiment_name'],
-        'problem_type': config['experiment_config']['problem_type'],
-        'target_name': config['target_name'],
-        'feature_names': config['feature_names'],
-        'n_classes': config['experiment_config']['n_classes'],
-        'test_size': config.get('test_size', 0.2),  # Use get() with default
-        'val_size': config.get('val_size', 0.15),  # Correct key name
-        'random_state': config['random_state'],
-        'stratified': config['stratified'],
-        'total_samples': config['experiment_config']['total_samples'],
-        'train_samples': config['experiment_config']['train_samples'],
-        'val_samples': config['experiment_config']['val_samples'],
-        'test_samples': config['experiment_config']['test_samples'],
-}
+       'experiment_name': config['experiment_name'],
+       'problem_type': config['experiment_config']['problem_type'],
+       'target_name': config['target_name'],
+       'feature_names': config['feature_names'],
+       'n_classes': config['experiment_config']['n_classes'],
+       'test_size': config.get('test_size', 0.2),  # Use get() with default
+       'val_size': config.get('val_size', 0.15),  # Correct key name
+       'random_state': config['random_state'],
+       'stratified': config['stratified'],
+       'total_samples': config['experiment_config']['total_samples'],
+       'train_samples': config['experiment_config']['train_samples'],
+       'val_samples': config['experiment_config']['val_samples'],
+       'test_samples': config['experiment_config']['test_samples'],
+   }
 
    ml.save_model_artifacts(
-        model=best_model,
-        model_name=f"{config['experiment_name']}_production_model",
-        experiment_config=serializable_config, # Pass the serializable config
-        performance_metrics={
-            'cv_score': cv_score,
-            'test_score': float(final_score),
-            'model_type': str(best_model_name),
-            # Metadata integrated into performance_metrics
-            'experiment_name': str(config['experiment_name']),
-            'training_date': datetime.now().strftime('%Y-%m-%d'),
-            'data_shape': f"{df_ml.shape[0]}x{df_ml.shape[1]}",
-            'feature_count': int(len(config['feature_names']))
-        }
-    )
+       model=best_model,
+       model_name=f"{config['experiment_name']}_production_model",
+       experiment_config=serializable_config,  # Pass the serializable config
+       performance_metrics={
+           'cv_score': cv_score,
+           'test_score': float(final_score),
+           'model_type': str(best_model_name),
+           # Metadata integrated into performance_metrics
+           'experiment_name': str(config['experiment_name']),
+           'training_date': datetime.now().strftime('%Y-%m-%d'),
+           'data_shape': f"{df_ml.shape[0]}x{df_ml.shape[1]}",
+           'feature_count': int(len(config['feature_names']))
+       }
+   )
    
    # Step 10: Model Report Generation
    report = ml.create_model_report(
