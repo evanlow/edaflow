@@ -53,12 +53,11 @@ Here's a comprehensive example showing the full ML workflow:
 
    # Step 3: Configure Preprocessing Pipeline
    pipeline_config = ml.configure_model_pipeline(
-       X=config['X_train'],
-       y=config['y_train'],
-       task_type='classification',
-       handle_missing='median',
-       scale_features=True,
-       encode_categories=True
+       data_config=config,
+       numerical_strategy='standard',
+       categorical_strategy='onehot',
+       handle_missing='impute',
+       verbose=True
    )
 
    # Step 4: Compare Multiple Models
@@ -68,6 +67,12 @@ Here's a comprehensive example showing the full ML workflow:
        'logistic_regression': LogisticRegression(random_state=42),
        'svm': SVC(probability=True, random_state=42)
    }
+
+   # 🚨 CRITICAL: Train all models first!
+   print("🔧 Training models...")
+   for name, model in models.items():
+       model.fit(config['X_train'], config['y_train'])
+       print(f"✅ {name} trained")
 
    comparison_results = ml.compare_models(
        models=models,
@@ -87,9 +92,23 @@ Here's a comprehensive example showing the full ML workflow:
        show_std=True
    )
 
-   # Step 6: Hyperparameter Optimization for Best Model
-   best_model = ml.rank_models(comparison_results)[0]['model_name']
+   # Step 6: Rank Models and Select Best Performer
+   # Two ways to get the best model:
    
+   # Method 1: DataFrame format (traditional)
+   ranked_df = ml.rank_models(comparison_results, 'roc_auc')
+   best_model_traditional = ranked_df.iloc[0]['model']
+   
+   # Method 2: List format (easy dictionary access)
+   best_model = ml.rank_models(
+       comparison_results, 
+       'roc_auc', 
+       return_format='list'
+   )[0]['model_name']
+   
+   print(f"Best performing model: {best_model}")
+   
+   # Step 7: Hyperparameter Optimization for Best Model
    if best_model == 'random_forest':
        param_distributions = {
            'n_estimators': [50, 100, 200],
@@ -110,7 +129,7 @@ Here's a comprehensive example showing the full ML workflow:
        n_jobs=-1
    )
 
-   # Step 7: Performance Visualizations
+   # Step 8: Performance Visualizations
    best_tuned_model = tuning_results['best_model']
    
    # Learning curves
@@ -136,7 +155,7 @@ Here's a comprehensive example showing the full ML workflow:
        top_n=15
    )
 
-   # Step 8: Save Model Artifacts
+   # Step 9: Save Model Artifacts
    artifact_paths = ml.save_model_artifacts(
        model=best_tuned_model,
        model_name="best_tuned_rf_model",
@@ -147,7 +166,7 @@ Here's a comprehensive example showing the full ML workflow:
        X_sample=config['X_train'].head(100)
    )
 
-   # Step 9: Track Experiment
+   # Step 10: Track Experiment
    ml.track_experiment(
        experiment_name=config['experiment_name'],
        model_results=comparison_results,
@@ -156,7 +175,7 @@ Here's a comprehensive example showing the full ML workflow:
        notes="Comprehensive model comparison with hyperparameter tuning"
    )
 
-   # Step 10: Generate Model Report
+   # Step 11: Generate Model Report
    ml.create_model_report(
        model=best_tuned_model,
        experiment_config=config,
@@ -235,6 +254,97 @@ Model Comparison Functions
        show_std=True,
        highlight_best=True
    )
+
+**Rank Models**
+
+The ``rank_models`` function provides flexible model ranking with two return formats:
+
+.. code-block:: python
+
+   # DataFrame format (traditional, backward compatible)
+   ranked_df = ml.rank_models(
+       comparison_df=results,
+       primary_metric='accuracy'
+   )
+   
+   # Access best model
+   best_model = ranked_df.iloc[0]['model']
+   best_accuracy = ranked_df.iloc[0]['accuracy']
+   
+   print(f"Best model: {best_model} (accuracy: {best_accuracy:.4f})")
+
+   # List format (dictionary access)
+   ranked_list = ml.rank_models(
+       comparison_df=results,
+       primary_metric='accuracy',
+       return_format='list'
+   )
+   
+   # Easy dictionary access patterns
+   best_model_name = ranked_list[0]["model_name"]
+   best_accuracy = ranked_list[0]["accuracy"]
+   best_f1 = ranked_list[0]["f1"]
+   
+   # One-liner pattern for best model
+   best_model = ml.rank_models(results, 'accuracy', return_format='list')[0]["model_name"]
+   
+   # Access all ranked models
+   print("All models ranked by accuracy:")
+   for i, model_info in enumerate(ranked_list):
+       print(f"{i+1}. {model_info['model_name']}: {model_info['accuracy']:.4f}")
+
+**Advanced Ranking Options**
+
+.. code-block:: python
+
+   # Rank by different metrics
+   ranked_by_f1 = ml.rank_models(results, 'f1_score', return_format='list')
+   ranked_by_precision = ml.rank_models(results, 'precision', return_format='list')
+   
+   # Ascending order (useful for error metrics)
+   ranked_by_error = ml.rank_models(
+       results, 
+       'validation_error', 
+       ascending=True,  # Lower error is better
+       return_format='list'
+   )
+   
+   # Weighted multi-metric ranking
+   ranked_weighted = ml.rank_models(
+       comparison_df=results,
+       primary_metric='accuracy',
+       weights={
+           'accuracy': 0.4,
+           'f1_score': 0.3,
+           'precision': 0.2,
+           'recall': 0.1
+       },
+       return_format='list'
+   )
+   
+   best_overall = ranked_weighted[0]["model_name"]
+   print(f"Best model by weighted score: {best_overall}")
+
+**Return Format Comparison**
+
+.. code-block:: python
+
+   # Both formats provide the same ranking
+   df_format = ml.rank_models(results, 'accuracy')
+   list_format = ml.rank_models(results, 'accuracy', return_format='list')
+   
+   # DataFrame format - good for analysis and display
+   print("Top 3 models (DataFrame):")
+   print(df_format.head(3)[['model', 'accuracy', 'f1', 'rank']])
+   
+   # List format - easy programmatic access
+   print("Top 3 models (List):")
+   for i, model in enumerate(list_format[:3]):
+       print(f"{i+1}. {model['model_name']}: {model['accuracy']:.4f}")
+   
+   # Choose format based on your needs:
+   # - DataFrame: Analysis, filtering, display
+   # - List: Simple access, iteration, one-liners
 
 Hyperparameter Tuning Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

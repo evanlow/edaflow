@@ -31,7 +31,7 @@ from .display import optimize_display
 # Make ML subpackage available  
 from . import ml
 
-__version__ = "0.13.3"
+__version__ = "0.15.0"
 __author__ = "Evan Low"
 __email__ = "evan.low@illumetechnology.com"
 

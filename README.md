@@ -15,12 +15,13 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.13.2** - [Latest Release](https://pypi.org/project/edaflow/0.13.2/) includes enhanced display optimization and visual improvements for better data analysis presentation across all environments. *Updated: August 12, 2025*
+> **📦 Current Version: v0.15.0** - [Latest Release](https://pypi.org/project/edaflow/0.15.0/) includes **CRITICAL ML workflow documentation fixes** that resolve user-reported errors and ensure all examples work perfectly. *Updated: August 13, 2025*
 
 ## 📖 Table of Contents
 
 - [Description](#description)
-- [✨ What's New](#-whats-new-in-v01221)
+- [🚨 Critical Fixes in v0.15.0](#-critical-fixes-in-v0150)
+- [✨ What's New](#-whats-new)
 - [Features](#features)
 - [🆕 Recent Updates](#-recent-updates)
 - [📚 Documentation](#-documentation)
@@ -34,15 +35,53 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## ✨ What's New in v0.13.2
+## 🚨 Critical Fixes in v0.15.0
 
-### Display Enhancement (v0.13.2)
-**ENHANCED VISUAL EXPERIENCE**: Improved Rich console styling across all EDA functions for consistent, professional data analysis presentation. Enhanced Google Colab compatibility with optimized display formatting.
+**IMPORTANT UPDATE**: This release fixes critical issues in ML workflow documentation that were causing user errors.
 
-### ML Expansion (v0.13.0)
-**NEW MACHINE LEARNING SUBPACKAGE**: Introduced comprehensive `edaflow.ml` subpackage with complete ML workflow capabilities.
+### 🎯 **Issues Resolved**:
+- ❌ **FIXED**: `RandomForestClassifier instance is not fitted yet` errors
+- ❌ **FIXED**: `TypeError: unexpected keyword argument` errors  
+- ❌ **FIXED**: Missing imports and undefined variables in examples
+- ❌ **FIXED**: Duplicate step numbering in documentation
+- ✅ **RESULT**: All ML workflow examples now work perfectly!
 
-**Root Enhancement**: Extended edaflow beyond EDA into full machine learning workflows, providing end-to-end data science capabilities from exploration to model deployment.
+### 📋 **What This Means For You**:
+- 🎉 **Copy-paste examples that work immediately**
+- 🎯 **No more confusing error messages**
+- 📚 **Complete, beginner-friendly documentation**
+- 🚀 **Smooth learning experience for new users**
+
+**Upgrade recommended for all users following ML workflow documentation.**
+
+## ✨ What's New
+
+### 🚨 Critical ML Documentation Fixes (v0.15.0)
+**MAJOR DOCUMENTATION UPDATE**: Fixed critical issues that were causing user errors when following ML workflow examples.
+
+**Problems Resolved**:
+- ✅ **Model Fitting**: Added missing `model.fit()` steps that were causing "not fitted" errors
+- ✅ **Function Parameters**: Fixed incorrect parameter names in all examples
+- ✅ **Missing Context**: Added imports and data preparation context  
+- ✅ **Step Numbering**: Corrected duplicate step numbers in documentation
+- ✅ **Enhanced Warnings**: Added prominent warnings about critical requirements
+
+**Result**: All ML workflow documentation now works perfectly out-of-the-box!
+
+### 🎯 Enhanced rank_models Function (v0.14.x)
+**DUAL RETURN FORMAT SUPPORT**: Major enhancement based on user requests.
+
+```python
+# Both formats now supported:
+df_results = ml.rank_models(results, 'accuracy')  # DataFrame (default)
+list_results = ml.rank_models(results, 'accuracy', return_format='list')  # List of dicts
+
+# User-requested pattern now works:
+best_model = ml.rank_models(results, 'accuracy', return_format='list')[0]["model_name"]
+```
+
+### 🚀 ML Expansion (v0.13.0+)
+**COMPLETE MACHINE LEARNING SUBPACKAGE**: Extended edaflow into full ML workflows.
 
 **New ML Modules Added**:
 - **`ml.config`**: ML experiment setup and data validation
@@ -250,6 +289,18 @@ models = {
     'LogisticRegression': LogisticRegression()
 }
 comparison = ml.compare_models(models, **experiment)
+
+# Rank models with flexible access patterns
+# Method 1: Easy dictionary access (recommended for getting best model)
+best_model_name = ml.rank_models(comparison, 'accuracy', return_format='list')[0]['model_name']
+
+# Method 2: Traditional DataFrame format
+ranked_df = ml.rank_models(comparison, 'accuracy')
+best_model_traditional = ranked_df.iloc[0]['model']
+
+# Both methods give the same result
+print(f"Best model: {best_model_name}")  # Easy access
+print(f"Best model: {best_model_traditional}")  # Traditional access
 
 # Optimize hyperparameters
 results = ml.optimize_hyperparameters(
@@ -502,6 +553,25 @@ comparison = ml.compare_models(
     verbose=True
 )
 print(comparison)  # Professional styled output
+
+# ⭐ Enhanced rank_models with flexible return formats
+# Quick access to best model (list format - NEW)
+best_model = ml.rank_models(comparison, 'accuracy', return_format='list')[0]['model_name']
+print(f"🏆 Best model: {best_model}")
+
+# Detailed ranking analysis (DataFrame format - traditional)
+ranked_models = ml.rank_models(comparison, 'accuracy')
+print("📊 Top 3 models:")
+print(ranked_models.head(3)[['model', 'accuracy', 'f1', 'rank']])
+
+# Advanced: Multi-metric weighted ranking
+weighted_ranking = ml.rank_models(
+    comparison, 
+    'accuracy',
+    weights={'accuracy': 0.4, 'f1': 0.3, 'precision': 0.3},
+    return_format='list'
+)
+print(f"🎯 Best by weighted score: {weighted_ranking[0]['model_name']}")
 
 # 3. Hyperparameter optimization ⭐ Enhanced with validation set
 param_grid = {

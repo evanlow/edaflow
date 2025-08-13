@@ -47,9 +47,48 @@ First, install and import edaflow:
 🤖 **ML Workflow Quick Start**
 ------------------------------
 
+.. warning::
+   **🚨 IMPORTANT: Model Fitting Required**
+   
+   The ``compare_models`` function expects **pre-trained models**. You MUST call ``model.fit()`` 
+   on each model before passing them to ``compare_models``. Unfitted models will cause errors!
+   
+   ✅ **Correct:**
+   
+   .. code-block:: python
+   
+      models = {'rf': RandomForestClassifier()}
+      
+      # ESSENTIAL: Fit models first!
+      for name, model in models.items():
+          model.fit(X_train, y_train)
+      
+      results = ml.compare_models(models, ...)  # ✅ Works!
+   
+   ❌ **Incorrect:**
+   
+   .. code-block:: python
+   
+      models = {'rf': RandomForestClassifier()}  # Unfitted!
+      results = ml.compare_models(models, ...)   # ❌ Will fail!
+
 .. code-block:: python
 
-   # Prepare your data
+   # Prerequisites: Import required libraries
+   import edaflow.ml as ml
+   import pandas as pd
+   from sklearn.ensemble import RandomForestClassifier
+   from sklearn.linear_model import LogisticRegression
+
+   # Prepare your data (assumes you've completed EDA steps above)
+   # This could be the result of: df_converted = edaflow.convert_to_numeric(df)
+   # For this example, let's assume you have a cleaned dataset:
+   
+   # Example data preparation (replace with your actual data)
+   # df = pd.read_csv('your_data.csv')
+   # df_converted = edaflow.convert_to_numeric(df)  # From EDA workflow above
+   
+   # Extract features and target
    X = df_converted.drop('target', axis=1)
    y = df_converted['target']
    
@@ -83,6 +122,11 @@ First, install and import edaflow:
        'rf': RandomForestClassifier(),
        'lr': LogisticRegression()
    }
+   
+   # 🚨 CRITICAL: Train models first!
+   for name, model in models.items():
+       model.fit(config['X_train'], config['y_train'])
+       print(f"✅ {name} trained")
    
    results = ml.compare_models(
        models=models,
@@ -521,6 +565,19 @@ edaflow ML functions support dual API patterns for maximum flexibility:
    
    # ⚖️ compare_models - Enhanced with experiment_config
    
+   # Define and train models
+   from sklearn.ensemble import RandomForestClassifier
+   from sklearn.linear_model import LogisticRegression
+   
+   models = {
+       'RandomForest': RandomForestClassifier(random_state=42),
+       'LogisticRegression': LogisticRegression(random_state=42)
+   }
+   
+   # 🚨 CRITICAL: Train models first!
+   for name, model in models.items():
+       model.fit(config['X_train'], config['y_train'])
+   
    # Uses experiment config automatically for validation sets
    results = ml.compare_models(
        models=models,
@@ -947,19 +1004,26 @@ Explore image datasets with the same systematic approach as tabular data! edaflo
 💡 **Pro Tips**
 ---------------
 
+**For Machine Learning:**
+1. **🚨 ALWAYS Fit Models First**: ``compare_models`` expects pre-trained models. Always call ``model.fit(X_train, y_train)`` before comparison
+2. **Model Training**: Train models on training data, then use ``compare_models`` for evaluation on test/validation sets
+3. **Experiment Tracking**: Use ``experiment_name`` parameter in ``setup_ml_experiment`` for organized workflows
+4. **Validation Sets**: Use ``val_size`` parameter to create proper train/validation/test splits
+5. **Performance**: Pre-fit models once, then compare multiple times with different evaluation sets
+
 **For Tabular Data:**
-1. **Jupyter Notebooks**: Use edaflow in Jupyter for the best visual experience with color-coded outputs
-2. **Large Datasets**: For datasets with >10,000 rows, consider sampling for visualization functions
-3. **Memory Management**: Process data in chunks for very large datasets
-4. **Custom Thresholds**: Adjust threshold parameters based on your data quality tolerance
-5. **Interactive Mode**: Use ``visualize_interactive_boxplots()`` for presentations and exploratory analysis
+6. **Jupyter Notebooks**: Use edaflow in Jupyter for the best visual experience with color-coded outputs
+7. **Large Datasets**: For datasets with >10,000 rows, consider sampling for visualization functions
+8. **Memory Management**: Process data in chunks for very large datasets
+9. **Custom Thresholds**: Adjust threshold parameters based on your data quality tolerance
+10. **Interactive Mode**: Use ``visualize_interactive_boxplots()`` for presentations and exploratory analysis
 
 **For Computer Vision:**
-6. **Start Small**: Use ``sample_size`` parameters to test workflows on subsets before full analysis
-7. **Quality First**: Always run ``assess_image_quality()`` before feature analysis to identify issues
-8. **Organized Data**: Structure images in class folders for automatic class detection
-9. **Memory Efficiency**: CV functions are optimized for memory usage but consider batch processing for huge datasets
-10. **Dependencies**: Install OpenCV (``pip install opencv-python``) for enhanced edge detection and texture analysis
+11. **Start Small**: Use ``sample_size`` parameters to test workflows on subsets before full analysis
+12. **Quality First**: Always run ``assess_image_quality()`` before feature analysis to identify issues
+13. **Organized Data**: Structure images in class folders for automatic class detection
+14. **Memory Efficiency**: CV functions are optimized for memory usage but consider batch processing for huge datasets
+15. **Dependencies**: Install OpenCV (``pip install opencv-python``) for enhanced edge detection and texture analysis
 
 🚀 **Next Steps**
 -----------------

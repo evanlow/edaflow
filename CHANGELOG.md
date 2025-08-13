@@ -5,6 +5,79 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] - 2025-08-13
+
+### 🚨 CRITICAL FIXES - ML Workflow Documentation
+
+**MAJOR ISSUE RESOLVED**: Fixed critical documentation bugs that were preventing users from successfully following ML workflows. All ML documentation examples now work perfectly without errors.
+
+#### 🎯 **Critical Fixes Applied**:
+
+**1. Missing Model Fitting Requirements**
+- **Problem**: Both ML workflows called `compare_models` with unfitted models, causing `RandomForestClassifier instance is not fitted yet` errors
+- **Solution**: Added explicit model training loops to all documentation examples
+- **Impact**: Users can now copy-paste examples that work immediately
+
+**2. Incorrect Function Parameters**
+- **Problem**: Documentation used wrong parameter names causing `TypeError: unexpected keyword argument` errors
+- **Solution**: Fixed all function calls to use correct signatures:
+  - `setup_ml_experiment(data=df, target_column='target')` ✅
+  - `compare_models(models=models, experiment_config=config)` ✅
+- **Impact**: No more confusing parameter errors for beginners
+
+**3. Missing Context & Imports**
+- **Problem**: Quickstart referenced undefined variables like `df_converted` without showing origin
+- **Solution**: Added complete context, imports, and data preparation steps
+- **Impact**: Clear, complete examples that beginners can follow step-by-step
+
+**4. Step Numbering Issues**
+- **Problem**: Complete ML Workflow had duplicate "Step 7" sections causing confusion
+- **Solution**: Fixed step numbering sequence (Step 7→8, 8→9, 9→10, 10→11)
+- **Impact**: Clear, logical progression through workflow steps
+
+#### 📋 **Documentation Files Fixed**:
+- ✅ `docs/source/quickstart.rst` - ML Workflow Quick Start
+- ✅ `docs/source/user_guide/ml_guide.rst` - Complete ML Workflow
+
+#### ⚠️ **Enhanced Warnings Added**:
+- Added prominent warning boxes about model fitting requirements
+- Enhanced ML-specific Pro Tips section
+- Clear guidance for beginners about critical steps
+
+#### 🧪 **Comprehensive Testing**:
+- Created complete end-to-end validation tests
+- Verified both workflows work without errors
+- Tested all function parameter combinations
+
+### Enhanced - User Experience
+- **Beginner-Friendly**: All examples now work out-of-the-box
+- **Professional Documentation**: Enhanced warnings and best practices guidance
+- **No More Errors**: Eliminated common user confusion points
+- **Copy-Paste Ready**: All code examples are immediately usable
+
+### Fixed - Function Compatibility
+- **setup_ml_experiment**: Now properly documented with correct parameter patterns
+- **compare_models**: Fixed parameter usage in all examples
+- **configure_model_pipeline**: Corrected data_config parameter usage
+
+**Migration Note**: This version primarily fixes documentation - no breaking changes to actual API functionality.
+
+## [Unreleased] - 2025-08-13
+
+### Enhanced - rank_models Function Major Enhancement 🎯
+- **Dual Return Formats**: Added `return_format` parameter with 'dataframe' and 'list' options
+- **User-Requested Pattern Support**: Now supports `rank_models(results, 'accuracy', return_format='list')[0]["model_name"]` pattern
+- **Dictionary Access**: List format returns dictionaries with both 'model' and 'model_name' keys for flexibility
+- **Backward Compatibility**: Default 'dataframe' format preserves all existing workflows
+- **Enhanced Documentation**: Comprehensive examples added to user guide and README
+- **Weighted Ranking**: Support for multi-metric weighted ranking in both formats
+- **Comprehensive Examples**: Added complete example file with all usage patterns
+
+### Enhanced - API Consistency & Error Handling
+- **compare_models Requirement**: Enhanced documentation to clarify models must be pre-trained
+- **Training Examples**: All documentation examples now show proper model.fit() calls
+- **Error Prevention**: Better error messages for common usage mistakes
+
 ## [0.14.2] - 2025-08-13
 
 ### Enhanced - API Consistency & Dual Pattern Support 🔄
