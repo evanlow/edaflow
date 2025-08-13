@@ -70,7 +70,7 @@ def optimize_hyperparameters(
     if scoring == 'auto':
         scoring = _detect_scoring_metric(y_train)
         if verbose:
-            print(f"📈 Scoring metric: {scoring}")
+            print(f" Scoring metric: {scoring}")
     
     start_time = time.time()
     
