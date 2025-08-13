@@ -500,9 +500,9 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    # Step 9: Model Artifacts & Deployment Preparation
    from datetime import datetime
    
-   # Get CV score safely to avoid DataFrame boolean ambiguity
-   best_row_mask = final_comparison['model'] == best_model_name
-   cv_score = float(final_comparison[best_row_mask]['roc_auc'].iloc[0])
+   # Get CV score safely using query method to avoid DataFrame boolean ambiguity
+   best_model_row = final_comparison.query(f"model == '{best_model_name}'")
+   cv_score = float(best_model_row['roc_auc'].iloc[0])
    
    ml.save_model_artifacts(
        model=best_model,
@@ -524,7 +524,7 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    report = ml.create_model_report(
        model=best_model,
        experiment_data=config,
-       performance_metrics=final_comparison[best_row_mask].iloc[0].to_dict(),
+       performance_metrics=best_model_row.iloc[0].to_dict(),
        include_plots=True
    )
    
