@@ -144,8 +144,8 @@ Here's a comprehensive example showing the full ML workflow:
    # ROC curves
    ml.plot_roc_curves(
        models={'tuned_model': best_tuned_model},
-       X_test=config['X_test'],
-       y_test=config['y_test']
+       X_val=config['X_test'],
+       y_val=config['y_test']
    )
    
    # Feature importance
@@ -406,7 +406,7 @@ Performance Visualization Functions
 
    ml.plot_roc_curves(
        models={'Model 1': model1, 'Model 2': model2},
-       X_test=X_test, y_test=y_test,
+       X_val=X_test, y_val=y_test,
        title="Model Comparison ROC Curves"
    )
 

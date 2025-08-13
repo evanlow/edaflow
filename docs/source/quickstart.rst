@@ -456,23 +456,23 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    # ROC curves
    ml.plot_roc_curves(
        models=optimized_models,
-       X_test=config['X_test'],
-       y_test=config['y_test']
+       X_val=config['X_test'],
+       y_val=config['y_test']
    )
    
    # Precision-Recall curves
    ml.plot_precision_recall_curves(
        models=optimized_models,
-       X_test=config['X_test'],
-       y_test=config['y_test']
+       X_val=config['X_test'],
+       y_val=config['y_test']
    )
    
    # Confusion matrix
    ml.plot_confusion_matrix(
        model=best_model,
-       X_test=config['X_test'],
-       y_test=config['y_test'],
-       normalize='true'
+       X_val=config['X_test'],
+       y_val=config['y_test'],
+       normalize=True
    )
    
    # Feature importance
@@ -487,8 +487,8 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    if best_model_name == 'RandomForest':
        ml.plot_validation_curves(
            model=RandomForestClassifier(random_state=42),
-           X=config['X_train'],
-           y=config['y_train'],
+           X_train=config['X_train'],
+           y_train=config['y_train'],
            param_name='n_estimators',
            param_range=[50, 100, 150, 200, 250, 300]
        )
