@@ -68,6 +68,61 @@ You can specify any of these metrics in the `scoring` argument of `ml.compare_mo
 
 These metrics are recommended for most practical ML workflows and are fully supported in edaflow.
 
+Choosing Metrics by Problem Type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The best metric depends on your prediction target:
+
+**Binary Classification (2 classes):**
+- Use: `accuracy`, `precision`, `recall`, `f1`, `roc_auc`
+- `roc_auc` is only available for binary targets (e.g., 0/1, True/False).
+- Example: Disease prediction (yes/no), fraud detection (fraud/not fraud)
+
+**Multiclass Classification (3+ classes):**
+- Use: `accuracy`, `precision`, `recall`, `f1`
+- `roc_auc` is not available in edaflow for multiclass (will show NaN)
+- Example: Animal type (cat/dog/horse), digit recognition (0-9)
+
+**Regression (continuous target):**
+- Use: `mse`, `mae`, `rmse`, `r2`
+- Example: House price prediction, temperature forecasting
+
+**Tip:**
+- If you see NaN for `roc_auc`, check if your target is multiclass or if your model lacks probability outputs.
+- For multiclass ROC AUC, use scikit-learn directly or request an edaflow extension.
+
+This guidance ensures you always choose the right metric for your ML problem type.
+
+Practical Examples: Metric Selection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++---------------------------+---------------------+-------------------------------+
+| Scenario                  | Recommended Metrics | Why/When to Use               |
++===========================+=====================+===============================+
+| Disease prediction        | f1, recall, roc_auc | Imbalanced, missing positives |
+| (binary classification)   |                     | is costly                     |
++---------------------------+---------------------+-------------------------------+
+| Spam detection            | precision, f1       | Imbalanced, false positives   |
+| (binary classification)   |                     | are costly                    |
++---------------------------+---------------------+-------------------------------+
+| Animal type classification| accuracy, f1        | Multiclass, balanced classes  |
+| (multiclass classification)|                    |                               |
++---------------------------+---------------------+-------------------------------+
+| Digit recognition         | accuracy, f1        | Multiclass, balanced          |
+| (multiclass classification)|                    |                               |
++---------------------------+---------------------+-------------------------------+
+| House price prediction    | mae, rmse, r2       | Regression, interpretability  |
+| (regression)              |                     | and error size matter         |
++---------------------------+---------------------+-------------------------------+
+| Energy demand forecasting | mae, mse, r2        | Regression, outlier-robust    |
+| (regression)              |                     | and variance explained        |
++---------------------------+---------------------+-------------------------------+
+
+**Tip:**
+- For imbalanced binary classification, use `f1`, `recall`, and `roc_auc`.
+- For multiclass, use `accuracy` and `f1`.
+- For regression, use both `mae` and `rmse` for a full error picture.
+
 Complete ML Workflow Example
 -----------------------------
 
