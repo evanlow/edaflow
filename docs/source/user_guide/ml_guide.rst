@@ -14,6 +14,60 @@ The edaflow.ml subpackage provides 26 functions organized into 5 categories:
 * **Performance Visualization** (6 functions): ML-specific plots and curves
 * **Model Artifacts** (4 functions): Model persistence and experiment tracking
 
+Best Practice Scoring Metrics
+---------------------------
+
+Choosing the right scoring metric is critical for evaluating and comparing machine learning models. Here are the best practice metrics supported by edaflow, with practical guidance:
+
+**Classification Metrics:**
+
+- **accuracy**: Overall correctness. Use for balanced datasets.
+- **precision**: Correctness of positive predictions. Important for imbalanced data (e.g., fraud detection).
+- **recall**: Ability to find all positive samples. Use when missing positives is costly (e.g., medical diagnosis).
+- **f1**: Harmonic mean of precision and recall. Best for imbalanced data when both precision and recall matter.
+- **roc_auc**: Area under the ROC curve. Measures ranking quality, best for binary classification.
+
+**Regression Metrics:**
+
+- **mse**: Mean squared error. Penalizes large errors, sensitive to outliers.
+- **mae**: Mean absolute error. Robust to outliers, interpretable.
+- **rmse**: Root mean squared error. Like MSE, but in original units.
+- **r2**: R-squared. Proportion of variance explained by the model.
+
+**How to Use in edaflow**
+
+You can specify any of these metrics in the `scoring` argument of `ml.compare_models`:
+
+.. code-block:: python
+
+   # Example: Compare models using all best practice metrics
+   results = ml.compare_models(
+       models=models,
+       X_train=config['X_train'],
+       y_train=config['y_train'],
+       X_test=config['X_test'],
+       y_test=config['y_test'],
+       cv_folds=5,
+       scoring=['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
+   )
+
+   # For regression:
+   results = ml.compare_models(
+       models=models,
+       X_train=X_train,
+       y_train=y_train,
+       X_test=X_test,
+       y_test=y_test,
+       cv_folds=5,
+       scoring=['mse', 'mae', 'rmse', 'r2']
+   )
+
+**Tip:**
+- For imbalanced classification, prefer `f1`, `precision`, and `recall` over `accuracy`.
+- For regression, use both `mae` and `rmse` to understand error characteristics.
+
+These metrics are recommended for most practical ML workflows and are fully supported in edaflow.
+
 Complete ML Workflow Example
 -----------------------------
 
