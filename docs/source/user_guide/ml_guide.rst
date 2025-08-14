@@ -70,6 +70,19 @@ The `cv_folds` parameter controls the number of cross-validation folds used to e
 
 Example: `cv_folds=5` means 5-fold cross-validation (the data is split into 5 parts, each used once as validation).
 
+**Other Key Parameters for Model Comparison**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **experiment_config**: Pass the output of `setup_ml_experiment()` to automatically use consistent train/validation/test splits and experiment settings. Best practice: Always use this for reproducibility and to avoid data leakage.
+
+- **problem_type**: Set to `'classification'`, `'regression'`, or `'auto'` (default). `'auto'` will detect the problem type from your data. Best practice: Let edaflow auto-detect unless you have a special case.
+
+- **metrics**: List of metrics to calculate for each model. If not set, edaflow uses the metrics in `scoring` or defaults based on problem type. Best practice: Specify only if you want extra metrics beyond those in `scoring`.
+
+- **verbose**: If True (default), prints progress and helpful messages during comparison. Set to False for silent operation (e.g., in scripts or pipelines). Best practice: Keep verbose on for interactive work, off for automation.
+
+These parameters help you follow best practices for reproducibility, clarity, and robust model evaluation in edaflow.
+
 .. code-block:: python
 
    # Example: Compare models using all best practice metrics
