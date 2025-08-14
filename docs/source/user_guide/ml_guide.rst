@@ -17,7 +17,28 @@ The edaflow.ml subpackage provides 26 functions organized into 5 categories:
 Best Practice Scoring Metrics
 ---------------------------
 
+
 Choosing the right scoring metric is critical for evaluating and comparing machine learning models. Here are the best practice metrics supported by edaflow, with practical guidance:
+
+**When to Choose Accuracy or F1 as Your Primary Metric**
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Selecting a primary metric depends on your dataset and business goals:
+
+- **Accuracy** is best when your classes are balanced and all types of errors are equally important. It measures the overall proportion of correct predictions. Use accuracy as your primary metric when:
+    - The dataset has roughly equal numbers of samples in each class.
+    - False positives and false negatives have similar costs.
+    - Example: Handwritten digit recognition, animal type classification with balanced classes.
+
+- **F1 Score** is best when your classes are imbalanced or when you care about both precision and recall. It is especially useful when the positive class is rare or when missing positive cases is costly. Use F1 as your primary metric when:
+    - The dataset is imbalanced (one class is much less frequent).
+    - Both false positives and false negatives are important to minimize.
+    - Example: Disease detection, fraud detection, spam filtering.
+
+**Summary:**
+- Use **accuracy** for balanced datasets and equal error costs.
+- Use **F1** for imbalanced datasets or when both precision and recall matter.
+
+Tracking both metrics can provide a more complete picture, but always select a primary metric that aligns with your real-world goals.
 
 **Classification Metrics:**
 
@@ -36,7 +57,18 @@ Choosing the right scoring metric is critical for evaluating and comparing machi
 
 **How to Use in edaflow**
 
-You can specify any of these metrics in the `scoring` argument of `ml.compare_models`:
+
+You can specify any of these metrics in the `scoring` argument of `ml.compare_models`.
+
+**About cv_folds**
+~~~~~~~~~~~~~~~~~
+The `cv_folds` parameter controls the number of cross-validation folds used to evaluate each model. Cross-validation splits your training data into several parts (folds), trains the model on some folds, and validates it on the remaining fold, repeating this process for each fold. The results are averaged to give a more reliable estimate of model performance.
+
+- Typical values: 5 or 10 (5 is common and a good default)
+- More folds = more reliable estimates, but longer runtime
+- Use higher values for small datasets, and lower values for very large datasets
+
+Example: `cv_folds=5` means 5-fold cross-validation (the data is split into 5 parts, each used once as validation).
 
 .. code-block:: python
 
