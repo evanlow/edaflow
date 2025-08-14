@@ -437,8 +437,11 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    ml.display_leaderboard(final_comparison, figsize=(12, 4))
    
    # Select best model
-   best_model_name = final_comparison.loc[final_comparison['roc_auc'].idxmax(), 'model']
-   best_model = optimized_models[best_model_name]
+
+    # Dynamically select the best model based on the primary metric
+    primary_metric = config.get('primary_metric', 'roc_auc')  # fallback to 'roc_auc' if not set
+    best_model_name = final_comparison.loc[final_comparison[primary_metric].idxmax(), 'model']
+    best_model = optimized_models[best_model_name]
    
    print(f"🏆 Selected model: {best_model_name}")
    
