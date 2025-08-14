@@ -1,3 +1,177 @@
+Troubleshooting & Common Pitfalls
+---------------------------------
+
+Even with a robust workflow, users may encounter common issues. Here are some troubleshooting tips and pitfalls to avoid:
+
+**Data Issues**
+- Unexpected errors during model fitting often stem from missing values, inconsistent data types, or unseen categories. Always validate and clean your data first.
+- If you see shape mismatch errors, check that your features and target arrays are aligned and have no missing values.
+
+**Model Training**
+- If a model fails to converge, try scaling your features or adjusting hyperparameters (e.g., increase max_iter).
+- For imbalanced classification, consider using stratified splits and appropriate metrics (e.g., ROC AUC, F1-score).
+
+**Leaderboard & Comparison**
+- If the leaderboard shows similar scores for all models, check for data leakage or target leakage.
+- If a model dominates, ensure your baseline is reasonable and your metrics are appropriate for the problem type.
+
+**Artifact Saving/Loading**
+- Always use the same library versions for saving and loading models to avoid compatibility issues.
+- If you cannot load a saved model, check for missing dependencies or version mismatches.
+
+**General Tips**
+- Read error messages carefully—they often point directly to the problem.
+- Use version control to track changes in your workflow and experiments.
+
+Further Resources & FAQ
+----------------------
+
+**Further Resources**
+- [scikit-learn User Guide](https://scikit-learn.org/stable/user_guide.html)
+- [XGBoost Documentation](https://xgboost.readthedocs.io/en/stable/)
+- [LightGBM Documentation](https://lightgbm.readthedocs.io/en/latest/)
+- [CatBoost Documentation](https://catboost.ai/docs/)
+- [Model Deployment with FastAPI](https://fastapi.tiangolo.com/tutorial/)
+- [Model Monitoring Concepts](https://mlops.community/model-monitoring/)
+
+**FAQ**
+
+**Q: Why does my model perform poorly on new data?**
+A: This may be due to overfitting, data drift, or differences between training and production data. Use cross-validation and monitor performance after deployment.
+
+**Q: How do I handle missing values in my dataset?**
+A: Use edaflow's imputation utilities or scikit-learn's SimpleImputer to fill missing values before training.
+
+**Q: Can I use custom models with edaflow?**
+A: Yes, as long as your model follows the scikit-learn API (fit/predict methods), it can be integrated into the workflow.
+
+**Q: How do I deploy my trained model?**
+A: See the "What's Next After Training the Model?" section for deployment options and best practices.
+
+**Q: What if I have a question not covered here?**
+A: Check the official documentation above or reach out to the project maintainers/community for support.
+edaflow Machine Learning Workflow: Overview & Best Practices
+===========================================================
+
+This guide walks you through the recommended end-to-end workflow for building, evaluating, and deploying machine learning models with edaflow. Each step is explained in detail below, but here’s a high-level summary to help you see the big picture:
+
+**Recommended ML Workflow**
+
+1. **Data Validation**
+    - Check for missing values, outliers, and data quality issues.
+2. **Experiment Setup**
+    - Split data into train/validation/test sets and configure experiment settings.
+3. **Preprocessing**
+    - Apply scaling, encoding, and imputation as needed.
+4. **Model Fitting**
+    - Train multiple candidate models (including baselines).
+5. **Model Comparison & Evaluation**
+    - Compare models using cross-validation and leaderboard visualizations.
+6. **Hyperparameter Optimization**
+    - Tune the best models for optimal performance.
+7. **Select Best Model**
+    - Choose the top-performing model based on your primary metric.
+8. **Save Model Artifacts**
+    - Persist the model, configuration, and metrics for reproducibility and deployment.
+9. **Generate Model Reports**
+    - Create reports and visualizations for stakeholders and documentation.
+10. **Track Experiments**
+     - Log experiment details for future reference and reproducibility.
+
+**Workflow Diagram:**
+
+::
+
+    [Data Validation]
+             ↓
+    [Experiment Setup]
+             ↓
+    [Preprocessing]
+             ↓
+    [Model Fitting] → [Baseline Model]
+             ↓
+    [Model Comparison/Evaluation]
+             ↓
+    [Hyperparameter Optimization]
+             ↓
+    [Select Best Model]
+             ↓
+    [Save Artifacts & Generate Reports]
+             ↓
+    [Track Experiments]
+
+Each section of this guide provides actionable examples, best practices, and explanations for every step above. Use this workflow as your roadmap for robust, reproducible, and effective machine learning with edaflow.
+
+Choosing the Right Performance Visualization
+-------------------------------------------
+
+Selecting the appropriate visualization helps you interpret model results and diagnose issues more effectively. Use the table below to match your problem type and primary metric to the recommended plot:
+
++---------------------------+---------------------+-------------------------------+
+| Problem Type / Scenario   | Primary Metrics     | Recommended Visualizations     |
++===========================+=====================+===============================+
+| Binary Classification     | accuracy, f1,       | ROC curve, learning curve,    |
+| (e.g., disease prediction)| recall, roc_auc     | confusion matrix              |
++---------------------------+---------------------+-------------------------------+
+| Multiclass Classification | accuracy, f1        | Learning curve, confusion     |
+| (e.g., digit recognition) |                     | matrix                        |
++---------------------------+---------------------+-------------------------------+
+| Imbalanced Classification | f1, recall,         | ROC curve, precision-recall   |
+| (e.g., fraud detection)   | precision, roc_auc  | curve, learning curve         |
++---------------------------+---------------------+-------------------------------+
+| Regression                | mae, rmse, r2, mse  | Learning curve, residual plot |
+| (e.g., house prices)      |                     | predicted vs. actual plot     |
++---------------------------+---------------------+-------------------------------+
+
+**Tips:**
+- Use learning curves to diagnose underfitting/overfitting and data sufficiency for any problem type.
+- Use ROC curves for binary/imbalanced classification to assess discrimination ability.
+- Use residual plots and predicted vs. actual plots for regression to check model fit and error patterns.
+- Confusion matrices are helpful for understanding misclassifications in classification tasks.
+
+edaflow provides functions for learning curves, ROC curves, and feature importance plots. Choose the visualization that best matches your metric and problem type for the most actionable insights.
+Best Practices and Strategies for Hyperparameter Optimization
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. **Start Simple:**
+    - Begin with default hyperparameters or a small grid. Only tune a few key hyperparameters at first (e.g., `n_estimators`, `max_depth`).
+
+2. **Use Cross-Validation:**
+    - Always evaluate hyperparameter combinations using cross-validation to avoid overfitting to a single train/test split.
+
+3. **Limit Search Space:**
+    - Define reasonable ranges for each hyperparameter. Avoid very large grids unless you have significant compute resources.
+
+4. **Random Search for Large Spaces:**
+    - For high-dimensional or continuous spaces, random search or Bayesian optimization is often more efficient than exhaustive grid search.
+
+5. **Tune Important Hyperparameters First:**
+    - Focus on hyperparameters that have the most impact (e.g., learning rate, tree depth, regularization). Fix less important ones to sensible defaults.
+
+6. **Monitor for Overfitting:**
+    - Watch for large gaps between training and validation scores. Use regularization and early stopping if available.
+
+7. **Automate and Parallelize:**
+    - Use tools that support parallel search or distributed computing to speed up tuning.
+
+8. **Document Results:**
+    - Keep track of tested combinations and their performance. This helps avoid redundant work and supports reproducibility.
+
+9. **Balance Performance and Simplicity:**
+    - The most complex model is not always the best. Prefer simpler models if performance is similar.
+
+10. **Re-tune When Data Changes:**
+     - If your data distribution changes significantly, re-run hyperparameter optimization.
+
+**Strategy Examples:**
+
+- **Grid Search:** Best for small, discrete search spaces and when you want to exhaustively test all combinations.
+- **Random Search:** Good for large or continuous spaces; often finds good solutions faster than grid search.
+- **Bayesian Optimization:** Efficient for expensive models or large search spaces; uses past results to guide the search.
+
+edaflow supports both grid search and Bayesian optimization, so you can choose the strategy that best fits your problem and resources.
+
+Baseline Models: A Starting Point
 Machine Learning User Guide
 ===========================
 
@@ -15,6 +189,41 @@ The edaflow.ml subpackage provides 26 functions organized into 5 categories:
 * **Model Artifacts** (4 functions): Model persistence and experiment tracking
 
 Best Practice Scoring Metrics
+
+Data Validation: A Critical First Step
+--------------------------------------
+Before comparing models, always validate your data. Data issues like missing values, high cardinality, or inconsistent distributions can lead to misleading results or model errors. edaflow provides the `validate_ml_data` function to help you:
+
+- Detect missing values and outliers
+- Check feature cardinality and distributions
+- Ensure your data is suitable for modeling
+
+**Best practice:** Run `validate_ml_data` on your training data before any model comparison. This ensures your results are reliable and helps prevent common pitfalls in ML workflows.
+
+Example:
+
+.. code-block:: python
+
+   report = ml.validate_ml_data(
+       X=X_train, y=y_train,
+       check_missing=True,
+       check_cardinality=True,
+       check_distributions=True
+   )
+
+Review the validation report and address any issues before proceeding to model comparison.
+
+
+**Data Quality Score:**
+The `validate_ml_data` function provides a data quality score—a summary metric (typically from 0 to 1) that reflects the overall health of your dataset. A higher score means your data is cleaner, more complete, and better suited for modeling. Use this score to quickly assess readiness:
+
+- **Tip:** The data quality score can also be used to compare the quality of different datasets. When you have multiple data sources or versions, use the score to objectively evaluate and select the dataset that is best suited for modeling. This helps ensure you are building models on the highest quality data available.
+
+- **0.9–1.0:** Excellent quality, ready for modeling
+- **0.7–0.9:** Good, but review warnings and minor issues
+- **Below 0.7:** Significant issues—address missing values, outliers, or feature problems before proceeding
+
+**Best practice:** Aim for a high data quality score to ensure robust, reliable model results.
 ---------------------------
 
 
@@ -377,6 +586,55 @@ Configuration Functions
    )
 
 Model Comparison Functions
+How Model Comparison and Leaderboards Work in edaflow
+-----------------------------------------------------
+
+edaflow makes it easy to compare multiple models and visualize their performance side by side. Here’s how the workflow operates and what you can expect:
+
+**How `ml.compare_models` Works:**
+- Takes a dictionary of models and your train/test data.
+- Runs cross-validation (using `cv_folds`) for each model, fitting and evaluating them on the specified metrics.
+- Returns a results object (usually a DataFrame) with each model’s average scores for all metrics, plus standard deviations if applicable.
+- Supports both classification and regression models.
+
+**How `ml.display_leaderboard` Works:**
+- Takes the results from `ml.compare_models` and displays them in a clear, sortable table (the leaderboard).
+- You can choose which metric to sort by (e.g., accuracy, f1, roc_auc, mae, etc.).
+- The leaderboard highlights the best-performing models for each metric and can show standard deviations to help you assess model stability.
+- Options like `highlight_best`, `show_std`, and `figsize` let you customize the display.
+
+**What You’ll See:**
+- A table or plot with model names as rows and metrics as columns.
+- The best model(s) for each metric are highlighted.
+- You can quickly spot which models perform best overall or on specific metrics.
+- Standard deviations (if shown) help you judge the consistency of each model’s performance.
+
+**How to Use the Output:**
+- Use the leaderboard to select the best model for your needs (e.g., highest f1 for imbalanced classification, lowest rmse for regression).
+- Compare models not just on average scores, but also on their stability (std) and performance across multiple metrics.
+- Export or save the leaderboard for reporting or further analysis.
+
+**Example Workflow:**
+
+.. code-block:: python
+
+   results = ml.compare_models(
+       models=models,
+       X_train=X_train, y_train=y_train,
+       X_test=X_test, y_test=y_test,
+       cv_folds=5,
+       scoring=['accuracy', 'f1', 'roc_auc']
+   )
+
+   ml.display_leaderboard(
+       comparison_results=results,
+       sort_by='f1',
+       show_std=True,
+       highlight_best=True,
+       figsize=(10, 4)
+   )
+
+This workflow helps you make informed, data-driven choices about which model to use in production or further tuning.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Compare Models**
@@ -504,6 +762,32 @@ The ``rank_models`` function provides flexible model ranking with two return for
 Hyperparameter Tuning Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+What is Hyperparameter Optimization?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Hyperparameter optimization (also called hyperparameter tuning) is the process of systematically searching for the best combination of settings (hyperparameters) that control how a machine learning model learns from data. Unlike model parameters (which are learned during training, such as weights in a neural network), hyperparameters are set before training and can significantly affect model performance.
+
+Common hyperparameters include:
+- Number of trees in a random forest (`n_estimators`)
+- Maximum tree depth (`max_depth`)
+- Learning rate for boosting algorithms
+- Regularization strength
+- Kernel type for SVMs
+
+Why is it important?
+--------------------
+The right hyperparameters can dramatically improve a model’s accuracy, generalization, and robustness. Poorly chosen hyperparameters can lead to underfitting, overfitting, or unnecessarily slow training.
+
+How does it work?
+-----------------
+Hyperparameter optimization involves:
+1. Defining a search space (the possible values for each hyperparameter).
+2. Selecting a search strategy (e.g., grid search, random search, Bayesian optimization).
+3. Evaluating model performance for each combination using cross-validation or a holdout set.
+4. Selecting the combination that yields the best results according to a chosen metric (e.g., accuracy, F1 score).
+
+edaflow provides utilities for both grid search and Bayesian optimization, making it easy to tune models for optimal performance.
+
 **Grid Search**
 
 .. code-block:: python
@@ -567,6 +851,38 @@ Performance Visualization Functions
 Model Artifacts Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Saving and Managing Model Artifacts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Saving model artifacts is essential for reproducibility, deployment, and collaboration. Here are best practices and tips for managing your models and experiment outputs:
+
+1. **Save Everything Needed for Reproducibility:**
+    - Always save the trained model, the configuration (hyperparameters, preprocessing steps), and the performance metrics.
+    - Use `ml.save_model_artifacts()` to bundle these together in a single directory or file.
+
+2. **Use Clear Naming Conventions:**
+    - Name your model files with version numbers, dates, or experiment IDs (e.g., `production_model_v1.joblib`, `rf_exp2025-08-14.joblib`).
+    - This makes it easy to track which model was used for which experiment or deployment.
+
+3. **Track Experiment Metadata:**
+    - Save experiment configuration, random seeds, and data splits alongside your model. This ensures you can reproduce results exactly.
+    - Consider using experiment tracking tools or a simple spreadsheet/log to record key details.
+
+4. **Test Loading Before Deployment:**
+    - After saving, always test loading the model and running a prediction to ensure the artifact is valid and compatible with your environment.
+
+5. **Store Artifacts Securely:**
+    - Keep production models in a version-controlled or access-controlled location (e.g., cloud storage, artifact repository).
+    - Avoid storing sensitive data in model artifacts unless necessary, and document any data included.
+
+6. **Document Model Lineage:**
+    - Record which data, code version, and hyperparameters produced each model artifact. This is critical for audits and troubleshooting.
+
+7. **Automate Artifact Management:**
+    - Integrate artifact saving and loading into your ML pipeline to reduce manual errors and ensure consistency.
+
+By following these practices, you ensure your models are reproducible, auditable, and ready for deployment or further analysis.
+
 **Save Model Artifacts**
 
 .. code-block:: python
@@ -604,6 +920,190 @@ Best Practices
 7. **Generate model reports** for stakeholder communication
 
 Integration with EDA
+Baseline Models: A Starting Point
+---------------------------------
+
+Before building complex machine learning models, it's important to establish a baseline. A baseline model is a simple model that provides a minimum benchmark for performance. Comparing your advanced models to a baseline helps you understand if your modeling efforts are truly adding value.
+
+**What is a Baseline Model?**
+
+- A baseline model is a simple, easy-to-implement model that makes predictions using basic rules or heuristics.
+- It sets a reference point for model performance—your goal is to outperform the baseline.
+- If your advanced model does not beat the baseline, it may indicate issues with your data, features, or modeling approach.
+
+**Why Use Baseline Models?**
+
+- They help you detect data leakage or target leakage.
+- They provide context for interpreting model results.
+- They are quick to implement and require no tuning.
+
+**Common Baseline Models**
+
+*For Classification:*
+
+- **DummyClassifier** (from scikit-learn):
+    - "most_frequent": Always predicts the most common class in the training data.
+    - "stratified": Predicts according to the class distribution.
+    - "uniform": Predicts classes uniformly at random.
+
+*For Regression:*
+
+- **DummyRegressor** (from scikit-learn):
+    - "mean": Always predicts the mean of the training targets.
+    - "median": Always predicts the median of the training targets.
+
+**How to Use Baseline Models in edaflow**
+
+You can include baseline models in your model dictionary when using `ml.compare_models`. Here is an example:
+
+.. code-block:: python
+
+   from sklearn.dummy import DummyClassifier, DummyRegressor
+
+   # For classification
+   models = {
+       'dummy_most_frequent': DummyClassifier(strategy='most_frequent'),
+       'dummy_stratified': DummyClassifier(strategy='stratified'),
+       # Add your real models here
+   }
+
+   results = ml.compare_models(
+       models=models,
+       X_train=X_train, y_train=y_train,
+       X_test=X_test, y_test=y_test,
+       cv_folds=5
+   )
+
+   # For regression
+   models = {
+       'dummy_mean': DummyRegressor(strategy='mean'),
+       'dummy_median': DummyRegressor(strategy='median'),
+       # Add your real models here
+   }
+
+   results = ml.compare_models(
+       models=models,
+       X_train=X_train, y_train=y_train,
+       X_test=X_test, y_test=y_test,
+       cv_folds=5
+   )
+
+**Best Practice:**
+- Always include at least one baseline model in your comparisons.
+- If your best model does not outperform the baseline, revisit your data, features, or modeling approach.
+
+This approach ensures you have a solid reference point and helps you build more robust, trustworthy machine learning solutions.
+---------------------
+
+Widely Used Model Types in Machine Learning
+-------------------------------------------
+
+edaflow supports a wide range of models from scikit-learn and compatible libraries. Here are the most common types you can use for classification and regression:
+
+**Classification Models:**
+
+- **Logistic Regression**
+    - Good baseline for linear problems.
+    - `from sklearn.linear_model import LogisticRegression`
+- **Decision Tree Classifier**
+    - Interpretable, handles non-linear data.
+    - `from sklearn.tree import DecisionTreeClassifier`
+- **Random Forest Classifier**
+    - Robust ensemble of decision trees.
+    - `from sklearn.ensemble import RandomForestClassifier`
+- **Gradient Boosting Classifier**
+    - Powerful for tabular data.
+    - `from sklearn.ensemble import GradientBoostingClassifier`
+- **K-Nearest Neighbors (KNN) Classifier**
+    - Simple, non-parametric.
+    - `from sklearn.neighbors import KNeighborsClassifier`
+- **Naive Bayes**
+    - Fast, good for text and categorical data.
+    - `from sklearn.naive_bayes import GaussianNB`
+- **Support Vector Machine (SVM)**
+    - Effective for high-dimensional data.
+    - `from sklearn.svm import SVC`
+- **Neural Network (MLPClassifier)**
+    - Flexible, can model complex patterns.
+    - `from sklearn.neural_network import MLPClassifier`
+- **Ensemble Methods**
+    - Bagging, Stacking, Voting, AdaBoost, ExtraTrees.
+    - `from sklearn.ensemble import BaggingClassifier, StackingClassifier, VotingClassifier, AdaBoostClassifier, ExtraTreesClassifier`
+- **Advanced Boosting Libraries**
+    - XGBoost, LightGBM, CatBoost (install separately).
+    - `from xgboost import XGBClassifier`, `from lightgbm import LGBMClassifier`, `from catboost import CatBoostClassifier`
+
+**Regression Models:**
+
+- **Linear Regression**
+    - Standard for continuous targets.
+    - `from sklearn.linear_model import LinearRegression`
+- **Ridge, Lasso, ElasticNet**
+    - Regularized linear models.
+    - `from sklearn.linear_model import Ridge, Lasso, ElasticNet`
+- **Decision Tree Regressor**
+    - Non-linear, interpretable.
+    - `from sklearn.tree import DecisionTreeRegressor`
+- **Random Forest Regressor**
+    - Ensemble, robust to overfitting.
+    - `from sklearn.ensemble import RandomForestRegressor`
+- **Gradient Boosting Regressor**
+    - Powerful for many regression tasks.
+    - `from sklearn.ensemble import GradientBoostingRegressor`
+- **K-Nearest Neighbors (KNN) Regressor**
+    - Simple, non-parametric.
+    - `from sklearn.neighbors import KNeighborsRegressor`
+- **Support Vector Regressor (SVR)**
+    - Effective for high-dimensional regression.
+    - `from sklearn.svm import SVR`
+- **Neural Network (MLPRegressor)**
+    - Flexible, can model complex patterns.
+    - `from sklearn.neural_network import MLPRegressor`
+- **Ensemble Methods**
+    - Bagging, Stacking, Voting, AdaBoost, ExtraTrees.
+    - `from sklearn.ensemble import BaggingRegressor, StackingRegressor, VotingRegressor, AdaBoostRegressor, ExtraTreesRegressor`
+- **Advanced Boosting Libraries**
+    - XGBoost, LightGBM, CatBoost (install separately).
+    - `from xgboost import XGBRegressor`, `from lightgbm import LGBMRegressor`, `from catboost import CatBoostRegressor`
+
+**Example: Adding Multiple Model Types to edaflow**
+
+.. code-block:: python
+
+     from sklearn.linear_model import LogisticRegression, LinearRegression
+     from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, RandomForestRegressor, GradientBoostingRegressor
+     from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+     from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+     from sklearn.naive_bayes import GaussianNB
+     from sklearn.svm import SVC, SVR
+     from sklearn.neural_network import MLPClassifier, MLPRegressor
+
+     # For classification
+     models = {
+             'logistic_regression': LogisticRegression(),
+             'decision_tree': DecisionTreeClassifier(),
+             'random_forest': RandomForestClassifier(),
+             'gradient_boosting': GradientBoostingClassifier(),
+             'knn': KNeighborsClassifier(),
+             'naive_bayes': GaussianNB(),
+             'svm': SVC(probability=True),
+             'mlp': MLPClassifier()
+     }
+
+     # For regression
+     models = {
+             'linear_regression': LinearRegression(),
+             'decision_tree': DecisionTreeRegressor(),
+             'random_forest': RandomForestRegressor(),
+             'gradient_boosting': GradientBoostingRegressor(),
+             'knn': KNeighborsRegressor(),
+             'svr': SVR(),
+             'mlp': MLPRegressor()
+     }
+
+**Note:** For XGBoost, LightGBM, and CatBoost, you must install the libraries separately (e.g., `pip install xgboost lightgbm catboost`).
+
+Refer to scikit-learn and the respective library documentation for more details and advanced options.
 ---------------------
 
 The ML functions integrate seamlessly with edaflow's EDA capabilities:
@@ -626,4 +1126,42 @@ The ML functions integrate seamlessly with edaflow's EDA capabilities:
    config = ml.setup_ml_experiment(X=X, y=y)
    # ... continue with ML workflow
 
+
 This creates a complete data science pipeline from exploration to model deployment.
+
+What's Next After Training the Model?
+------------------------------------
+
+Completing the ML workflow is a major milestone, but impactful data science continues beyond model training. Here are the recommended next steps to ensure your work delivers value in real-world settings:
+
+1. **Model Deployment**
+    - Deploy your trained model to production environments (web apps, APIs, batch jobs, etc.).
+    - Consider using tools like Flask, FastAPI, Streamlit, or cloud services (Azure ML, AWS SageMaker, GCP AI Platform).
+    - Ensure reproducibility by saving model artifacts and environment details.
+
+2. **Model Monitoring & Maintenance**
+    - Track model performance over time to detect data drift or performance degradation.
+    - Set up alerts for significant drops in accuracy or changes in data distribution.
+    - Plan for periodic retraining as new data becomes available.
+
+3. **Interpretability & Reporting**
+    - Use model explainability tools (e.g., SHAP, LIME) to interpret predictions and build trust with stakeholders.
+    - Generate clear reports and visualizations for both technical and non-technical audiences.
+
+4. **Collaboration & Documentation**
+    - Document your workflow, decisions, and results for future reference and team collaboration.
+    - Share code, artifacts, and experiment logs using version control and collaborative platforms.
+
+5. **Iterative Improvement**
+    - Gather feedback from users and stakeholders to identify areas for improvement.
+    - Iterate on feature engineering, model selection, and hyperparameter tuning as needed.
+
+**Checklist: Post-ML Workflow Actions**
+
+- [ ] Deploy the selected model to a test or production environment
+- [ ] Set up monitoring for model performance and data drift
+- [ ] Document the workflow, results, and key decisions
+- [ ] Share reports and artifacts with stakeholders
+- [ ] Plan for regular model review and retraining
+
+By following these steps, you ensure your machine learning solutions remain robust, interpretable, and valuable over time.
