@@ -1,3 +1,32 @@
+Sanity Test: Dynamic Best Model Selection
+----------------------------------------
+
+To ensure the robustness of the dynamic best model selection logic in the workflow, a sanity test script is provided. This script runs the workflow for different metrics (e.g., accuracy, f1, roc_auc) and asserts that the best model is correctly selected for each case.
+
+**Script location:**
+
+    sanity_test_dynamic_best_model.py
+
+**How it works:**
+
+1. Loads a sample dataset (breast cancer from scikit-learn).
+2. Runs the ML workflow for each metric in a list.
+3. Asserts that the best model selected matches the highest score for the chosen metric.
+4. Prints a pass message for each metric.
+
+**Usage:**
+
+Activate your virtual environment, then run:
+
+    python sanity_test_dynamic_best_model.py
+
+If all tests pass, you will see output like:
+
+    [PASS] Best model for accuracy: random_forest (score: 0.9474)
+    [PASS] Best model for f1: random_forest (score: 0.9474)
+    [PASS] Best model for roc_auc: logistic_regression (score: 0.9947)
+
+This ensures the sample code in the documentation is safe for copy-paste and works for any metric.
 Troubleshooting & Common Pitfalls
 ---------------------------------
 
@@ -457,20 +486,22 @@ Here's a comprehensive example showing the full ML workflow:
    )
 
    # Step 6: Rank Models and Select Best Performer
-   # Two ways to get the best model:
-   
+
+   # Dynamically select the best model based on the primary metric
+   primary_metric = config.get('primary_metric', 'roc_auc')  # fallback to 'roc_auc' if not set
+
    # Method 1: DataFrame format (traditional)
-   ranked_df = ml.rank_models(comparison_results, 'roc_auc')
+   ranked_df = ml.rank_models(comparison_results, primary_metric)
    best_model_traditional = ranked_df.iloc[0]['model']
-   
+
    # Method 2: List format (easy dictionary access)
    best_model = ml.rank_models(
-       comparison_results, 
-       'roc_auc', 
+       comparison_results,
+       primary_metric,
        return_format='list'
    )[0]['model_name']
-   
-   print(f"Best performing model: {best_model}")
+
+   print(f"Best performing model (by {primary_metric}): {best_model}")
    
    # Step 7: Hyperparameter Optimization for Best Model
    if best_model == 'random_forest':
