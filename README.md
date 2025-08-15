@@ -15,7 +15,7 @@
 
 A Python package for streamlined exploratory data analysis workflows.
 
-> **📦 Current Version: v0.15.0** - [Latest Release](https://pypi.org/project/edaflow/0.15.0/) includes **CRITICAL ML workflow documentation fixes** that resolve user-reported errors and ensure all examples work perfectly. *Updated: August 13, 2025*
+ > **📦 Current Version: v0.15.1** - [Latest Release](https://pypi.org/project/edaflow/0.15.1/) adds **robust primary_metric support** in ML experiment setup, ensuring error-free metric handling in all workflows. *Updated: August 15, 2025*
 
 ## 📖 Table of Contents
 
@@ -35,9 +35,16 @@ A Python package for streamlined exploratory data analysis workflows.
 
 `edaflow` is designed to simplify and accelerate the exploratory data analysis (EDA) process by providing a collection of tools and utilities for data scientists and analysts. The package integrates popular data science libraries to create a cohesive workflow for data exploration, visualization, and preprocessing.
 
-## 🚨 Critical Fixes in v0.15.0
+## 🚨 What's New in v0.15.1
 
-**IMPORTANT UPDATE**: This release fixes critical issues in ML workflow documentation that were causing user errors.
+**NEW:** `setup_ml_experiment` now supports a `primary_metric` argument, making metric selection robust and error-free for all ML workflows. All documentation, tests, and downstream code are updated for consistency. A new test ensures the metric is set and accessible throughout the workflow.
+
+**Upgrade recommended for all users who want reliable, copy-paste-safe ML workflows with dynamic metric selection.**
+
+---
+
+## 🚨 Critical Fixes in v0.15.0
+**(Previous release)**
 
 ### 🎯 **Issues Resolved**:
 - ❌ **FIXED**: `RandomForestClassifier instance is not fitted yet` errors

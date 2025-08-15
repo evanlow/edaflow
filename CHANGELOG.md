@@ -1,3 +1,13 @@
+# [0.15.1] - 2025-08-15
+
+### 🚀 ENHANCEMENT: Robust Metric Handling in ML Workflows
+
+- `setup_ml_experiment` now supports a `primary_metric` argument, making metric selection robust and error-free for all ML workflows.
+- All documentation, user guides, and quickstart examples updated to show and explain `primary_metric` usage.
+- Downstream code and all ML workflow logic now consistently use the metric set in the experiment config.
+- Added a dedicated test to ensure the metric is set and accessible throughout the workflow.
+- **Result:** Users can now copy-paste ML workflow code with confidence that metric selection will work as expected.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

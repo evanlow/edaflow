@@ -28,7 +28,8 @@ def setup_ml_experiment(
     X: Optional[pd.DataFrame] = None,
     y: Optional[pd.Series] = None,
     # Alternative parameter names for compatibility
-    val_size: Optional[float] = None
+    val_size: Optional[float] = None,
+    primary_metric: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Set up a complete ML experiment with train/validation/test splits.
@@ -36,8 +37,13 @@ def setup_ml_experiment(
     This function supports two calling patterns:
     1. DataFrame with target column: setup_ml_experiment(data, target_column)
     2. Sklearn-style: setup_ml_experiment(X=X, y=y)
-    
+
     Parameters:
+    -----------
+    ...existing parameters...
+    primary_metric : str, optional
+        The main metric used for model selection and ranking (e.g., 'roc_auc', 'f1', 'accuracy', 'r2').
+        This will be stored in the config for downstream use.
     -----------
     data : pd.DataFrame, optional
         The complete dataset including features and target
@@ -189,9 +195,10 @@ def setup_ml_experiment(
         'total_samples': len(X) + len(y),
         'train_samples': len(X_train),
         'val_samples': len(X_val),
-        'test_samples': len(X_test)
+        'test_samples': len(X_test),
+        'primary_metric': primary_metric
     }
-    
+
     return {
         'X_train': X_train,
         'X_val': X_val,
@@ -202,6 +209,7 @@ def setup_ml_experiment(
         'feature_names': list(X.columns),
         'target_name': target_name,
         'experiment_name': experiment_name,  # Add experiment_name to top level for easy access
+        'primary_metric': primary_metric,
         'experiment_config': experiment_config
     }
 
