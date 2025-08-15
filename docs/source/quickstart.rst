@@ -25,6 +25,13 @@ First, install and import edaflow:
    print(edaflow.hello())
 
 📊 **EDA Workflow Quick Start**
+
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- `edaflow.check_null_columns` scans your DataFrame for missing values, calculates null percentages, and provides a visual summary with actionable warnings.
+- `edaflow.analyze_categorical_columns` inspects object columns to suggest type conversions and highlight high-cardinality features.
+- `edaflow.convert_to_numeric` attempts safe conversion of object columns to numeric, reporting any issues.
+- Visualization functions use matplotlib/seaborn to generate clear, publication-ready plots for quick data assessment.
 -------------------------------
 
 .. code-block:: python
@@ -45,6 +52,12 @@ First, install and import edaflow:
    edaflow.visualize_scatter_matrix(df_converted)
 
 🤖 **ML Workflow Quick Start**
+
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- edaflow’s ML functions expect you to fit models before comparison, ensuring fair and reproducible evaluation.
+- `ml.compare_models` runs cross-validation for each model, aggregates scores for your chosen metrics, and returns a leaderboard-ready summary.
+- All steps are designed to prevent data leakage and provide transparent, auditable results for your ML experiments.
 ------------------------------
 
 .. warning::

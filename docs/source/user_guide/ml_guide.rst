@@ -1,3 +1,70 @@
+How edaflow Splits Your Dataset: Training, Validation, and Test
+----------------------------------------------------------------
+
+edaflow automates robust, reproducible splitting of your dataset into training, validation, and test sets, following best practices for machine learning workflows.
+
+**Key Function: `setup_ml_experiment`**
+
+- This is the main function responsible for splitting your data.
+- Example usage:
+
+  .. code-block:: python
+
+      config = ml.setup_ml_experiment(
+            X=X,
+            y=y,
+            test_size=0.2,
+            val_size=0.15,
+            random_state=42
+      )
+
+- **Parameters:**
+  - `X`, `y`: Your features and target.
+  - `test_size`: Fraction of data reserved for the test set (e.g., 0.2 = 20%).
+  - `val_size`: Fraction of the *remaining* data (after test split) for validation.
+  - `random_state`: Ensures reproducibility.
+
+**What Happens Under the Hood**
+
+1. **Test Split:**
+    - The function first splits off the test set using `sklearn.model_selection.train_test_split`.
+    - Example: With `test_size=0.2`, 20% of the data is set aside for final testing.
+
+2. **Validation Split:**
+    - From the remaining 80%, it splits off the validation set using another `train_test_split`.
+    - Example: With `val_size=0.15`, 15% of the *original* data (or 18.75% of the remaining 80%) is used for validation.
+
+3. **Output:**
+    - Returns a config dictionary containing:
+      - `X_train`, `X_val`, `X_test`
+      - `y_train`, `y_val`, `y_test`
+      - Indices for each split (useful for reproducibility)
+      - Other experiment settings
+
+**Why This Matters**
+
+- **Training Set:** Used to fit models.
+- **Validation Set:** Used for hyperparameter tuning and model selection (prevents overfitting to the test set).
+- **Test Set:** Used only for final evaluation, simulating unseen data.
+
+**Other Functions Involved**
+
+- `validate_ml_data`: Can be used on any split to check for data quality issues.
+- `configure_model_pipeline`: Uses the split data to set up preprocessing pipelines.
+- All downstream modeling functions (e.g., `compare_models`, `optimize_hyperparameters`) expect the split data from `setup_ml_experiment`.
+
+**Summary Table:**
+
+=================  ===============================  =====================================
+Split              Purpose                          How edaflow Creates It
+=================  ===============================  =====================================
+Training           Model fitting                    From `setup_ml_experiment`
+Validation         Tuning, model selection          From `setup_ml_experiment`
+Test               Final evaluation (unseen)        From `setup_ml_experiment`
+=================  ===============================  =====================================
+
+**In short:**
+edaflow’s `setup_ml_experiment` automates robust, reproducible splitting of your data, following best practices for ML workflows. All other ML functions in edaflow are designed to work seamlessly with these splits.
 Sanity Test: Dynamic Best Model Selection
 ----------------------------------------
 
@@ -92,16 +159,58 @@ This guide walks you through the recommended end-to-end workflow for building, e
     - Split data into train/validation/test sets and configure experiment settings.
 3. **Preprocessing**
     - Apply scaling, encoding, and imputation as needed.
+
+    What Happens Under the Hood
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - The `configure_model_pipeline` function builds a scikit-learn `Pipeline` or `ColumnTransformer` based on your data types and preprocessing choices.
+    - It automatically detects numerical and categorical columns, applying the specified strategies (e.g., standard scaling, one-hot encoding, imputation).
+    - Handles missing values according to your chosen method, ensuring compatibility with downstream models.
+    - The resulting pipeline is stored in the config and used for all model training and evaluation steps.
 4. **Model Fitting**
     - Train multiple candidate models (including baselines).
+
+    What Happens Under the Hood
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - edaflow expects you to provide a dictionary of models (scikit-learn compatible) for training.
+    - Each model is fit on the training data (from the config) using its `.fit()` method.
+    - Training progress and any errors are reported if `verbose=True`.
+    - All models are trained independently to avoid cross-contamination of results.
 5. **Model Comparison & Evaluation**
     - Compare models using cross-validation and leaderboard visualizations.
+
+    What Happens Under the Hood
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - The `compare_models` function runs cross-validation for each model using the specified number of folds and metrics.
+    - It collects out-of-fold predictions and aggregates scores for each metric, storing means and standard deviations.
+    - Results are returned as a DataFrame or list, ready for leaderboard display and ranking.
+    - The function supports both classification and regression, auto-detecting the problem type if needed.
 6. **Hyperparameter Optimization**
     - Tune the best models for optimal performance.
+
+    What Happens Under the Hood
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - edaflow provides `optimize_hyperparameters`, `grid_search_models`, and `bayesian_optimization` utilities.
+    - These functions define a search space and strategy, then evaluate model performance for each combination using cross-validation.
+    - The best hyperparameters are selected based on your chosen metric, and the tuned model is returned for further use.
+    - All search results and best parameters are stored for reproducibility and reporting.
 7. **Select Best Model**
     - Choose the top-performing model based on your primary metric.
+
+    What Happens Under the Hood
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - The `rank_models` function sorts models by your primary metric, supporting both DataFrame and list return formats.
+    - It can apply custom weights for multi-metric ranking and supports both ascending and descending order (for error vs. score metrics).
+    - The top-ranked model is selected for further tuning or deployment.
+    - All ranking logic is transparent and reproducible.
 8. **Save Model Artifacts**
     - Persist the model, configuration, and metrics for reproducibility and deployment.
+
+    What Happens Under the Hood
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~
+    - The `save_model_artifacts` function serializes your trained model, config, and metrics using joblib or pickle.
+    - It saves all relevant files to a specified directory, using clear naming conventions for traceability.
+    - The function can also include a sample of your training data for future reference or debugging.
+    - Loading is handled by `load_model_artifacts`, which restores all components for immediate use.
 9. **Generate Model Reports**
     - Create reports and visualizations for stakeholders and documentation.
 10. **Track Experiments**
@@ -201,6 +310,12 @@ Best Practices and Strategies for Hyperparameter Optimization
 edaflow supports both grid search and Bayesian optimization, so you can choose the strategy that best fits your problem and resources.
 
 Baseline Models: A Starting Point
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- Baseline models in edaflow are typically implemented using scikit-learn’s `DummyClassifier` or `DummyRegressor`.
+- These models use simple strategies (e.g., most frequent, mean, median) to generate predictions.
+- Including them in your model dictionary allows direct comparison with more advanced models in the same workflow.
+- The results help you verify that your pipeline and metrics are working as expected before investing in complex modeling.
 Machine Learning User Guide
 ===========================
 

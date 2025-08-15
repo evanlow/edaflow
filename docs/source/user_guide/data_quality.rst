@@ -14,6 +14,11 @@ Data quality is the foundation of any successful data analysis or machine learni
 * **Outlier Detection**: Identify and handle anomalous values
 
 Missing Data Analysis
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- `edaflow.check_null_columns` uses pandas to scan each column for null values and calculates the percentage of missing data.
+- It generates a visual summary (e.g., heatmap or color-coded table) to highlight missingness patterns.
+- The function applies user-defined thresholds to trigger warnings and provides actionable recommendations based on the severity of missing data.
 ---------------------
 
 The first step in any EDA workflow should be understanding your missing data patterns.
@@ -45,6 +50,11 @@ This function provides:
    edaflow.check_null_columns(df, threshold=15)  # Warn if >15% null
 
 Data Type Conversion
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- `edaflow.analyze_categorical_columns` inspects object columns to determine if they can be safely converted to numeric types, using heuristics and value checks.
+- `edaflow.convert_to_numeric` attempts conversion for columns that meet the threshold, handling errors gracefully and reporting any columns that could not be converted.
+- `edaflow.display_column_types` summarizes the current data types for all columns, making it easy to spot inconsistencies.
 --------------------
 
 Many datasets have columns that should be numeric but are stored as objects/strings.
@@ -71,6 +81,11 @@ Many datasets have columns that should be numeric but are stored as objects/stri
    edaflow.display_column_types(df)
 
 Data Imputation Strategies
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- edaflow’s imputation utilities detect column types (numerical, categorical) and select the appropriate imputation strategy (mean, median, mode, or custom logic).
+- The imputation process is applied column-wise, with missing values filled in-place or in a copy, depending on user preference.
+- All imputation steps are logged or reported, ensuring transparency and reproducibility in the cleaning workflow.
 ---------------------------
 
 edaflow provides intelligent imputation methods for different data types.
@@ -99,6 +114,11 @@ edaflow provides intelligent imputation methods for different data types.
    df_clean = edaflow.impute_categorical_mode(df_clean)
 
 Outlier Detection and Handling
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- edaflow’s outlier detection tools use statistical methods (e.g., IQR, Z-score) to flag values that deviate significantly from the norm.
+- Visualizations (such as boxplots) are generated to help users quickly spot and interpret outliers.
+- The functions can optionally remove or cap outliers, with all actions logged for transparency.
 -------------------------------
 
 Outliers can significantly impact analysis and model performance.
@@ -121,6 +141,11 @@ Outliers can significantly impact analysis and model performance.
 * **Median Replacement**: Robust strategy that maintains data distribution
 
 Best Practices Workflow
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- The workflow combines all edaflow data quality utilities in a recommended sequence, ensuring each cleaning step builds on the previous one.
+- Each function logs its actions and results, making the process auditable and reproducible.
+- The workflow is modular, so users can customize or skip steps as needed for their specific data challenges.
 ------------------------
 
 Here's a recommended data quality workflow:
@@ -159,6 +184,11 @@ Here's a recommended data quality workflow:
    edaflow.display_column_types(df_clean)
 
 Common Data Quality Issues
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- edaflow scans for common data quality issues using a library of heuristics and pattern checks (e.g., constant columns, duplicate rows, mixed types).
+- Detected issues are summarized in a report, with severity levels and suggested remediation steps.
+- The system is extensible, allowing new issue types to be added as data challenges evolve.
 ---------------------------
 
 **Mixed Data Types in Columns**
@@ -188,6 +218,11 @@ Common Data Quality Issues
            df[col] = pd.to_datetime(df[col], errors='coerce')
 
 Integration with ML Workflow
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- edaflow’s data quality outputs (cleaned data, reports, logs) are designed to integrate seamlessly with its ML experiment setup and modeling functions.
+- Cleaned datasets and quality scores can be passed directly to ML workflows, ensuring consistency and traceability.
+- Integration points are documented so users can automate the transition from EDA to modeling.
 -----------------------------
 
 Clean data is essential for machine learning:
@@ -211,6 +246,11 @@ Clean data is essential for machine learning:
    )
 
 Tips for Large Datasets
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- edaflow uses efficient, vectorized operations (via pandas/numpy) to handle large datasets without excessive memory usage.
+- For very large data, sampling and chunked processing options are available to maintain performance.
+- All tips are based on practical experience with real-world, large-scale data cleaning tasks.
 ------------------------
 
 **Memory Efficiency**
@@ -233,6 +273,11 @@ Tips for Large Datasets
    df_converted = edaflow.convert_to_numeric(df)
 
 Quality Assessment Checklist
+What Happens Under the Hood
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+- The checklist is generated from the results of all previous edaflow data quality checks and cleaning steps.
+- It provides a structured summary of what has been validated, cleaned, or flagged for review.
+- The checklist can be exported or included in reports for documentation and audit purposes.
 -----------------------------
 
 Use this checklist to ensure comprehensive data quality assessment:
