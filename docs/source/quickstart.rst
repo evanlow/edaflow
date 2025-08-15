@@ -114,7 +114,8 @@ What Happens Under the Hood
        test_size=0.2,
        experiment_name="quick_start_ml",
        random_state=42,
-       stratify=True
+       stratify=True,
+       primary_metric="roc_auc"  # Explicitly set primary metric
    )
    
    # Alternative: sklearn-style
@@ -124,7 +125,8 @@ What Happens Under the Hood
        test_size=0.2,
        experiment_name="quick_start_ml",
        random_state=42,
-       stratify=True
+       stratify=True,
+       primary_metric="roc_auc"  # Explicitly set primary metric
    )
    
    # Step 2: Compare Models
@@ -352,16 +354,18 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
        experiment_name="complete_ml_workflow",  # ⭐ NEW: Experiment tracking
        random_state=42,
        stratify=True,
-       verbose=True
+       verbose=True,
+       primary_metric="roc_auc"  # Explicitly set primary metric
    )
    
    # Alternative: sklearn-style calling (also enhanced)
    # X = df_ml.drop('target_column', axis=1)
    # y = df_ml['target_column']
    # config = ml.setup_ml_experiment(
-   #     X=X, y=y,
-   #     val_size=0.15, experiment_name="sklearn_style_workflow"
-   # )
+    #     X=X, y=y,
+    #     val_size=0.15, experiment_name="sklearn_style_workflow",
+    #     primary_metric="roc_auc"  # Explicitly set primary metric
+    # )
    
    print(f"Training samples: {len(config['X_train'])}")
    print(f"Validation samples: {len(config['X_val'])}")  # ⭐ NEW: Validation set
@@ -580,14 +584,16 @@ edaflow ML functions support dual API patterns for maximum flexibility:
    config = ml.setup_ml_experiment(
        df_cleaned, 'target_column',
        val_size=0.15, 
-       experiment_name="my_experiment"
+       experiment_name="my_experiment",
+       primary_metric="roc_auc"  # Explicitly set primary metric
    )
    
    # Pattern 2: sklearn-style (X, y)
    config = ml.setup_ml_experiment(
        X=X, y=y,
        val_size=0.15,
-       experiment_name="my_experiment"
+       experiment_name="my_experiment",
+       primary_metric="roc_auc"  # Explicitly set primary metric
    )
    
    # 🔍 validate_ml_data - Two calling patterns
@@ -653,7 +659,8 @@ For a seamless transition from EDA to ML:
    config = ml.setup_ml_experiment(
        df_encoded, 'target_column',
        val_size=0.15,
-       experiment_name="eda_to_ml_pipeline"  # ⭐ NEW: Track the complete workflow
+       experiment_name="eda_to_ml_pipeline",  # ⭐ NEW: Track the complete workflow
+       primary_metric="roc_auc"  # Explicitly set primary metric
    )
    
    # 4. Continue with ML workflow...

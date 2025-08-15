@@ -373,6 +373,28 @@ The `validate_ml_data` function provides a data quality score—a summary metric
 
 Choosing the right scoring metric is critical for evaluating and comparing machine learning models. Here are the best practice metrics supported by edaflow, with practical guidance:
 
+.. note::
+    **Set Your Primary Metric in `setup_ml_experiment`!**
+
+    Always specify the ``primary_metric`` parameter in your call to ``setup_ml_experiment``. This ensures that all downstream functions (like model ranking and best model selection) use the metric that matches your problem and business goals.
+
+    **Example:**
+
+    .. code-block:: python
+
+        config = ml.setup_ml_experiment(
+             X=X, y=y,
+             test_size=0.2,
+             val_size=0.15,
+             experiment_name="my_experiment",
+             primary_metric="roc_auc"  # Change this to 'f1', 'accuracy', 'r2', etc. as needed
+        )
+
+    **Tip:**
+    - For classification, use ``primary_metric='roc_auc'``, ``'f1'``, or ``'accuracy'`` as appropriate.
+    - For regression, use ``primary_metric='r2'``, ``'mae'``, or ``'rmse'``.
+    - Choose the metric that best reflects your real-world success criteria!
+
 **When to Choose Accuracy or F1 as Your Primary Metric**
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Selecting a primary metric depends on your dataset and business goals:
