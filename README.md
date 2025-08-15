@@ -310,9 +310,41 @@ print(f"Best model: {best_model_name}")  # Easy access
 print(f"Best model: {best_model_traditional}")  # Traditional access
 
 # Optimize hyperparameters
+
+# --- Copy-paste-safe hyperparameter optimization example ---
+model_name = 'LogisticRegression'  # or 'RandomForest' or 'GradientBoosting'
+
+if model_name == 'RandomForest':
+    param_distributions = {
+        'n_estimators': [100, 200, 300],
+        'max_depth': [5, 10, 15, None],
+        'min_samples_split': [2, 5, 10]
+    }
+    model = RandomForestClassifier()
+    method = 'grid'
+elif model_name == 'GradientBoosting':
+    param_distributions = {
+        'n_estimators': (50, 200),
+        'learning_rate': (0.01, 0.3),
+        'max_depth': (3, 8)
+    }
+    from sklearn.ensemble import GradientBoostingClassifier
+    model = GradientBoostingClassifier()
+    method = 'bayesian'
+elif model_name == 'LogisticRegression':
+    param_distributions = {
+        'C': [0.01, 0.1, 1, 10, 100],
+        'penalty': ['l1', 'l2', 'elasticnet', 'none'],
+        'solver': ['lbfgs', 'liblinear', 'saga']
+    }
+    model = LogisticRegression(max_iter=1000)
+    method = 'grid'
+else:
+    raise ValueError(f"Unknown model_name: {model_name}")
+
 results = ml.optimize_hyperparameters(
-    RandomForestClassifier(),
-    param_distributions={'n_estimators': [50, 100, 200]},
+    model,
+    param_distributions=param_distributions,
     **experiment
 )
 
