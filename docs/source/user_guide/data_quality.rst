@@ -237,7 +237,10 @@ Clean data is essential for machine learning:
    y = df_clean['target']
    
    # Setup ML experiment with validated data
-   config = ml.setup_ml_experiment(X=X, y=y)
+   config = ml.setup_ml_experiment(
+      X=X, y=y,
+      primary_metric="roc_auc"  # 👈 Set your main metric here! (e.g., 'f1', 'accuracy', 'r2', etc.)
+   )
    
    # Additional ML-specific validation
    validation_report = ml.validate_ml_data(

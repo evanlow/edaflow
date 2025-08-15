@@ -82,22 +82,24 @@ edaflow is a Python package designed to streamline both exploratory data analysi
    
    # DataFrame-style (recommended)
    config = ml.setup_ml_experiment(
-       df, 'target',
-       val_size=0.15,
-       test_size=0.2,
-       experiment_name="model_comparison",
-       random_state=42,
-       stratify=True
+      df, 'target',
+      val_size=0.15,
+      test_size=0.2,
+      experiment_name="model_comparison",
+      random_state=42,
+      stratify=True,
+      primary_metric="roc_auc"  # 👈 Set your main metric here! (e.g., 'f1', 'accuracy', 'r2', etc.)
    )
    
    # Alternative: sklearn-style
    config = ml.setup_ml_experiment(
-       X=X, y=y,
-       val_size=0.15,
-       test_size=0.2,
-       experiment_name="model_comparison",
-       random_state=42,
-       stratify=True
+      X=X, y=y,
+      val_size=0.15,
+      test_size=0.2,
+      experiment_name="model_comparison",
+      random_state=42,
+      stratify=True,
+      primary_metric="roc_auc"  # 👈 Set your main metric here! (e.g., 'f1', 'accuracy', 'r2', etc.)
    )
 
    # Compare multiple models

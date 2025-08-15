@@ -388,6 +388,7 @@ Choosing the right scoring metric is critical for evaluating and comparing machi
              val_size=0.15,
              experiment_name="my_experiment",
              primary_metric="roc_auc"  # Change this to 'f1', 'accuracy', 'r2', etc. as needed
+        primary_metric="roc_auc"  # 👈 Set your main metric here! (e.g., 'f1', 'accuracy', 'r2', etc.)
         )
 
     **Tip:**
@@ -396,6 +397,7 @@ Choosing the right scoring metric is critical for evaluating and comparing machi
     - Choose the metric that best reflects your real-world success criteria!
 
 **When to Choose Accuracy or F1 as Your Primary Metric**
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Selecting a primary metric depends on your dataset and business goals:
 
