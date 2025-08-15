@@ -451,53 +451,53 @@ Here's how to perform a complete machine learning workflow using edaflow's 26 ML
    
    # Select best model
 
-    # Dynamically select the best model based on the primary metric
-    primary_metric = config.get('primary_metric', 'roc_auc')  # fallback to 'roc_auc' if not set
-    best_model_name = final_comparison.loc[final_comparison[primary_metric].idxmax(), 'model']
-    best_model = optimized_models[best_model_name]
+# Dynamically select the best model based on the primary metric
+primary_metric = config.get('primary_metric', 'roc_auc')  # fallback to 'roc_auc' if not set
+best_model_name = final_comparison.loc[final_comparison[primary_metric].idxmax(), 'model']
+best_model = optimized_models[best_model_name]
    
-   print(f"🏆 Selected model: {best_model_name}")
-   
-   # Step 7: Comprehensive Model Evaluation
-   print("\n📊 Model Performance Visualization:")
-   
-   # Learning curves
-   ml.plot_learning_curves(
-       model=best_model,
-       X_train=config['X_train'],
-       y_train=config['y_train'],
-       cv=5
-   )
-   
-   # ROC curves
-   ml.plot_roc_curves(
-       models=optimized_models,
-       X_val=config['X_test'],
-       y_val=config['y_test']
-   )
-   
-   # Precision-Recall curves
-   ml.plot_precision_recall_curves(
-       models=optimized_models,
-       X_val=config['X_test'],
-       y_val=config['y_test']
-   )
-   
-   # Confusion matrix
-   ml.plot_confusion_matrix(
-       model=best_model,
-       X_val=config['X_test'],
-       y_val=config['y_test'],
-       normalize=True
-   )
-   
-   # Feature importance
-   if hasattr(best_model, 'feature_importances_'):
-       ml.plot_feature_importance(
-           model=best_model,
-           feature_names=config['feature_names'],
-           top_n=15
-       )
+print(f"🏆 Selected model: {best_model_name}")
+
+# Step 7: Comprehensive Model Evaluation
+print("\n📊 Model Performance Visualization:")
+
+# Learning curves
+ml.plot_learning_curves(
+    model=best_model,
+    X_train=config['X_train'],
+    y_train=config['y_train'],
+    cv=5
+)
+
+# ROC curves
+ml.plot_roc_curves(
+    models=optimized_models,
+    X_val=config['X_test'],
+    y_val=config['y_test']
+)
+
+# Precision-Recall curves
+ml.plot_precision_recall_curves(
+    models=optimized_models,
+    X_val=config['X_test'],
+    y_val=config['y_test']
+)
+
+# Confusion matrix
+ml.plot_confusion_matrix(
+    model=best_model,
+    X_val=config['X_test'],
+    y_val=config['y_test'],
+    normalize=True
+)
+
+# Feature importance
+if hasattr(best_model, 'feature_importances_'):
+    ml.plot_feature_importance(
+        model=best_model,
+        feature_names=config['feature_names'],
+        top_n=15
+    )
    
    # Validation curves for key hyperparameters
    if best_model_name == 'RandomForest':
